@@ -60,7 +60,7 @@ export default function Home() {
         >
           <source src="/videos/hero-background.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 z-10 bg-gradient-to-br from-primary/20 via-background to-background" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-br from-[#96AAFF]/20 via-background to-background" />
 
         <div className="container relative z-20 flex h-full flex-col items-center justify-center text-center">
           <motion.h1
@@ -70,7 +70,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             Legg Inn Dine Predictions
-            <span className="block bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-[#64FFFF] to-[#BEFFD2] bg-clip-text text-transparent">
               Vinn Stort
             </span>
           </motion.h1>
@@ -92,10 +92,13 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <Link href="/matches">
-              <Button size="lg" className="group relative overflow-hidden">
+              <Button
+                size="lg"
+                className="group relative overflow-hidden bg-[#64FFFF] text-black hover:bg-[#64FFFF]/90"
+              >
                 <span className="relative z-10">Start å Predikere</span>
                 <motion.div
-                  className="absolute inset-0 bg-primary/20"
+                  className="absolute inset-0 bg-[#BEFFD2]/20"
                   initial={{ x: '-100%' }}
                   whileHover={{ x: 0 }}
                   transition={{ duration: 0.3 }}
@@ -111,13 +114,13 @@ export default function Home() {
         <div className="container">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <motion.div
-              className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+              className="rounded-lg border border-[#96AAFF]/20 bg-card p-6 text-card-foreground shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <Trophy className="mb-4 h-12 w-12 text-primary" />
+              <Trophy className="mb-4 h-12 w-12 text-[#64FFFF]" />
               <h3 className="mb-2 text-2xl font-semibold">
                 Totale Predictions
               </h3>
@@ -127,13 +130,13 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+              className="rounded-lg border border-[#96AAFF]/20 bg-card p-6 text-card-foreground shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Users className="mb-4 h-12 w-12 text-primary" />
+              <Users className="mb-4 h-12 w-12 text-[#BEFFD2]" />
               <h3 className="mb-2 text-2xl font-semibold">Aktive Brukere</h3>
               <p className="text-muted-foreground">
                 Bli med i et voksende fellesskap av e-sport-entusiaster
@@ -141,13 +144,13 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm sm:col-span-2 lg:col-span-1"
+              className="rounded-lg border border-[#96AAFF]/20 bg-card p-6 text-card-foreground shadow-sm sm:col-span-2 lg:col-span-1"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Calendar className="mb-4 h-12 w-12 text-primary" />
+              <Calendar className="mb-4 h-12 w-12 text-[#64FFFF]" />
               <h3 className="mb-2 text-2xl font-semibold">Kommende Kamper</h3>
               <p className="text-muted-foreground">
                 Hold deg oppdatert med de nyeste kampene og legg inn dine
@@ -164,7 +167,7 @@ export default function Home() {
         initial="hidden"
         animate={featuresInView ? 'show' : 'hidden'}
         variants={container}
-        className="bg-gradient-to-b from-background to-muted/20 py-20"
+        className="bg-gradient-to-b from-background via-[#96AAFF]/5 to-[#BEFFD2]/5 py-20"
       >
         <div className="container mx-auto px-4">
           <motion.h2
@@ -185,10 +188,10 @@ export default function Home() {
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="relative h-full overflow-hidden rounded-lg border border-muted bg-card p-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#64FFFF]/10 to-[#96AAFF]/10 opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="relative">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <Calendar className="h-6 w-6 text-primary" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#64FFFF]/10">
+                    <Calendar className="h-6 w-6 text-[#64FFFF]" />
                   </div>
                   <h3 className="mb-2 text-xl font-bold">
                     1. Velg Dine Kamper
@@ -208,10 +211,10 @@ export default function Home() {
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="relative h-full overflow-hidden rounded-lg border border-muted bg-card p-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/10 to-red-600/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#BEFFD2]/10 to-[#64FFFF]/10 opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="relative">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <TrendingUp className="h-6 w-6 text-primary" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#BEFFD2]/10">
+                    <TrendingUp className="h-6 w-6 text-[#BEFFD2]" />
                   </div>
                   <h3 className="mb-2 text-xl font-bold">2. Tjen Poeng</h3>
                   <p className="text-muted-foreground">
@@ -229,10 +232,10 @@ export default function Home() {
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="relative h-full overflow-hidden rounded-lg border border-muted bg-card p-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#96AAFF]/10 to-[#BEFFD2]/10 opacity-0 transition-opacity group-hover:opacity-100" />
                 <div className="relative">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <Trophy className="h-6 w-6 text-primary" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#96AAFF]/10">
+                    <Trophy className="h-6 w-6 text-[#96AAFF]" />
                   </div>
                   <h3 className="mb-2 text-xl font-bold">
                     3. Klatre i Rankingen
@@ -248,7 +251,7 @@ export default function Home() {
       </motion.section>
 
       {/* Footer */}
-      <footer className="mt-auto w-full border-t border-t-foreground/10 py-8">
+      <footer className="mt-auto w-full border-t border-[#96AAFF]/10 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
             Drevet av{' '}
@@ -256,7 +259,7 @@ export default function Home() {
               href="https://x.com/KekMekn"
               target="_blank"
               rel="noreferrer"
-              className="font-semibold transition-colors hover:text-primary"
+              className="font-semibold transition-colors hover:text-[#64FFFF]"
             >
               KekMek
             </a>
