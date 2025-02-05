@@ -2,14 +2,20 @@
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.users (id, email, username, created_at, updated_at)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE((NEW.raw_user_meta_data->>'username')::text, 'user_' || substr(NEW.id::text, 1, 8)),
-    NEW.created_at,
-    NEW.updated_at
-  );
+  -- Only insert if the user doesn't already exist
+  IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
+    INSERT INTO public.users (id, email, username, created_at, updated_at)
+    VALUES (
+      NEW.id,
+      NEW.email,
+      COALESCE(
+        (NEW.raw_user_meta_data->>'username')::text,
+        split_part(NEW.email, '@', 1)
+      ),
+      NEW.created_at,
+      NEW.updated_at
+    );
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

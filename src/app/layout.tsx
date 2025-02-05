@@ -1,16 +1,12 @@
 import { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/react'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/toaster'
-import { cn } from '@/lib/utils'
 import './globals.css'
 import '@/styles/animations.css'
-import Navigation from '@/components/Navigation'
+import RootLayoutClient from '@/components/RootLayoutClient'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'GGWP.NO',
   description: 'Tipp på CS2 kamper i Good Game Ligaen',
 }
@@ -23,12 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
-          <Navigation />
-          <main>{children}</main>
-          <Toaster />
-        </ThemeProvider>
-        <Analytics />
+        <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>
   )

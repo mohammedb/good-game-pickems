@@ -57,9 +57,6 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: `${origin}/api/auth/callback`,
       data: {
         username: username,
-        raw_user_meta_data: {
-          username: username,
-        },
       },
     },
   })
@@ -69,25 +66,32 @@ export async function signUp(formData: FormData) {
     return { error: signUpError.message }
   }
 
-  // Wait a moment for the trigger to create the user
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  // If we have an auth user, consider it a success
+  // The trigger will handle profile creation asynchronously
+  if (authData?.user) {
+    // Try to insert the user profile, but don't fail if it doesn't work
+    // as the trigger will handle it
+    try {
+      await supabase.from('users').insert({
+        id: authData.user.id,
+        email: email,
+        username: username,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+    } catch (error) {
+      // Log the error but don't fail the signup
+      console.log('Profile creation will be handled by trigger:', error)
+    }
 
-  // Verify the user was created and username was set
-  if (authData.user) {
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', authData.user.id)
-      .single()
-
-    if (userError || !userData?.username) {
-      console.error('Error verifying user creation:', userError)
-      return {
-        error:
-          'Account created but there was an issue setting up your profile. Please contact support.',
-      }
+    return {
+      success: true,
+      message:
+        'Account created successfully! Please check your email to verify your account.',
     }
   }
 
-  return { success: true }
+  return {
+    error: 'Unable to create account. Please try again.',
+  }
 }
