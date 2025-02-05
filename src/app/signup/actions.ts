@@ -6,6 +6,9 @@ import { redirect } from 'next/navigation'
 import { renderEmail, WelcomeEmail } from '@/lib/email-templates'
 import { sendEmail } from '@/lib/email'
 
+// Make sure we use the correct site URL
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://ggwp.no'
+
 async function sendWelcomeEmail(
   email: string,
   username: string,
@@ -20,7 +23,7 @@ async function sendWelcomeEmail(
 
   await sendEmail({
     to: email,
-    subject: 'Welcome to GGWP.no! 🎮',
+    subject: 'Velkommen til GGWP.no! 🎮',
     html: welcomeEmailHtml,
   })
 }
@@ -28,7 +31,6 @@ async function sendWelcomeEmail(
 export async function signUp(formData: FormData) {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
-  const origin = headers().get('origin')
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -75,7 +77,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/api/auth/callback?next=/`,
+      emailRedirectTo: `${SITE_URL}/api/auth/callback?next=/`,
       data: {
         username: username,
       },
@@ -100,7 +102,7 @@ export async function signUp(formData: FormData) {
       })
 
       // Send welcome email with verification link
-      const verificationUrl = `${origin}/api/auth/callback?next=/`
+      const verificationUrl = `${SITE_URL}/api/auth/callback?next=/`
       await sendWelcomeEmail(email, username, verificationUrl)
     } catch (error) {
       // Log the error but don't fail the signup
