@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Trophy, Calendar, User2, Menu, X, LucideIcon } from 'lucide-react'
+import { Trophy, Calendar, User2, Menu, X, LucideIcon, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/stores/onboarding-store'
 import { OnboardingTour } from './onboarding-tour'
@@ -22,21 +22,27 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     href: '/matches',
-    label: 'Matches',
+    label: 'Kamper',
     icon: Calendar,
     id: 'nav-matches'
   },
   {
     href: '/leaderboard',
-    label: 'Leaderboard',
+    label: 'Toppliste',
     icon: Trophy,
     id: 'nav-leaderboard'
   },
   {
     href: '/profile',
-    label: 'Profile',
+    label: 'Profil',
     icon: User2,
     id: 'nav-profile'
+  },
+  {
+    href: '/om-oss',
+    label: 'Om Oss',
+    icon: Users,
+    id: 'nav-about'
   }
 ]
 

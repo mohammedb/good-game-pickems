@@ -44,9 +44,18 @@ export default function Home() {
     <main className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-[90vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src="/videos/hero-background.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background z-10" />
         
-        <div className="container relative flex h-full flex-col items-center justify-center text-center">
+        <div className="container relative flex h-full flex-col items-center justify-center text-center z-20">
           <motion.h1 
             className="mb-6 text-4xl font-bold sm:text-6xl"
             initial={{ opacity: 0, y: 20 }}

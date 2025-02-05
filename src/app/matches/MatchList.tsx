@@ -336,7 +336,7 @@ export default function MatchList({ matches, userId, roundStats }: MatchListProp
                                   </span>
                                   {match.winner_id && (
                                     <div className="text-xs text-muted-foreground mt-1">
-                                      Winner: {match.winner_id === match.team1_id ? match.team1 : match.team2}
+                                      Vinner: {match.winner_id === match.team1_id ? match.team1 : match.team2}
                                     </div>
                                   )}
                                 </div>
@@ -382,11 +382,11 @@ export default function MatchList({ matches, userId, roundStats }: MatchListProp
                                       {match.team1_score} - {match.team2_score}
                                     </div>
                                     <p className="text-sm text-muted-foreground">
-                                      Match Completed
+                                      Ferdig
                                     </p>
                                     {match.winner_id && (
                                       <p className="text-sm font-medium mt-1">
-                                        Winner: {match.winner_id === match.team1_id ? match.team1 : match.team2}
+                                        Vinner: {match.winner_id === match.team1_id ? match.team1 : match.team2}
                                       </p>
                                     )}
                                   </>
