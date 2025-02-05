@@ -1,52 +1,59 @@
 import { GoodGameMatch, Match } from '@/app/matches/types'
 
 const DIVISION_ID = '12517' // CS:GO Division
-const SEASON_ID = '13162'   // Current Season
+const SEASON_ID = '13162' // Current Season
 const API_BASE_URL = 'https://www.goodgameligaen.no/api'
+const BATCH_SIZE = 25 // Process matches in smaller batches
 
 export async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
   try {
     const params = new URLSearchParams({
       division: '12517',
       game: 'csgo',
-      limit: '100',
+      limit: '50', // Reduced from 100 to process fewer matches per run
       offset: '0',
       order_by: 'round_number',
       order_dir: 'asc',
       season: '13162',
-      status: 'unfinished'
+      status: 'unfinished',
     })
 
     const url = `${API_BASE_URL}/matches?${params.toString()}`
     console.log('Fetching matches from:', url)
-    
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
     const response = await fetch(url, {
       next: { revalidate: 300 }, // Cache for 5 minutes
       headers: {
-        'Authorization': `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`
-      }
+        Authorization: `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`,
+      },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const errorText = await response.text()
       console.error('API Response:', {
         status: response.status,
         statusText: response.statusText,
-        body: errorText
+        body: errorText,
       })
-      throw new Error(`Failed to fetch matches: ${response.statusText}. ${errorText}`)
+      throw new Error(
+        `Failed to fetch matches: ${response.statusText}. ${errorText}`,
+      )
     }
 
     const data = await response.json()
-    
-    // Log the first match to see its structure
-    if (data.length > 0) {
-      console.log('Sample match structure:', JSON.stringify(data[0], null, 2))
-    }
-    
     console.log('Fetched matches:', data.length)
     return data
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Request timed out after 10 seconds')
+      return []
+    }
     console.error('Error fetching from Good Game Ligaen:', error)
     throw error
   }
@@ -64,9 +71,8 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
     }
 
     // Find the first active Twitch stream if available
-    const activeStream = match.videos?.find(video => 
-      video.source === 'twitch' && 
-      video.status === 'online'
+    const activeStream = match.videos?.find(
+      (video) => video.source === 'twitch' && video.status === 'online',
     )
 
     return {
@@ -80,11 +86,15 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
       start_time: match.start_time,
       division_id: DIVISION_ID,
       is_finished: !!match.finished_at,
-      winner_id: match.winning_side === 'home' ? match.home_signup.team.id.toString() : 
-                match.winning_side === 'away' ? match.away_signup.team.id.toString() : null,
+      winner_id:
+        match.winning_side === 'home'
+          ? match.home_signup.team.id.toString()
+          : match.winning_side === 'away'
+            ? match.away_signup.team.id.toString()
+            : null,
       best_of: match.best_of || 3, // Default to BO3 if not specified
       round: match.round_identifier_text,
-      stream_link: activeStream?.url
+      stream_link: activeStream?.url,
     }
   } catch (error) {
     console.error('Error transforming match:', error)
@@ -95,75 +105,92 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
 export async function syncMatches(supabase: any) {
   try {
     console.log('Starting match sync...')
-    
+
     // 1. Fetch matches from Good Game Ligaen
     const ggMatches = await fetchGoodGameMatches()
     console.log(`Fetched ${ggMatches.length} matches from API`)
-    
+
     if (ggMatches.length === 0) {
       console.log('No matches returned from API')
       return {
         success: true,
         synced_matches: 0,
-        matches: []
+        matches: [],
       }
     }
-    
-    // 2. Transform matches to our format
-    const transformedMatches = await Promise.all(
-      ggMatches
-        .filter(match => match && match.home_signup?.team && match.away_signup?.team)
-        .map(async match => {
-          // Get the existing match ID if it exists
-          const { data: existingMatch } = await supabase
-            .from('matches')
-            .select('id')
-            .eq('gg_ligaen_api_id', match.id.toString())
-            .single()
 
-          const matchData = transformGoodGameMatch(match)
-          return {
-            ...matchData,
-            id: existingMatch?.id || crypto.randomUUID(),
-            gg_ligaen_api_id: match.id.toString(),
-            synced_at: new Date().toISOString()
-          }
-        })
-    )
+    // 2. Transform and process matches in batches
+    const allTransformedMatches = []
+    for (let i = 0; i < ggMatches.length; i += BATCH_SIZE) {
+      const batch = ggMatches.slice(i, i + BATCH_SIZE)
+      const transformedBatch = await Promise.all(
+        batch
+          .filter(
+            (match) =>
+              match && match.home_signup?.team && match.away_signup?.team,
+          )
+          .map(async (match) => {
+            try {
+              // Get the existing match ID if it exists
+              const { data: existingMatch } = await supabase
+                .from('matches')
+                .select('id')
+                .eq('gg_ligaen_api_id', match.id.toString())
+                .single()
 
-    console.log(`Transformed ${transformedMatches.length} matches`)
+              const matchData = transformGoodGameMatch(match)
+              return {
+                ...matchData,
+                id: existingMatch?.id || crypto.randomUUID(),
+                gg_ligaen_api_id: match.id.toString(),
+                synced_at: new Date().toISOString(),
+              }
+            } catch (error) {
+              console.error(`Error processing match ${match.id}:`, error)
+              return null
+            }
+          }),
+      )
+      allTransformedMatches.push(...transformedBatch.filter(Boolean))
+    }
 
-    if (transformedMatches.length === 0) {
+    console.log(`Transformed ${allTransformedMatches.length} matches`)
+
+    if (allTransformedMatches.length === 0) {
       console.log('No valid matches to sync')
       return {
         success: true,
         synced_matches: 0,
-        matches: []
+        matches: [],
       }
     }
 
-    // 3. Upsert matches to our database
-    const { data, error } = await supabase
-      .from('matches')
-      .upsert(transformedMatches, {
-        onConflict: 'gg_ligaen_api_id',
-        ignoreDuplicates: false
-      })
-      .select()
+    // 3. Upsert matches in batches
+    const results = []
+    for (let i = 0; i < allTransformedMatches.length; i += BATCH_SIZE) {
+      const batch = allTransformedMatches.slice(i, i + BATCH_SIZE)
+      const { data, error } = await supabase
+        .from('matches')
+        .upsert(batch, {
+          onConflict: 'gg_ligaen_api_id',
+          ignoreDuplicates: false,
+        })
+        .select()
 
-    if (error) {
-      console.error('Error upserting matches:', error)
-      throw error
+      if (error) {
+        console.error('Error upserting batch:', error)
+        continue
+      }
+
+      if (data) {
+        results.push(...data)
+      }
     }
 
-    console.log(`Successfully upserted ${data?.length || 0} matches`)
-
     // 4. Log the sync
-    const { error: logError } = await supabase
-      .from('sync_logs')
-      .insert({
-        matches_synced: transformedMatches.length
-      })
+    const { error: logError } = await supabase.from('sync_logs').insert({
+      matches_synced: allTransformedMatches.length,
+    })
 
     if (logError) {
       console.error('Error logging sync:', logError)
@@ -171,11 +198,11 @@ export async function syncMatches(supabase: any) {
 
     return {
       success: true,
-      synced_matches: transformedMatches.length,
-      matches: data || []
+      synced_matches: allTransformedMatches.length,
+      matches: results,
     }
   } catch (error) {
     console.error('Error syncing matches:', error)
     throw error
   }
-} 
+}
