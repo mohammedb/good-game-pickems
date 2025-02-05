@@ -1,6 +1,6 @@
 'use server'
 
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { redirect } from 'next/navigation'
 import { renderEmail, WelcomeEmail } from '@/lib/email-templates'
@@ -8,6 +8,7 @@ import { sendEmail } from '@/lib/email'
 
 // Make sure we use the correct site URL
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://ggwp.no'
+const REDIRECT_URL = `${SITE_URL}/api/auth/callback`
 
 async function sendWelcomeEmail(
   email: string,
@@ -72,12 +73,12 @@ export async function signUp(formData: FormData) {
     return { error: 'Username is already taken' }
   }
 
-  // Sign up the user
+  // Configure Supabase auth with site URL
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${SITE_URL}/api/auth/callback?next=/`,
+      emailRedirectTo: REDIRECT_URL,
       data: {
         username: username,
       },
@@ -102,8 +103,7 @@ export async function signUp(formData: FormData) {
       })
 
       // Send welcome email with verification link
-      const verificationUrl = `${SITE_URL}/api/auth/callback?next=/`
-      await sendWelcomeEmail(email, username, verificationUrl)
+      await sendWelcomeEmail(email, username, REDIRECT_URL)
     } catch (error) {
       // Log the error but don't fail the signup
       console.error('Error in signup process:', error)
