@@ -3,6 +3,27 @@
 import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { redirect } from 'next/navigation'
+import { renderEmail, WelcomeEmail } from '@/lib/email-templates'
+import { sendEmail } from '@/lib/email'
+
+async function sendWelcomeEmail(
+  email: string,
+  username: string,
+  verificationUrl: string,
+) {
+  const welcomeEmailHtml = await renderEmail(
+    WelcomeEmail({
+      username,
+      verificationUrl,
+    }),
+  )
+
+  await sendEmail({
+    to: email,
+    subject: 'Welcome to GGWP.no! 🎮',
+    html: welcomeEmailHtml,
+  })
+}
 
 export async function signUp(formData: FormData) {
   const cookieStore = cookies()
@@ -54,7 +75,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/api/auth/callback`,
+      emailRedirectTo: `${origin}/api/auth/callback?next=/`,
       data: {
         username: username,
       },
@@ -67,11 +88,9 @@ export async function signUp(formData: FormData) {
   }
 
   // If we have an auth user, consider it a success
-  // The trigger will handle profile creation asynchronously
   if (authData?.user) {
-    // Try to insert the user profile, but don't fail if it doesn't work
-    // as the trigger will handle it
     try {
+      // Insert the user profile
       await supabase.from('users').insert({
         id: authData.user.id,
         email: email,
@@ -79,9 +98,13 @@ export async function signUp(formData: FormData) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
+
+      // Send welcome email with verification link
+      const verificationUrl = `${origin}/api/auth/callback?next=/`
+      await sendWelcomeEmail(email, username, verificationUrl)
     } catch (error) {
       // Log the error but don't fail the signup
-      console.log('Profile creation will be handled by trigger:', error)
+      console.error('Error in signup process:', error)
     }
 
     return {

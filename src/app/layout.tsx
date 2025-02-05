@@ -9,6 +9,20 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'GGWP.NO',
   description: 'Tipp på CS2 kamper i Good Game Ligaen',
+  icons: {
+    icon: [
+      {
+        url: '/icon',
+        type: 'image/png',
+      },
+    ],
+    apple: [
+      {
+        url: '/apple-icon',
+        type: 'image/png',
+      },
+    ],
+  },
 }
 
 export default function RootLayout({
