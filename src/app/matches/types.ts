@@ -22,6 +22,14 @@ export interface GoodGameSignup {
   team: GoodGameTeam
 }
 
+interface GoodGameVideo {
+  url: string
+  source: string
+  remote_id: string
+  status: 'online' | 'offline'
+  viewer_count: number
+}
+
 export interface GoodGameMatch {
   id: number
   url: string
@@ -40,6 +48,7 @@ export interface GoodGameMatch {
   home_signup: GoodGameSignup
   away_signup: GoodGameSignup
   best_of?: number
+  videos?: GoodGameVideo[]
 }
 
 export interface Match {
@@ -53,6 +62,12 @@ export interface Match {
   start_time: string
   division_id: string
   is_finished: boolean
+  winner_id: string | null
+  team1_score?: number | null
+  team2_score?: number | null
+  team1_map_score?: number | null
+  team2_map_score?: number | null
   best_of: number
   round: string
+  stream_link?: string
 } 

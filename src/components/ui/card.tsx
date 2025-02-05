@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { motion, HTMLMotionProps } from 'framer-motion'
-import { cn } from '@/utils/tailwind'
+import { cn } from '@/lib/utils'
 
 type CardProps = HTMLMotionProps<'div'> & {
   ref?: React.Ref<HTMLDivElement>

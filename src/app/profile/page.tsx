@@ -7,6 +7,8 @@ interface Match {
   team1: string
   team2: string
   start_time: string
+  team1_map_score: number | null
+  team2_map_score: number | null
 }
 
 interface Pick {
@@ -14,7 +16,11 @@ interface Pick {
   user_id: string
   match_id: string
   predicted_winner: string
+  predicted_team1_maps: number | null
+  predicted_team2_maps: number | null
   is_correct: boolean | null
+  map_score_correct: boolean | null
+  map_score_points: number
   created_at: string
   match: Match
 }
@@ -23,22 +29,28 @@ interface ProfileStats {
   totalPicks: number
   correctPicks: number
   totalPoints: number
+  mapScorePoints: number
   recentPicks: Pick[]
 }
 
-async function getProfileData(userId: string): Promise<{ stats: ProfileStats }> {
+async function getProfileData(userId: string): Promise<ProfileStats> {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
+    // Fetch picks with match data
     const { data: picks, error: picksError } = await supabase
       .from('picks')
       .select(`
         *,
-        match:match_id (
+        match:matches (
           team1,
           team2,
-          start_time
+          start_time,
+          team1_map_score,
+          team2_map_score,
+          is_finished,
+          winner_id
         )
       `)
       .eq('user_id', userId)
@@ -47,32 +59,50 @@ async function getProfileData(userId: string): Promise<{ stats: ProfileStats }> 
     if (picksError) {
       console.error('Error fetching picks:', picksError)
       return {
-        stats: {
-          totalPicks: 0,
-          correctPicks: 0,
-          totalPoints: 0,
-          recentPicks: []
-        }
-      }
-    }
-
-    const stats: ProfileStats = {
-      totalPicks: picks?.length || 0,
-      correctPicks: picks?.filter(pick => pick.is_correct).length || 0,
-      totalPoints: (picks?.filter(pick => pick.is_correct).length || 0) * 10,
-      recentPicks: (picks?.slice(0, 5) || []) as Pick[]
-    }
-
-    return { stats }
-  } catch (error) {
-    console.error('Error in getProfileData:', error)
-    return {
-      stats: {
         totalPicks: 0,
         correctPicks: 0,
         totalPoints: 0,
+        mapScorePoints: 0,
         recentPicks: []
       }
+    }
+
+    // Process picks to ensure correct status
+    const processedPicks = picks?.map(pick => {
+      const matchStartTime = new Date(pick.match.start_time)
+      const now = new Date()
+      
+      // If match hasn't started yet or isn't finished, set is_correct to null
+      if (matchStartTime > now || !pick.match.is_finished) {
+        return {
+          ...pick,
+          is_correct: null,
+          map_score_correct: null
+        }
+      }
+      
+      return pick
+    }) || []
+
+    const stats: ProfileStats = {
+      totalPicks: processedPicks.length,
+      correctPicks: processedPicks.filter(pick => pick.is_correct).length,
+      totalPoints: processedPicks.reduce((sum, pick) => 
+        sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0), 0),
+      mapScorePoints: processedPicks.reduce((sum, pick) => 
+        sum + (pick.map_score_points || 0), 0),
+      recentPicks: processedPicks.slice(0, 5) as Pick[]
+    }
+
+    return stats
+  } catch (error) {
+    console.error('Error in getProfileData:', error)
+    return {
+      totalPicks: 0,
+      correctPicks: 0,
+      totalPoints: 0,
+      mapScorePoints: 0,
+      recentPicks: []
     }
   }
 }
@@ -87,7 +117,7 @@ export default async function ProfilePage() {
     redirect('/login')
   }
 
-  const { stats } = await getProfileData(user.id)
+  const stats = await getProfileData(user.id)
 
-  return <ProfileContent user={user} stats={stats} />
+  return <ProfileContent stats={stats} />
 } 

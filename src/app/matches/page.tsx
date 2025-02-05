@@ -10,7 +10,8 @@ const API_BASE_URL = 'https://www.goodgameligaen.no/api'
 
 async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
   try {
-    const params = new URLSearchParams({
+    // Fetch both unfinished and recently finished matches
+    const unfinishedParams = new URLSearchParams({
       division: '12517',
       game: 'csgo',
       limit: '100',
@@ -21,22 +22,47 @@ async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
       status: 'unfinished'
     })
 
-    const url = `${API_BASE_URL}/matches?${params.toString()}`
-    console.log('Fetching matches from:', url)
-
-    const response = await fetch(url, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
-      headers: {
-        'Authorization': `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`
-      }
+    const finishedParams = new URLSearchParams({
+      division: '12517',
+      game: 'csgo',
+      limit: '100',
+      offset: '0',
+      order_by: 'round_number',
+      order_dir: 'asc',
+      season: '13162',
+      status: 'finished',
+      finished_after: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     })
 
-    if (!response.ok) {
+    const [unfinishedResponse, finishedResponse] = await Promise.all([
+      fetch(`${API_BASE_URL}/matches?${unfinishedParams.toString()}`, {
+        next: { revalidate: 300 }, // Cache for 5 minutes
+        headers: {
+          'Authorization': `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`
+        }
+      }),
+      fetch(`${API_BASE_URL}/matches?${finishedParams.toString()}`, {
+        next: { revalidate: 300 }, // Cache for 5 minutes
+        headers: {
+          'Authorization': `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`
+        }
+      })
+    ])
+
+    if (!unfinishedResponse.ok || !finishedResponse.ok) {
       throw new Error('Failed to fetch matches')
     }
 
-    const data = await response.json()
-    return data
+    const [unfinishedData, finishedData] = await Promise.all([
+      unfinishedResponse.json(),
+      finishedResponse.json()
+    ])
+
+    // Combine and sort by start time
+    const allMatches = [...unfinishedData, ...finishedData]
+    allMatches.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+
+    return allMatches
   } catch (error) {
     console.error('Error fetching from Good Game Ligaen:', error)
     return []
@@ -46,7 +72,8 @@ async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
 async function getMatches(): Promise<Match[]> {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
-  const now = new Date().toISOString()
+  const now = new Date()
+  const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
 
   try {
     // 1. Fetch matches from Good Game Ligaen
@@ -55,7 +82,7 @@ async function getMatches(): Promise<Match[]> {
     // 2. Transform the data to our format
     const transformedMatches = await Promise.all(
       ggMatches
-        .filter(match => !match.finished_at && match.home_signup?.team && match.away_signup?.team)
+        .filter(match => match.home_signup?.team && match.away_signup?.team)
         .map(async match => {
           // Get the existing match ID if it exists
           const { data: existingMatch } = await supabase
@@ -73,11 +100,16 @@ async function getMatches(): Promise<Match[]> {
             team2_id: match.away_signup.team.id.toString(),
             team1_logo: match.home_signup.team.logo?.url,
             team2_logo: match.away_signup.team.logo?.url,
+            team1_score: match.home_score,
+            team2_score: match.away_score,
             start_time: match.start_time,
             division_id: DIVISION_ID,
             is_finished: !!match.finished_at,
+            winner_id: match.winning_side === 'home' ? match.home_signup.team.id.toString() : 
+                      match.winning_side === 'away' ? match.away_signup.team.id.toString() : null,
             best_of: match.best_of || 3,
-            round: match.round_identifier_text
+            round: match.round_identifier_text,
+            stream_link: match.videos?.find(video => video.source === 'twitch' && video.status === 'online')?.url
           }
         })
     )
@@ -100,17 +132,12 @@ async function getMatches(): Promise<Match[]> {
       console.error('Error storing matches:', error)
     }
 
-    return transformedMatches
-  } catch (error) {
-    console.error('Error in getMatches:', error)
-    
-    // Fallback to database if API fails
+    // 4. Get matches from the last 24 hours and upcoming
     const { data: matches, error: dbError } = await supabase
       .from('matches')
       .select('*')
-      .gt('start_time', now)
+      .gte('start_time', twentyFourHoursAgo.toISOString())
       .order('start_time', { ascending: true })
-      .limit(10)
 
     if (dbError) {
       console.error('Error fetching from database:', dbError)
@@ -118,6 +145,48 @@ async function getMatches(): Promise<Match[]> {
     }
 
     return matches || []
+  } catch (error) {
+    console.error('Error in getMatches:', error)
+    
+    // Fallback to database if API fails
+    const { data: matches, error: dbError } = await supabase
+      .from('matches')
+      .select('*')
+      .gte('start_time', twentyFourHoursAgo.toISOString())
+      .order('start_time', { ascending: true })
+
+    if (dbError) {
+      console.error('Error fetching from database:', dbError)
+      return []
+    }
+
+    return matches || []
+  }
+}
+
+async function getUserPredictionStats(userId: string, round: string) {
+  const cookieStore = cookies()
+  const supabase = createServerClient(cookieStore)
+
+  const { data: picks, error } = await supabase
+    .from('picks')
+    .select(`
+      *,
+      match:match_id (
+        round
+      )
+    `)
+    .eq('user_id', userId)
+    .eq('match.round', round)
+
+  if (error) {
+    console.error('Error fetching user prediction stats:', error)
+    return { totalPicks: 0, correctPicks: 0 }
+  }
+
+  return {
+    totalPicks: picks.length,
+    correctPicks: picks.filter(pick => pick.is_correct).length
   }
 }
 
@@ -132,6 +201,19 @@ export default async function MatchesPage() {
   }
 
   const matches = await getMatches()
+  
+  // Get the current round (first match's round)
+  const currentRound = matches[0]?.round || 'Current Round'
+  
+  // Get prediction stats for the current round
+  const stats = await getUserPredictionStats(user.id, currentRound)
 
-  return <MatchList matches={matches} userId={user.id} />
+  return <MatchList 
+    matches={matches} 
+    userId={user.id} 
+    roundStats={{
+      ...stats,
+      roundName: currentRound
+    }}
+  />
 }

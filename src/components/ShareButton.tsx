@@ -33,10 +33,10 @@ export default function ShareButton({ userId, mode, rank, stats }: ShareButtonPr
       let shareText = ''
 
       if (mode === 'leaderboard' && rank) {
-        shareText = `🏆 I'm ranked #${rank} on Good Game Pickems! Come join and make your predictions!`
+        shareText = `🏆 I'm ranked #${rank} on GGWP.NO! Come join and make your predictions!`
       } else if (mode === 'profile' && stats) {
-        const accuracy = ((stats.correctPicks / stats.totalPicks) * 100).toFixed(1)
-        shareText = `🎮 I've made ${stats.correctPicks} correct predictions out of ${stats.totalPicks} (${accuracy}% accuracy) on Good Game Pickems!`
+        const accuracy = stats.totalPicks > 0 ? Math.round((stats.correctPicks / stats.totalPicks) * 100) : 0
+        shareText = `🎮 I've made ${stats.correctPicks} correct predictions out of ${stats.totalPicks} (${accuracy}% accuracy) on GGWP.NO!`
       }
 
       // Get the base URL from environment variable or default

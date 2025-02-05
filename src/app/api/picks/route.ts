@@ -58,4 +58,33 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+}
+
+export async function GET() {
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient(cookieStore)
+
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Fetch user's predictions
+    const { data: picks, error } = await supabase
+      .from('picks')
+      .select('*')
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error fetching picks:', error)
+      return NextResponse.json({ error: 'Failed to fetch predictions' }, { status: 500 })
+    }
+
+    return NextResponse.json({ picks })
+  } catch (error) {
+    console.error('Error in picks API:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 } 

@@ -2,10 +2,11 @@
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.users (id, email, created_at, updated_at)
+  INSERT INTO public.users (id, email, username, created_at, updated_at)
   VALUES (
     NEW.id,
     NEW.email,
+    COALESCE((NEW.raw_user_meta_data->>'username')::text, 'user_' || substr(NEW.id::text, 1, 8)),
     NEW.created_at,
     NEW.updated_at
   );

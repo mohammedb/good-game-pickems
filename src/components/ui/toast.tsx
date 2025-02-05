@@ -4,9 +4,7 @@ import * as React from 'react'
 import * as ToastPrimitives from '@radix-ui/react-toast'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { X } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-
-import { cn } from '@/utils/tailwind'
+import { cn } from '@/lib/utils'
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -47,18 +45,11 @@ const Toast = React.forwardRef<
     VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.3 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-    >
-      <ToastPrimitives.Root
-        ref={ref}
-        className={cn(toastVariants({ variant }), className)}
-        {...props}
-      />
-    </motion.div>
+    <ToastPrimitives.Root
+      ref={ref}
+      className={cn(toastVariants({ variant }), className)}
+      {...props}
+    />
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName
@@ -91,12 +82,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <motion.div
-      whileHover={{ rotate: 90 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-    >
-      <X className="h-4 w-4" />
-    </motion.div>
+    <X className="h-4 w-4" />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName

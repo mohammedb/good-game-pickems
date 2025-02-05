@@ -1,55 +1,33 @@
-import { GeistSans } from 'geist/font/sans'
-import ThemeProvider from '@/providers/ThemeProvider'
-import NextTopLoader from 'nextjs-toploader'
+import { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { cn } from '@/lib/utils'
 import './globals.css'
-import ReactQueryProvider from '@/providers/ReactQueryProvider'
-import { Toaster } from '@/components/Toaster'
+import '@/styles/animations.css'
 import Navigation from '@/components/Navigation'
-import ReactQueryDevTools from '@/components/ReactQueryDevTools'
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000'
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: 'Good Game Pickems',
-  description: 'Make predictions for Good Game Ligaen matches and compete with others!',
+  title: 'GGWP.NO',
+  description: 'Tipp på CS2 kamper i Good Game Ligaen'
 }
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html
-      lang="en"
-      className={GeistSans.className}
-      style={{ colorScheme: 'dark' }}
-      suppressHydrationWarning
-    >
-      <body className="bg-background text-foreground">
-        <NextTopLoader showSpinner={false} height={2} color="#2acf80" />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ReactQueryProvider>
-            <div className="flex min-h-screen flex-col">
-              <Navigation />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Analytics />
-            </div>
-            <ReactQueryDevTools />
-          </ReactQueryProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <Navigation />
+          <main>{children}</main>
+          <Toaster />
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   )

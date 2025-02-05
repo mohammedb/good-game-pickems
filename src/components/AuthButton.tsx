@@ -6,38 +6,61 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createBrowserClient } from '@/utils/supabase'
 import { signOut } from './auth/auth-actions'
+import { useToast } from '@/components/ui/use-toast'
+import { useUserStore } from '@/stores/user-store'
 
 export default function AuthButton() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const router = useRouter()
   const supabase = createBrowserClient()
+  const { toast } = useToast()
+  const { user, profile, isLoading, fetchUser } = useUserStore()
 
   useEffect(() => {
-    async function getUser() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-      } catch (error) {
-        console.error('Error getting user:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    getUser()
+    fetchUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user)
+      if (session?.user) {
+        fetchUser()
+      } else {
+        useUserStore.setState({ user: null, profile: null })
+      }
       router.refresh()
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase, router])
+  }, [supabase, router, fetchUser])
 
-  if (loading) {
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true)
+      const result = await signOut()
+
+      if (result.error) {
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive'
+        })
+        return
+      }
+
+      router.push('/login')
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to sign out. Please try again.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
+
+  if (isLoading) {
     return <Button variant="ghost" disabled>Loading...</Button>
   }
 
@@ -52,11 +75,11 @@ export default function AuthButton() {
   return (
     <div className="flex items-center gap-4">
       <span className="text-sm text-muted-foreground hidden md:inline">
-        {user.email}
+        {profile?.username || profile?.email}
       </span>
-      <form action={signOut}>
-        <Button variant="outline" type="submit">
-          Sign Out
+      <form action={handleSignOut}>
+        <Button variant="outline" type="submit" disabled={isSigningOut}>
+          {isSigningOut ? 'Signing out...' : 'Sign Out'}
         </Button>
       </form>
     </div>

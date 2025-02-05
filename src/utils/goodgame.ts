@@ -63,6 +63,12 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
       throw new Error('Invalid match data: missing team information')
     }
 
+    // Find the first active Twitch stream if available
+    const activeStream = match.videos?.find(video => 
+      video.source === 'twitch' && 
+      video.status === 'online'
+    )
+
     return {
       id: match.id.toString(),
       team1: match.home_signup.team.name,
@@ -74,8 +80,11 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
       start_time: match.start_time,
       division_id: DIVISION_ID,
       is_finished: !!match.finished_at,
+      winner_id: match.winning_side === 'home' ? match.home_signup.team.id.toString() : 
+                match.winning_side === 'away' ? match.away_signup.team.id.toString() : null,
       best_of: match.best_of || 3, // Default to BO3 if not specified
-      round: match.round_identifier_text
+      round: match.round_identifier_text,
+      stream_link: activeStream?.url
     }
   } catch (error) {
     console.error('Error transforming match:', error)

@@ -53,9 +53,9 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            Make Your Predictions
+            Legg Inn Dine Tips
             <span className="block bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
-              Win Big
+              Vinn Stort
             </span>
           </motion.h1>
 
@@ -65,8 +65,8 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Join the community of esports enthusiasts and test your prediction skills.
-            Make picks for upcoming matches and climb the leaderboard!
+            Bli med i fellesskapet av e-sport-entusiaster og test dine tippeferdigheter.
+            Tipp på kommende kamper og klatre på topplisten!
           </motion.p>
 
           <motion.div
@@ -76,7 +76,7 @@ export default function Home() {
           >
             <Link href="/matches">
               <Button size="lg" className="group relative overflow-hidden">
-                <span className="relative z-10">Start Predicting</span>
+                <span className="relative z-10">Start å Tippe</span>
                 <motion.div
                   className="absolute inset-0 bg-primary/20"
                   initial={{ x: '-100%' }}
@@ -101,8 +101,8 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <Trophy className="mb-4 h-12 w-12 text-primary" />
-              <h3 className="mb-2 text-2xl font-semibold">Total Predictions</h3>
-              <p className="text-muted-foreground">Track your prediction accuracy and improve over time</p>
+              <h3 className="mb-2 text-2xl font-semibold">Totale Tips</h3>
+              <p className="text-muted-foreground">Følg din treffsikkerhet og forbedre deg over tid</p>
             </motion.div>
 
             <motion.div
@@ -113,8 +113,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Users className="mb-4 h-12 w-12 text-primary" />
-              <h3 className="mb-2 text-2xl font-semibold">Active Users</h3>
-              <p className="text-muted-foreground">Join a growing community of esports predictors</p>
+              <h3 className="mb-2 text-2xl font-semibold">Aktive Brukere</h3>
+              <p className="text-muted-foreground">Bli med i et voksende fellesskap av e-sport-tippere</p>
             </motion.div>
 
             <motion.div
@@ -125,8 +125,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <Calendar className="mb-4 h-12 w-12 text-primary" />
-              <h3 className="mb-2 text-2xl font-semibold">Upcoming Matches</h3>
-              <p className="text-muted-foreground">Stay updated with the latest matches and make your picks</p>
+              <h3 className="mb-2 text-2xl font-semibold">Kommende Kamper</h3>
+              <p className="text-muted-foreground">Hold deg oppdatert med de nyeste kampene og legg inn dine tips</p>
             </motion.div>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function Home() {
             variants={fadeIn}
             className="text-3xl font-bold text-center mb-12"
           >
-            How It Works
+            Slik Fungerer Det
           </motion.h2>
 
           <motion.div 
@@ -154,55 +154,61 @@ export default function Home() {
           >
             <motion.div 
               variants={item}
-              className="relative group"
-              whileHover={{ scale: 1.02 }}
+              className="h-[280px] relative group"
+              whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-6 rounded-lg border border-muted">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Calendar className="h-6 w-6 text-primary" />
+              <div className="h-full rounded-lg border border-muted bg-card p-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Calendar className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">1. Velg Dine Kamper</h3>
+                  <p className="text-muted-foreground">
+                    Se gjennom kommende kamper og legg inn dine tips før de starter.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-2">1. Pick Your Matches</h3>
-                <p className="text-muted-foreground">
-                  Browse upcoming matches and make your predictions before they start.
-                </p>
               </div>
             </motion.div>
 
             <motion.div 
               variants={item}
-              className="relative group"
-              whileHover={{ scale: 1.02 }}
+              className="h-[280px] relative group"
+              whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/10 to-red-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-6 rounded-lg border border-muted">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+              <div className="h-full rounded-lg border border-muted bg-card p-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/10 to-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">2. Tjen Poeng</h3>
+                  <p className="text-muted-foreground">
+                    Få poeng for hvert riktig tips og se poengsummen din vokse.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-2">2. Earn Points</h3>
-                <p className="text-muted-foreground">
-                  Get points for each correct prediction and watch your score grow.
-                </p>
               </div>
             </motion.div>
 
             <motion.div 
               variants={item}
-              className="relative group"
-              whileHover={{ scale: 1.02 }}
+              className="h-[280px] relative group"
+              whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-6 rounded-lg border border-muted">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Trophy className="h-6 w-6 text-primary" />
+              <div className="h-full rounded-lg border border-muted bg-card p-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Trophy className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">3. Klatre i Rankingen</h3>
+                  <p className="text-muted-foreground">
+                    Konkurrer med andre og nå toppen av topplisten.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-2">3. Climb the Ranks</h3>
-                <p className="text-muted-foreground">
-                  Compete with others and reach the top of the leaderboard.
-                </p>
               </div>
             </motion.div>
           </motion.div>
@@ -213,14 +219,14 @@ export default function Home() {
       <footer className="w-full border-t border-t-foreground/10 py-8 mt-auto">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Powered by{' '}
+            Drevet av{' '}
             <a
-              href="https://supabase.com"
+              href="https://x.com/KekMekn"
               target="_blank"
               rel="noreferrer"
               className="font-semibold hover:text-primary transition-colors"
             >
-              Supabase
+              KekMek
             </a>
           </p>
         </div>

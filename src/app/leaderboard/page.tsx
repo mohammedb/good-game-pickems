@@ -13,16 +13,21 @@ type TimeRange = 'all' | 'weekly' | 'monthly'
 interface LeaderboardEntry {
   user_id: string
   user_email: string
+  username: string | null
   points: number
   correct_picks: number
   total_picks: number
+  map_score_points: number
 }
 
 interface LeaderboardResult {
   user_id: string
   email: string
+  username: string | null
   correct_picks: number
   total_picks: number
+  map_score_points: number
+  total_points: number
 }
 
 const getRankBadge = (index: number) => {
@@ -50,11 +55,13 @@ export default function LeaderboardPage() {
         let timeFilter = ''
         
         if (timeRange === 'weekly') {
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          timeFilter = `and created_at >= '${weekAgo.toISOString()}'`
+          const weekAgo = new Date(now)
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          timeFilter = `and p.created_at >= '${weekAgo.toISOString()}'`
         } else if (timeRange === 'monthly') {
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          timeFilter = `and created_at >= '${monthAgo.toISOString()}'`
+          const monthAgo = new Date(now)
+          monthAgo.setMonth(monthAgo.getMonth() - 1)
+          timeFilter = `and p.created_at >= '${monthAgo.toISOString()}'`
         }
 
         const { data, error: queryError } = await supabase
@@ -65,9 +72,11 @@ export default function LeaderboardPage() {
         const formattedData: LeaderboardEntry[] = (data as LeaderboardResult[]).map(entry => ({
           user_id: entry.user_id,
           user_email: entry.email || 'Unknown User',
-          points: entry.correct_picks * 10,
+          username: entry.username,
+          points: entry.total_points,
           correct_picks: entry.correct_picks,
-          total_picks: entry.total_picks
+          total_picks: entry.total_picks,
+          map_score_points: entry.map_score_points
         }))
 
         setLeaderboard(formattedData)
@@ -98,7 +107,7 @@ export default function LeaderboardPage() {
     return (
       <div className="container mx-auto p-4">
         <div className="rounded bg-red-100 p-4 text-red-700">
-          {error}
+          Kunne ikke laste inn topplisten
         </div>
       </div>
     )
@@ -111,25 +120,25 @@ export default function LeaderboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="mb-6 text-3xl font-bold">Leaderboard</h1>
+        <h1 className="mb-6 text-3xl font-bold">Toppliste</h1>
         <div className="flex gap-2">
           <Button
             variant={timeRange === 'all' ? 'default' : 'outline'}
             onClick={() => setTimeRange('all')}
           >
-            All Time
+            Totalt
           </Button>
           <Button
             variant={timeRange === 'monthly' ? 'default' : 'outline'}
             onClick={() => setTimeRange('monthly')}
           >
-            Monthly
+            Månedlig
           </Button>
           <Button
             variant={timeRange === 'weekly' ? 'default' : 'outline'}
             onClick={() => setTimeRange('weekly')}
           >
-            Weekly
+            Ukentlig
           </Button>
         </div>
       </motion.div>
@@ -142,8 +151,8 @@ export default function LeaderboardPage() {
             return (
               <BadgeCard
                 key={entry.user_id}
-                title={entry.user_email}
-                description={`${entry.points} points`}
+                title={entry.username || entry.user_email}
+                description={`${entry.points} poeng (${entry.map_score_points} map)`}
                 icon={icon}
                 variant={variant}
                 progress={(entry.correct_picks / entry.total_picks) * 100}
@@ -171,12 +180,13 @@ export default function LeaderboardPage() {
                   <div className="flex-1">
                     <div className="mb-2 flex items-center justify-between">
                       <div>
-                        <div className="font-semibold">{entry.user_email}</div>
+                        <div className="font-semibold">{entry.username || entry.user_email}</div>
                         <div className="text-sm text-muted-foreground">
-                          {entry.correct_picks} correct out of {entry.total_picks} picks
+                          {entry.correct_picks} riktige av {entry.total_picks} predictions
+                          <span className="ml-2">({entry.map_score_points} map poeng)</span>
                         </div>
                       </div>
-                      <div className="text-xl font-bold">{entry.points} pts</div>
+                      <div className="text-xl font-bold">{entry.points} p</div>
                     </div>
                     <ProgressBar
                       value={entry.correct_picks}
@@ -197,7 +207,7 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1 }}
             className="rounded-lg border border-dashed p-8 text-center"
           >
-            <p className="text-gray-500">No predictions made during this time period</p>
+            <p className="text-gray-500">Ingen predictions er lagt inn i denne perioden</p>
           </motion.div>
         )}
       </div>

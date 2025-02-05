@@ -154,22 +154,31 @@ export default function AdminPage() {
   const handleUpdatePoints = async () => {
     try {
       setIsUpdatingPoints(true)
-      const response = await fetch('/api/cron/update-points', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET_KEY}`
-        }
+      const response = await fetch('/api/admin/update-points', {
+        method: 'POST'
       })
 
       if (!response.ok) {
-        throw new Error('Points update failed')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Points update failed')
       }
 
       const result = await response.json()
+      
+      // Show success message
+      toast({
+        title: 'Success',
+        description: `Updated points for ${result.processed_picks} picks across ${result.processed_matches} matches`,
+      })
+      
       router.refresh()
     } catch (err) {
       console.error('Error updating points:', err)
-      setError('Failed to update points')
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to update points',
+        variant: 'destructive',
+      })
     } finally {
       setIsUpdatingPoints(false)
     }
