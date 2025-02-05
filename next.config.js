@@ -3,6 +3,10 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  images: {
+    domains: ['i.bo3.no'], // Allow images from Good Game Ligaen
+  },
+}
 
 module.exports = withBundleAnalyzer(nextConfig)

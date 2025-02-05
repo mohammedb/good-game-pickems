@@ -1,40 +1,64 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { createServerClient } from '@/utils/supabase'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { createBrowserClient } from '@/utils/supabase'
+import { signOut } from './auth/auth-actions'
 
-export default async function AuthButton() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+export default function AuthButton() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createBrowserClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  useEffect(() => {
+    async function getUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error('Error getting user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const signOut = async () => {
-    'use server'
+    getUser()
 
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
-    await supabase.auth.signOut()
-    return redirect('/login')
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user)
+      router.refresh()
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase, router])
+
+  if (loading) {
+    return <Button variant="ghost" disabled>Loading...</Button>
   }
 
-  return user ? (
+  if (!user) {
+    return (
+      <Link href="/login">
+        <Button variant="outline">Sign In</Button>
+      </Link>
+    )
+  }
+
+  return (
     <div className="flex items-center gap-4">
-      Hey, {user.email}!
+      <span className="text-sm text-muted-foreground hidden md:inline">
+        {user.email}
+      </span>
       <form action={signOut}>
-        <button className="bg-btn-background hover:bg-btn-background-hover rounded-md px-4 py-2 no-underline">
-          Logout
-        </button>
+        <Button variant="outline" type="submit">
+          Sign Out
+        </Button>
       </form>
     </div>
-  ) : (
-    <Link
-      href="/login"
-      className="bg-btn-background hover:bg-btn-background-hover flex rounded-md px-3 py-2 no-underline"
-    >
-      Login
-    </Link>
   )
 }

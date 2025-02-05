@@ -3,8 +3,10 @@ import ThemeProvider from '@/providers/ThemeProvider'
 import NextTopLoader from 'nextjs-toploader'
 import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import ReactQueryProvider from '@/providers/ReactQueryProvider'
+import { Toaster } from '@/components/Toaster'
+import Navigation from '@/components/Navigation'
+import ReactQueryDevTools from '@/components/ReactQueryDevTools'
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -12,8 +14,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Next.js and Supabase Starter Kit',
-  description: 'The fastest way to build apps with Next.js and Supabase',
+  title: 'Good Game Pickems',
+  description: 'Make predictions for Good Game Ligaen matches and compete with others!',
 }
 
 export default function RootLayout({
@@ -37,14 +39,17 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReactQueryProvider>
-            <main className="flex min-h-screen flex-col items-center">
-              {children}
-              <Analytics />{' '}
-              {/* ^^ remove this if you are not deploying to vercel. See more at https://vercel.com/docs/analytics  */}
-            </main>
-            <ReactQueryDevtools initialIsOpen={false} />
+            <div className="flex min-h-screen flex-col">
+              <Navigation />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Analytics />
+            </div>
+            <ReactQueryDevTools />
           </ReactQueryProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   )
