@@ -12,11 +12,11 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'GGWP.NO',
-  description: 'Tipp på CS2 kamper i Good Game Ligaen'
+  description: 'Tipp på CS2 kamper i Good Game Ligaen',
 }
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode
 }) {
@@ -28,6 +28,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Toaster />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

@@ -24,7 +24,10 @@ export async function signUp(formData: FormData) {
     return { error: 'Username must be less than 20 characters' }
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-    return { error: 'Username can only contain letters, numbers, underscores, and dashes' }
+    return {
+      error:
+        'Username can only contain letters, numbers, underscores, and dashes',
+    }
   }
 
   // Check if username is already taken
@@ -34,9 +37,12 @@ export async function signUp(formData: FormData) {
     .eq('username', username)
     .single()
 
-  if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+  if (checkError && checkError.code !== 'PGRST116') {
+    // PGRST116 means no rows returned
     console.error('Error checking username:', checkError)
-    return { error: 'Unable to verify username availability. Please try again.' }
+    return {
+      error: 'Unable to verify username availability. Please try again.',
+    }
   }
 
   if (existingUser) {
@@ -50,9 +56,12 @@ export async function signUp(formData: FormData) {
     options: {
       emailRedirectTo: `${origin}/api/auth/callback`,
       data: {
-        username
-      }
-    }
+        username: username,
+        raw_user_meta_data: {
+          username: username,
+        },
+      },
+    },
   })
 
   if (signUpError) {
@@ -61,7 +70,7 @@ export async function signUp(formData: FormData) {
   }
 
   // Wait a moment for the trigger to create the user
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
   // Verify the user was created and username was set
   if (authData.user) {
@@ -73,9 +82,12 @@ export async function signUp(formData: FormData) {
 
     if (userError || !userData?.username) {
       console.error('Error verifying user creation:', userError)
-      return { error: 'Account created but there was an issue setting up your profile. Please contact support.' }
+      return {
+        error:
+          'Account created but there was an issue setting up your profile. Please contact support.',
+      }
     }
   }
 
   return { success: true }
-} 
+}
