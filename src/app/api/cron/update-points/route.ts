@@ -28,31 +28,26 @@ interface MatchResult {
   winner_id: string
 }
 
-export const maxDuration = 300 // 5 minutes max duration for long-running function
+export const maxDuration = 60 // Maximum allowed duration for Vercel Hobby plan
 
 export async function POST(request: Request) {
   try {
     // Verify the request is from a trusted source (Vercel Cron or admin)
     const authHeader = request.headers.get('authorization')
-    if (
-      !authHeader ||
-      authHeader !== `Bearer ${process.env.CRON_SECRET_KEY}`
-    ) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET_KEY}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
 
-    // 1. Get all finished matches that haven't been processed
+    // 1. Get all finished matches that haven't been processed (limit to 10 at a time)
     const { data: matches, error: matchesError } = await supabase
       .from('matches')
       .select('*')
       .eq('is_finished', true)
       .eq('points_processed', false)
+      .limit(10) // Process in smaller batches to stay within time limit
 
     if (matchesError) {
       throw matchesError
@@ -67,30 +62,41 @@ export async function POST(request: Request) {
     const matchResults = await Promise.all(
       matches.map(async (match: Match) => {
         const apiUrl = `https://www.gamer.no/api/paradise/v2/division/${match.division_id}/matchups/${match.id}`
-        const response = await fetch(apiUrl, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        
-        if (!response.ok) {
-          console.error(`Failed to fetch match ${match.id}:`, await response.text())
+        try {
+          const response = await fetch(apiUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+            // Add timeout to prevent hanging requests
+            signal: AbortSignal.timeout(5000),
+          })
+
+          if (!response.ok) {
+            console.error(
+              `Failed to fetch match ${match.id}:`,
+              await response.text(),
+            )
+            return null
+          }
+
+          const data = await response.json()
+          return {
+            match_id: match.id,
+            winner_id: data.winner_id,
+          }
+        } catch (error) {
+          console.error(`Error fetching match ${match.id}:`, error)
           return null
         }
-
-        const data = await response.json()
-        return {
-          match_id: match.id,
-          winner_id: data.winner_id
-        }
-      })
+      }),
     )
 
     // Filter out any failed API calls and type the results
-    const validResults = matchResults.filter((result): result is MatchResult => 
-      result !== null && typeof result.winner_id === 'string'
+    const validResults = matchResults.filter(
+      (result): result is MatchResult =>
+        result !== null && typeof result.winner_id === 'string',
     )
 
     // 3. Get all picks for these matches
-    const matchIds = validResults.map(result => result.match_id)
+    const matchIds = validResults.map((result) => result.match_id)
     const { data: picks, error: picksError } = await supabase
       .from('picks')
       .select('*')
@@ -107,18 +113,19 @@ export async function POST(request: Request) {
 
     // 4. Update points for each pick
     const updates = picks.map((pick: Pick) => {
-      const matchResult = validResults.find(r => r.match_id === pick.match_id)
+      const matchResult = validResults.find((r) => r.match_id === pick.match_id)
       if (!matchResult) return null
 
-      const points = pick.predicted_winner === matchResult.winner_id
-        ? POINTS_FOR_CORRECT_PICK
-        : 0
+      const points =
+        pick.predicted_winner === matchResult.winner_id
+          ? POINTS_FOR_CORRECT_PICK
+          : 0
 
       return supabase
         .from('picks')
         .update({
           points_awarded: points,
-          is_correct: pick.predicted_winner === matchResult.winner_id
+          is_correct: pick.predicted_winner === matchResult.winner_id,
         })
         .eq('id', pick.id)
     })
@@ -137,13 +144,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: 'Points updated successfully',
       processed_matches: validResults.length,
-      processed_picks: picks.length
+      processed_picks: picks.length,
     })
   } catch (error) {
     console.error('Error updating points:', error)
     return NextResponse.json(
       { error: 'Failed to update points' },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}
