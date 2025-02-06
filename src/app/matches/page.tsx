@@ -13,6 +13,34 @@ export default function MatchesPage() {
   const supabase = createClientComponentClient()
   const { data: matches, isLoading, isError, error } = useMatches()
   const [userId, setUserId] = useState<string | null>(null)
+  const [username, setUsername] = useState<string>()
+  const [roundStats, setRoundStats] = useState({
+    totalPicks: 0,
+    correctPicks: 0,
+  })
+  const [selectedRound, setSelectedRound] = useState<string>()
+
+  // Get all unique rounds
+  const allRounds = matches
+    ? Array.from(new Set(matches.map((m) => m.round))).sort()
+    : []
+
+  // Find the current active round (first round with unfinished matches)
+  const getCurrentRound = () => {
+    if (!matches?.length) return ''
+
+    for (const round of allRounds) {
+      const roundMatches = matches.filter((m) => m.round === round)
+      const hasUnfinishedMatches = roundMatches.some((m) => !m.is_finished)
+      if (hasUnfinishedMatches) {
+        return round
+      }
+    }
+    // If all matches are finished, return the last round
+    return allRounds[allRounds.length - 1] || ''
+  }
+
+  const currentRound = selectedRound || getCurrentRound()
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -23,10 +51,45 @@ export default function MatchesPage() {
         router.push('/login')
       } else {
         setUserId(user.id)
+        // Fetch username
+        const { data: userData } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', user.id)
+          .single()
+        if (userData?.username) {
+          setUsername(userData.username)
+        }
       }
     }
     checkAuth()
-  }, [router, supabase.auth])
+  }, [router, supabase])
+
+  // Update round stats when round changes
+  useEffect(() => {
+    async function fetchRoundPicks() {
+      if (!userId || !currentRound || !matches?.length) return
+
+      const roundMatches = matches.filter((m) => m.round === currentRound)
+
+      const { data: picks } = await supabase
+        .from('picks')
+        .select('*')
+        .in(
+          'match_id',
+          roundMatches.map((m) => m.id),
+        )
+        .eq('user_id', userId)
+
+      if (picks) {
+        const totalPicks = picks.length
+        const correctPicks = picks.filter((p) => p.is_correct).length
+        setRoundStats({ totalPicks, correctPicks })
+      }
+    }
+
+    fetchRoundPicks()
+  }, [userId, currentRound, matches, supabase])
 
   if (isLoading || !userId) {
     return (
@@ -53,17 +116,17 @@ export default function MatchesPage() {
     )
   }
 
-  // Get the current round (first match's round)
-  const currentRound = matches[0]?.round || 'Current Round'
-
   return (
     <MatchList
       matches={matches}
       userId={userId}
+      username={username}
       roundStats={{
-        totalPicks: 0, // These will need to be fetched separately
-        correctPicks: 0,
+        totalPicks: roundStats.totalPicks,
+        correctPicks: roundStats.correctPicks,
         roundName: currentRound,
+        allRounds: allRounds,
+        onRoundChange: setSelectedRound,
       }}
     />
   )

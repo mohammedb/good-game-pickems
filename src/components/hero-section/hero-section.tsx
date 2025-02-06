@@ -71,10 +71,8 @@ function CTAButton({ isLoading }: { isLoading?: boolean }) {
     <Button
       size="lg"
       className="group relative overflow-hidden bg-[#64FFFF] text-black transition-transform hover:scale-105 hover:bg-[#64FFFF]/90"
-      disabled={isLoading}
     >
       <span className="relative z-10 flex items-center gap-2">
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
         Start å Predicte
       </span>
       <motion.div
@@ -89,7 +87,6 @@ function CTAButton({ isLoading }: { isLoading?: boolean }) {
 
 export function HeroSection() {
   const shouldReduceMotion = useReducedMotion()
-  const [isLoading, setIsLoading] = useState(false)
   const { scrollY } = useScroll()
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
   const scale = useTransform(scrollY, [0, 300], [1, 0.8])
@@ -97,13 +94,6 @@ export function HeroSection() {
     threshold: 0.1,
     triggerOnce: true,
   })
-
-  const handleClick = async () => {
-    setIsLoading(true)
-    // Simulate loading state for demo
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-  }
 
   return (
     <section className="relative h-[90vh] overflow-hidden">
@@ -148,7 +138,9 @@ export function HeroSection() {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="flex flex-col gap-4 sm:flex-row sm:justify-center"
           >
-            <CTAButton isLoading={isLoading} />
+            <Link href="/matches" className="w-full sm:w-auto">
+              <CTAButton />
+            </Link>
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 variant="outline"

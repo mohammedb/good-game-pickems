@@ -25,16 +25,20 @@ import { PredictionSummary } from './PredictionSummary'
 interface MatchListProps {
   matches: Match[]
   userId: string
+  username?: string
   roundStats: {
     totalPicks: number
     correctPicks: number
     roundName: string
+    allRounds: string[]
+    onRoundChange: (round: string) => void
   }
 }
 
 export default function MatchList({
   matches,
   userId,
+  username,
   roundStats,
 }: MatchListProps) {
   const router = useRouter()
@@ -323,6 +327,11 @@ export default function MatchList({
         totalPicks={roundStats.totalPicks}
         correctPicks={roundStats.correctPicks}
         roundName={roundStats.roundName}
+        allRounds={roundStats.allRounds}
+        onRoundChange={roundStats.onRoundChange}
+        matches={matches}
+        selectedWinners={selectedWinners}
+        username={username}
       />
 
       {matches.length > 0 ? (

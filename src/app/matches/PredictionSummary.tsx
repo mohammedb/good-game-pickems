@@ -4,69 +4,109 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Share2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Match } from './types'
 
 interface PredictionSummaryProps {
+  roundName: string
   totalPicks: number
   correctPicks: number
-  roundName: string
+  allRounds: string[]
+  onRoundChange: (round: string) => void
+  matches: Match[]
+  selectedWinners: Record<string, string>
+  username?: string
 }
 
-export function PredictionSummary({ totalPicks, correctPicks, roundName }: PredictionSummaryProps) {
+export function PredictionSummary({
+  roundName,
+  totalPicks,
+  correctPicks,
+  allRounds,
+  onRoundChange,
+  matches,
+  selectedWinners,
+  username,
+}: PredictionSummaryProps) {
+  const router = useRouter()
   const [isSharing, setIsSharing] = useState(false)
-  const accuracy = totalPicks > 0 ? ((correctPicks / totalPicks) * 100).toFixed(1) : '0.0'
+  const accuracy =
+    totalPicks > 0 ? ((correctPicks / totalPicks) * 100).toFixed(1) : '0.0'
 
-  const handleShare = async () => {
-    try {
-      setIsSharing(true)
-      
-      // Generate the share URL with the user's stats
-      const shareUrl = `${window.location.origin}/share?round=${encodeURIComponent(roundName)}&picks=${totalPicks}&correct=${correctPicks}`
-      
-      // Copy to clipboard
-      await navigator.clipboard.writeText(shareUrl)
-      
-      toast({
-        title: 'Link copied!',
-        description: 'Share your predictions with your friends',
-      })
-    } catch (error) {
-      console.error('Error sharing:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to copy share link',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSharing(false)
+  const roundMatches = matches.filter((match) => match.round === roundName)
+  const predictions = roundMatches.map((match) => ({
+    team1: match.team1,
+    team2: match.team2,
+    team1_logo: match.team1_logo,
+    team2_logo: match.team2_logo,
+    predicted_winner: selectedWinners[match.id] || null,
+    is_finished: match.winner_id !== null,
+    winner_id: match.winner_id,
+    team1_id: match.team1_id,
+    team2_id: match.team2_id,
+    start_time: match.start_time,
+  }))
+
+  const handleShare = () => {
+    const shareUrl = new URL('/share', window.location.origin)
+    shareUrl.searchParams.set('round', roundName)
+    shareUrl.searchParams.set('picks', totalPicks.toString())
+    shareUrl.searchParams.set('correct', correctPicks.toString())
+    shareUrl.searchParams.set('matches', JSON.stringify(predictions))
+    if (username) {
+      shareUrl.searchParams.set('username', username)
     }
+    router.push(shareUrl.toString())
   }
 
   return (
-    <Card className="p-6 mb-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Your {roundName} Predictions</h3>
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
-              {correctPicks} correct out of {totalPicks} picks
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {accuracy}% accuracy
-            </p>
+    <Card className="p-6">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <Select value={roundName} onValueChange={onRoundChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Velg runde" />
+            </SelectTrigger>
+            <SelectContent>
+              {allRounds.map((round) => (
+                <SelectItem key={round} value={round}>
+                  {round}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleShare}
+            disabled={totalPicks === 0}
+          >
+            <Share2 className="h-4 w-4" />
+            Del Predictions
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-8">
+          <div className="text-center">
+            <div className="mb-2 text-4xl font-bold">{correctPicks}</div>
+            <div className="text-sm text-muted-foreground">Riktige Picks</div>
+          </div>
+          <div className="text-center">
+            <div className="mb-2 text-4xl font-bold">{accuracy}%</div>
+            <div className="text-sm text-muted-foreground">Nøyaktighet</div>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleShare}
-          disabled={isSharing || totalPicks === 0}
-          className="gap-2"
-        >
-          <Share2 className="h-4 w-4" />
-          {isSharing ? 'Copying...' : 'Share'}
-        </Button>
       </div>
     </Card>
   )
-} 
+}
