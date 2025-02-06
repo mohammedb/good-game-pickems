@@ -9,6 +9,18 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'GGWP.NO',
   description: 'Tipp på CS2 kamper i Good Game Ligaen',
+  openGraph: {
+    title: 'GGWP.NO - Pickems',
+    description: 'Tipp på CS2 kamper i Good Game Ligaen',
+    type: 'website',
+    url: 'https://ggwp.no',
+    siteName: 'GGWP.NO',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GGWP.NO - Pickems',
+    description: 'Tipp på CS2 kamper i Good Game Ligaen',
+  },
   icons: {
     icon: [
       {

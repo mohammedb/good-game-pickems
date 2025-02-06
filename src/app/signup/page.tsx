@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
 import { signUp } from './actions'
+import { PasswordRequirements } from '@/components/password-requirements'
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -181,8 +182,20 @@ function SignUpForm() {
           }
           className="h-11"
           required
-          minLength={6}
+          minLength={8}
         />
+        <AnimatePresence>
+          {formData.password && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <PasswordRequirements password={formData.password} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
       <motion.div variants={item}>
         <Button
@@ -250,7 +263,7 @@ export default function SignUpPage() {
                 Velkommen til GGWP.NO!
               </h1>
               <p className="text-muted-foreground">
-                Gjør dine prediksjoner og klatre i rankingen
+                Opprett en konto for å begynne å spille
               </p>
             </motion.div>
             <SignUpForm />

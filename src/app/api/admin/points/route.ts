@@ -2,24 +2,18 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { z } from 'zod'
-
-// Schema for validating the request body
-const adjustmentSchema = z.object({
-  pick_id: z.string().uuid(),
-  is_correct: z.boolean(),
-  reason: z.string().min(1)
-})
+import { adjustmentSchema } from '@/lib/validations/schemas'
 
 async function isAdmin(userId: string) {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
-  
+
   const { data } = await supabase
     .from('users')
     .select('is_admin')
     .eq('id', userId)
     .single()
-  
+
   return data?.is_admin === true
 }
 
@@ -27,14 +21,13 @@ export async function POST(request: Request) {
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
-    
+
     // Check if user is authenticated and is admin
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user || !(await isAdmin(user.id))) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Validate request body
@@ -44,11 +37,11 @@ export async function POST(request: Request) {
     // Update the pick
     const { error: updateError } = await supabase
       .from('picks')
-      .update({ 
+      .update({
         is_correct: validatedData.is_correct,
         manual_adjustment_reason: validatedData.reason,
         adjusted_by: user.id,
-        adjusted_at: new Date().toISOString()
+        adjusted_at: new Date().toISOString(),
       })
       .eq('id', validatedData.pick_id)
 
@@ -57,20 +50,20 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      message: 'Points adjusted successfully'
+      message: 'Points adjusted successfully',
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     console.error('Error adjusting points:', error)
     return NextResponse.json(
       { error: 'Failed to adjust points' },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

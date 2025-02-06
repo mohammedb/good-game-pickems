@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 
 export const runtime = 'edge'
-export const alt = 'Good Game Pickems'
+export const alt = 'GGWP.no - Pickems'
 export const size = {
   width: 1200,
   height: 630,
@@ -52,7 +52,7 @@ export default async function Image() {
               marginBottom: 20,
             }}
           >
-            Good Game Pickems
+            GGWP.no - Pickems
           </h1>
           <p
             style={{
@@ -61,13 +61,16 @@ export default async function Image() {
               color: '#4A5568',
             }}
           >
-            Join {count || 0} players predicting CS:GO matches
+            Join {count || 0} players predicting CS2 matches
           </p>
         </div>
       </div>
     ),
     {
       ...size,
-    }
+      headers: {
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=3600',
+      },
+    },
   )
-} 
+}
