@@ -3,6 +3,17 @@ import { createServerClient } from '@/utils/supabase'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
+// Function to normalize domain (remove www if present)
+function normalizeDomain(url: string): string {
+  try {
+    const urlObj = new URL(url)
+    // Remove 'www.' from the beginning of the hostname if it exists
+    return urlObj.hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
 // URL validation schema
 const urlSchema = z.object({
   url: z
@@ -12,10 +23,20 @@ const urlSchema = z.object({
     .refine(
       (url) => {
         try {
-          const urlHost = new URL(url).host
-          const appHost = new URL(process.env.NEXT_PUBLIC_APP_URL!).host
-          return urlHost === appHost
-        } catch {
+          // Get the base URL from environment
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL
+          if (!appUrl) {
+            console.error('NEXT_PUBLIC_APP_URL is not defined')
+            return false
+          }
+
+          // Compare normalized domains
+          const urlDomain = normalizeDomain(url)
+          const appDomain = normalizeDomain(appUrl)
+
+          return urlDomain === appDomain
+        } catch (error) {
+          console.error('URL validation error:', error)
           return false
         }
       },
@@ -58,27 +79,27 @@ export async function POST(request: Request) {
     // Get client IP
     const ip = request.headers.get('x-forwarded-for') || 'unknown'
 
-    // Check rate limit
-    if (isRateLimited(ip)) {
-      return new Response(
-        JSON.stringify({
-          error: 'For mange forespørsler. Vennligst vent litt.',
-        }),
-        {
-          status: 429,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
-    }
-
     const body = await request.json()
+
+    // Log the incoming request
+    console.log('Incoming URL shortening request:', {
+      ip,
+      url: body.url,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      normalizedRequestDomain: normalizeDomain(body.url),
+      normalizedAppDomain: normalizeDomain(
+        process.env.NEXT_PUBLIC_APP_URL || '',
+      ),
+    })
 
     // Validate input
     const result = urlSchema.safeParse(body)
     if (!result.success) {
+      console.error('URL validation failed:', result.error)
       return new Response(
         JSON.stringify({
           error: 'Ugyldig URL. Kun interne URLer kan forkortes.',
+          details: result.error.errors.map((e) => e.message),
         }),
         {
           status: 400,
@@ -92,10 +113,10 @@ export async function POST(request: Request) {
     const supabase = createServerClient(cookieStore)
 
     // Set the app domain name for RLS policy
-    const appHost = new URL(process.env.NEXT_PUBLIC_APP_URL!).host
+    const appUrl = new URL(process.env.NEXT_PUBLIC_APP_URL!)
     await supabase.rpc('set_config', {
       name: 'app.domain_name',
-      value: appHost,
+      value: normalizeDomain(appUrl.toString()),
     })
 
     // Set the request IP for RLS policy
@@ -112,7 +133,6 @@ export async function POST(request: Request) {
       .single()
 
     if (existingError && existingError.code !== 'PGRST116') {
-      // Not found error is ok
       console.error('Error checking existing URL:', existingError)
       return new Response(
         JSON.stringify({ error: 'Kunne ikke sjekke eksisterende URL' }),
@@ -150,7 +170,6 @@ export async function POST(request: Request) {
 
       // Handle rate limit exceeded
       if (error.code === '23514') {
-        // Check constraint violation
         return new Response(
           JSON.stringify({
             error: 'For mange forespørsler. Vennligst vent litt.',
@@ -183,9 +202,15 @@ export async function POST(request: Request) {
     )
   } catch (error) {
     console.error('Error in URL shortener:', error)
-    return new Response(JSON.stringify({ error: 'Kunne ikke forkorte URL' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        error: 'Kunne ikke forkorte URL',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
 }

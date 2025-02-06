@@ -2,6 +2,7 @@
 drop trigger if exists handle_shortened_urls_updated_at on public.shortened_urls;
 drop function if exists public.handle_updated_at();
 drop function if exists public.cleanup_old_urls();
+drop function if exists public.extract_domain();
 
 -- Safely unschedule the cron job if it exists
 do $$
@@ -22,7 +23,7 @@ declare
   domain text;
 begin
   -- Extract domain from URL (handles both http and https)
-  domain := regexp_replace(url, '^https?://([^/]+).*$', '\1');
+  domain := regexp_replace(url, '^https?://(?:www\.)?([^/]+).*$', '\1');
   return domain;
 end;
 $$;
