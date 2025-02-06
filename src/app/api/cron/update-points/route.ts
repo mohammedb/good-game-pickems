@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
+import { addAdminLog } from '@/lib/admin-logs'
 
 // Points configuration
 const POINTS_FOR_CORRECT_PICK = 2
@@ -141,12 +142,26 @@ export async function POST(request: Request) {
     // 6. Update user total points (using a database function for atomicity)
     await supabase.rpc('update_user_total_points')
 
+    // Log the successful update
+    await addAdminLog(
+      'points',
+      `Updated points for ${validResults.length} matches`,
+      `Processed ${picks.length} picks successfully`,
+    )
+
     return NextResponse.json({
       message: 'Points updated successfully',
       processed_matches: validResults.length,
       processed_picks: picks.length,
     })
   } catch (error) {
+    // Log the error
+    await addAdminLog(
+      'error',
+      'Failed to update points',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
+
     console.error('Error updating points:', error)
     return NextResponse.json(
       { error: 'Failed to update points' },
