@@ -36,7 +36,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
         toast({
           title: 'Error',
           description: result.error,
-          variant: 'destructive'
+          variant: 'destructive',
         })
         return
       }
@@ -46,8 +46,9 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
     } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive',
       })
     } finally {
       setIsLoading(false)
@@ -55,21 +56,21 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
       {/* Animated background gradient */}
       <div
         className="absolute inset-0 bg-gradient-to-br from-background via-accent to-background opacity-50"
         style={{
           backgroundSize: '400% 400%',
-          animation: 'gradient 15s ease infinite'
+          animation: 'gradient 15s ease infinite',
         }}
       />
 
-      <Card className="relative w-full max-w-lg p-8 backdrop-blur-sm bg-background/95">
+      <Card className="relative w-full max-w-lg bg-background/95 p-8 backdrop-blur-sm">
         <div className="flex flex-col items-center space-y-6">
           <Link
             href="/"
-            className="absolute left-8 top-8 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute left-8 top-8 text-muted-foreground transition-colors hover:text-foreground"
           >
             <motion.div
               whileHover={{ x: -4 }}
@@ -85,7 +86,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-4 h-4"
+                className="h-4 w-4"
               >
                 <polyline points="15 18 9 12 15 6" />
               </svg>
@@ -96,7 +97,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-2"
+            className="space-y-2 text-center"
           >
             <h1 className="text-3xl font-bold">Welcome Back</h1>
             <p className="text-muted-foreground">
@@ -108,7 +109,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="space-y-6 w-full max-w-sm"
+            className="w-full max-w-sm space-y-6"
             onSubmit={handleSubmit}
           >
             <div className="space-y-4">
@@ -136,13 +137,17 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
                   required
                 />
               </div>
+              <div className="flex justify-end">
+                <Link
+                  href="/reset-password"
+                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  Glemt passord?
+                </Link>
+              </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="h-11 w-full" disabled={isLoading}>
               {isLoading ? (
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -155,7 +160,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               )}
             </Button>
 
-            <p className="text-sm text-center text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link href="/signup" className="text-primary hover:underline">
                 Sign up
@@ -166,7 +171,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground"
+                className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground"
               >
                 {searchParams.message}
               </motion.div>
