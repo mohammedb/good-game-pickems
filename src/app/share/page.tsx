@@ -62,14 +62,11 @@ export default function SharePage({ searchParams }: SharePageProps) {
         body: JSON.stringify({ url: window.location.href }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        console.error('Error response:', data)
-        throw new Error(data.error || 'Failed to shorten URL')
+        throw new Error('Failed to shorten URL')
       }
 
-      const { shortUrl } = data
+      const { shortUrl } = await response.json()
 
       // Copy the shortened URL
       await navigator.clipboard.writeText(shortUrl)
@@ -81,8 +78,7 @@ export default function SharePage({ searchParams }: SharePageProps) {
       console.error('Error copying link:', error)
       toast({
         title: 'Feil',
-        description:
-          error instanceof Error ? error.message : 'Kunne ikke kopiere link',
+        description: 'Kunne ikke kopiere link',
         variant: 'destructive',
       })
     }

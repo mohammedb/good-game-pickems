@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
-import { redirect } from 'next/navigation'
+import { NextResponse } from 'next/server'
 
 export async function GET(
   request: Request,
@@ -17,40 +17,17 @@ export async function GET(
       .eq('short_code', params.code)
       .single()
 
-    if (error) {
-      console.error('Error looking up shortened URL:', error)
-      if (error.code === 'PGRST116') {
-        // Not found
-        return new Response('URL ikke funnet', {
-          status: 404,
-          headers: { 'Content-Type': 'text/plain' },
-        })
-      }
-      return new Response('Feil ved behandling av forespørsel', {
-        status: 500,
-        headers: { 'Content-Type': 'text/plain' },
-      })
-    }
-
-    if (!data || !data.long_url) {
-      return new Response('URL ikke funnet', {
-        status: 404,
-        headers: { 'Content-Type': 'text/plain' },
-      })
+    if (error || !data) {
+      return NextResponse.json({ error: 'URL not found' }, { status: 404 })
     }
 
     // Redirect to the long URL
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: data.long_url,
-      },
-    })
+    return NextResponse.redirect(data.long_url)
   } catch (error) {
     console.error('Error in URL redirect:', error)
-    return new Response('Feil ved behandling av forespørsel', {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' },
-    })
+    return NextResponse.json(
+      { error: 'Error processing redirect' },
+      { status: 500 },
+    )
   }
 }
