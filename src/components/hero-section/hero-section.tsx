@@ -138,18 +138,25 @@ export function HeroSection() {
             transition={{ delay: 0.2, duration: 0.8 }}
             className="mx-auto max-w-2xl text-lg text-muted-foreground"
           >
-            Bli med i fellesskapet av e-sport-entusiaster og test dine
-            predictions-ferdigheter. Legg inn predictions på kommende kamper og
-            klatre på topplisten!
+            Bli med i Norges største e-sport predictions plattform og test dine
+            kunnskaper mot andre fans.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}
+            className="flex flex-col gap-4 sm:flex-row sm:justify-center"
           >
-            <Link href="/matches" onClick={handleClick}>
-              <CTAButton isLoading={isLoading} />
+            <CTAButton isLoading={isLoading} />
+            <Link href="/signup" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full bg-background/80 backdrop-blur-sm hover:bg-background/90 sm:w-auto"
+              >
+                Registrer Deg
+              </Button>
             </Link>
           </motion.div>
         </motion.div>
