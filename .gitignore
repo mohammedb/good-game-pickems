@@ -39,3 +39,4 @@ yarn-error.log*
 
 # swc
 .swc
+repomix-output.txt
