@@ -290,7 +290,18 @@ export default function MatchList({
     <div className="container mx-auto space-y-8 p-4">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-3xl font-bold">Kommende Kamper</h1>
+          <div>
+            <h1 className="mb-4 text-3xl font-bold">Kommende Kamper</h1>
+            <div className="mb-4">
+              <Image
+                src="/cs2.png"
+                alt="Counter-Strike 2"
+                width={128}
+                height={128}
+                className="h-12 w-48"
+              />
+            </div>
+          </div>
           <p className="text-muted-foreground">
             Legg inn dine predictions for kommende kamper
           </p>

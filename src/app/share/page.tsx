@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useEffect } from 'react'
 
 interface SharePageProps {
   searchParams: {
@@ -38,7 +39,7 @@ interface MatchPrediction {
 }
 
 export default function SharePage({ searchParams }: SharePageProps) {
-  const round = searchParams.r || 'Current Round'
+  const round = searchParams.r || 'Nåværende Runde'
   const picks = parseInt(searchParams.p || '0', 10)
   const correct = parseInt(searchParams.c || '0', 10)
   const accuracy = picks > 0 ? ((correct / picks) * 100).toFixed(1) : '0.0'
@@ -50,6 +51,14 @@ export default function SharePage({ searchParams }: SharePageProps) {
   } catch (error) {
     console.error('Error parsing matches:', error)
   }
+
+  // Update document title dynamically
+  useEffect(() => {
+    const pageTitle = username
+      ? `${username}s ${round} Predictions - GGWP.no`
+      : `${round} Predictions - GGWP.no`
+    document.title = pageTitle
+  }, [round, username])
 
   const handleShare = async () => {
     try {
