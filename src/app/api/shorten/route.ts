@@ -60,9 +60,14 @@ export async function POST(request: Request) {
 
     // Check rate limit
     if (isRateLimited(ip)) {
-      return Response.json(
-        { error: 'For mange forespørsler. Vennligst vent litt.' },
-        { status: 429 },
+      return new Response(
+        JSON.stringify({
+          error: 'For mange forespørsler. Vennligst vent litt.',
+        }),
+        {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        },
       )
     }
 
@@ -71,9 +76,14 @@ export async function POST(request: Request) {
     // Validate input
     const result = urlSchema.safeParse(body)
     if (!result.success) {
-      return Response.json(
-        { error: 'Ugyldig URL. Kun interne URLer kan forkortes.' },
-        { status: 400 },
+      return new Response(
+        JSON.stringify({
+          error: 'Ugyldig URL. Kun interne URLer kan forkortes.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
       )
     }
 
@@ -104,16 +114,25 @@ export async function POST(request: Request) {
     if (existingError && existingError.code !== 'PGRST116') {
       // Not found error is ok
       console.error('Error checking existing URL:', existingError)
-      return Response.json(
-        { error: 'Kunne ikke sjekke eksisterende URL' },
-        { status: 500 },
+      return new Response(
+        JSON.stringify({ error: 'Kunne ikke sjekke eksisterende URL' }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
       )
     }
 
     if (existing?.short_code) {
-      return Response.json({
-        shortUrl: `${process.env.NEXT_PUBLIC_APP_URL}/s/${existing.short_code}`,
-      })
+      return new Response(
+        JSON.stringify({
+          shortUrl: `${process.env.NEXT_PUBLIC_APP_URL}/s/${existing.short_code}`,
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Generate a short code
@@ -132,24 +151,41 @@ export async function POST(request: Request) {
       // Handle rate limit exceeded
       if (error.code === '23514') {
         // Check constraint violation
-        return Response.json(
-          { error: 'For mange forespørsler. Vennligst vent litt.' },
-          { status: 429 },
+        return new Response(
+          JSON.stringify({
+            error: 'For mange forespørsler. Vennligst vent litt.',
+          }),
+          {
+            status: 429,
+            headers: { 'Content-Type': 'application/json' },
+          },
         )
       }
 
-      return Response.json(
-        { error: 'Kunne ikke forkorte URL' },
-        { status: 500 },
+      return new Response(
+        JSON.stringify({ error: 'Kunne ikke forkorte URL' }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
       )
     }
 
     // Return the shortened URL
-    return Response.json({
-      shortUrl: `${process.env.NEXT_PUBLIC_APP_URL}/s/${shortCode}`,
-    })
+    return new Response(
+      JSON.stringify({
+        shortUrl: `${process.env.NEXT_PUBLIC_APP_URL}/s/${shortCode}`,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   } catch (error) {
     console.error('Error in URL shortener:', error)
-    return Response.json({ error: 'Kunne ikke forkorte URL' }, { status: 500 })
+    return new Response(JSON.stringify({ error: 'Kunne ikke forkorte URL' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }

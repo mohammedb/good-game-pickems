@@ -21,19 +21,36 @@ export async function GET(
       console.error('Error looking up shortened URL:', error)
       if (error.code === 'PGRST116') {
         // Not found
-        return new Response('URL ikke funnet', { status: 404 })
+        return new Response('URL ikke funnet', {
+          status: 404,
+          headers: { 'Content-Type': 'text/plain' },
+        })
       }
-      return new Response('Feil ved behandling av forespørsel', { status: 500 })
+      return new Response('Feil ved behandling av forespørsel', {
+        status: 500,
+        headers: { 'Content-Type': 'text/plain' },
+      })
     }
 
     if (!data || !data.long_url) {
-      return new Response('URL ikke funnet', { status: 404 })
+      return new Response('URL ikke funnet', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain' },
+      })
     }
 
     // Redirect to the long URL
-    return Response.redirect(data.long_url)
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: data.long_url,
+      },
+    })
   } catch (error) {
     console.error('Error in URL redirect:', error)
-    return new Response('Feil ved behandling av forespørsel', { status: 500 })
+    return new Response('Feil ved behandling av forespørsel', {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain' },
+    })
   }
 }
