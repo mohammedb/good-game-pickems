@@ -10,7 +10,7 @@ const RATE_LIMIT = {
 }
 
 // Simple in-memory rate limiting
-const userRequests = new Map<
+export const userRequests = new Map<
   string,
   { minuteCount: number; dayCount: number; lastReset: number }
 >()

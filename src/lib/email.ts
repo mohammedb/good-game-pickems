@@ -7,9 +7,9 @@ const RATE_LIMIT = {
 }
 
 // Simple in-memory rate limiting
-let emailsSentToday = 0
-let lastEmailTimestamp = 0
-let emailQueue: Array<{
+export let emailsSentToday = 0
+export let lastEmailTimestamp = 0
+export let emailQueue: Array<{
   resolve: Function
   reject: Function
   params: SendEmailParams

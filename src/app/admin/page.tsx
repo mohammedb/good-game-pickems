@@ -20,6 +20,7 @@ import { ActivityCharts } from '@/components/admin/activity-charts'
 import { ActionButton } from '@/components/admin/action-button'
 import { FilterBar, FilterOptions } from '@/components/admin/filter-bar'
 import { ActivityLog } from '@/components/admin/activity-log'
+import { RateLimitMonitor } from '@/components/admin/rate-limit-monitor'
 
 interface AdminStats {
   totalUsers: number
@@ -419,7 +420,9 @@ export default function AdminPage() {
         >
           <div className="mt-2 text-sm text-muted-foreground">
             {stats?.lastSyncTime
-              ? `Last updated ${formatDistanceToNow(new Date(stats.lastSyncTime))} ago`
+              ? `Last updated ${formatDistanceToNow(
+                  new Date(stats.lastSyncTime),
+                )} ago`
               : 'No sync data available'}
           </div>
         </StatsCard>
@@ -470,55 +473,65 @@ export default function AdminPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Manage platform data and settings</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">Sync Matches</div>
-                  <div className="text-sm text-muted-foreground">
-                    Update match data from external sources
-                  </div>
-                </div>
-                <ActionButton
-                  onClick={handleSync}
-                  isLoading={isSyncing}
-                  isSuccess={syncSuccess}
-                  isError={syncError}
-                  loadingText="Syncing..."
-                  icon={<RefreshCw className="h-4 w-4" />}
-                >
-                  Sync
-                </ActionButton>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">Update Points</div>
-                  <div className="text-sm text-muted-foreground">
-                    Recalculate user points and rankings
-                  </div>
-                </div>
-                <ActionButton
-                  onClick={handleUpdatePoints}
-                  isLoading={isUpdatingPoints}
-                  isSuccess={updateSuccess}
-                  isError={updateError}
-                  loadingText="Updating..."
-                  icon={<Calculator className="h-4 w-4" />}
-                >
-                  Update
-                </ActionButton>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold tracking-tight">Rate Limits</h2>
+          <p className="text-sm text-muted-foreground">
+            Monitor API rate limits and usage
+          </p>
+        </div>
+        <RateLimitMonitor />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Manage platform data and settings</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm font-medium">Sync Matches</div>
+                <div className="text-sm text-muted-foreground">
+                  Update match data from external sources
+                </div>
+              </div>
+              <ActionButton
+                onClick={handleSync}
+                isLoading={isSyncing}
+                isSuccess={syncSuccess}
+                isError={syncError}
+                loadingText="Syncing..."
+                icon={<RefreshCw className="h-4 w-4" />}
+              >
+                Sync
+              </ActionButton>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm font-medium">Update Points</div>
+                <div className="text-sm text-muted-foreground">
+                  Recalculate user points and rankings
+                </div>
+              </div>
+              <ActionButton
+                onClick={handleUpdatePoints}
+                isLoading={isUpdatingPoints}
+                isSuccess={updateSuccess}
+                isError={updateError}
+                loadingText="Updating..."
+                icon={<Calculator className="h-4 w-4" />}
+              >
+                Update
+              </ActionButton>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
