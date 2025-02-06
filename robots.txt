@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /profile/settings
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /share?*
+
+Sitemap: https://www.ggwp.no/sitemap.xml
