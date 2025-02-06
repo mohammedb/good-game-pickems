@@ -12,8 +12,7 @@ type TimeRange = 'all' | 'weekly' | 'monthly'
 
 interface LeaderboardEntry {
   user_id: string
-  user_email: string
-  username: string | null
+  username: string
   points: number
   correct_picks: number
   total_picks: number
@@ -22,7 +21,6 @@ interface LeaderboardEntry {
 
 interface LeaderboardResult {
   user_id: string
-  email: string
   username: string | null
   correct_picks: number
   total_picks: number
@@ -49,11 +47,11 @@ export default function LeaderboardPage() {
     async function fetchLeaderboard() {
       setIsLoading(true)
       setError(null)
-      
+
       try {
         const now = new Date()
         let timeFilter = ''
-        
+
         if (timeRange === 'weekly') {
           const weekAgo = new Date(now)
           weekAgo.setDate(weekAgo.getDate() - 7)
@@ -64,19 +62,22 @@ export default function LeaderboardPage() {
           timeFilter = `and p.created_at >= '${monthAgo.toISOString()}'`
         }
 
-        const { data, error: queryError } = await supabase
-          .rpc('get_leaderboard', { time_filter: timeFilter })
+        const { data, error: queryError } = await supabase.rpc(
+          'get_leaderboard',
+          { time_filter: timeFilter },
+        )
 
         if (queryError) throw queryError
 
-        const formattedData: LeaderboardEntry[] = (data as LeaderboardResult[]).map(entry => ({
+        const formattedData: LeaderboardEntry[] = (
+          data as LeaderboardResult[]
+        ).map((entry) => ({
           user_id: entry.user_id,
-          user_email: entry.email || 'Unknown User',
-          username: entry.username,
+          username: entry.username || 'Anonym Bruker',
           points: entry.total_points,
           correct_picks: entry.correct_picks,
           total_picks: entry.total_picks,
-          map_score_points: entry.map_score_points
+          map_score_points: entry.map_score_points,
         }))
 
         setLeaderboard(formattedData)
@@ -151,7 +152,7 @@ export default function LeaderboardPage() {
             return (
               <BadgeCard
                 key={entry.user_id}
-                title={entry.username || entry.user_email}
+                title={entry.username}
                 description={`${entry.points} poeng (${entry.map_score_points} map)`}
                 icon={icon}
                 variant={variant}
@@ -180,10 +181,13 @@ export default function LeaderboardPage() {
                   <div className="flex-1">
                     <div className="mb-2 flex items-center justify-between">
                       <div>
-                        <div className="font-semibold">{entry.username || entry.user_email}</div>
+                        <div className="font-semibold">{entry.username}</div>
                         <div className="text-sm text-muted-foreground">
-                          {entry.correct_picks} riktige av {entry.total_picks} predictions
-                          <span className="ml-2">({entry.map_score_points} map poeng)</span>
+                          {entry.correct_picks} riktige av {entry.total_picks}{' '}
+                          predictions
+                          <span className="ml-2">
+                            ({entry.map_score_points} map poeng)
+                          </span>
                         </div>
                       </div>
                       <div className="text-xl font-bold">{entry.points} p</div>
@@ -207,10 +211,12 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1 }}
             className="rounded-lg border border-dashed p-8 text-center"
           >
-            <p className="text-gray-500">Ingen predictions er lagt inn i denne perioden</p>
+            <p className="text-gray-500">
+              Ingen predictions er lagt inn i denne perioden
+            </p>
           </motion.div>
         )}
       </div>
     </div>
   )
-} 
+}
