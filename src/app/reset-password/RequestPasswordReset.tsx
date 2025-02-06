@@ -21,7 +21,7 @@ export function RequestPasswordReset() {
 
     try {
       // First generate the reset token using Supabase
-      const { data, error: supabaseError } =
+      const { error: supabaseError } =
         await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password/update`,
         })
@@ -38,9 +38,7 @@ export function RequestPasswordReset() {
         },
         body: JSON.stringify({
           email,
-          resetLink: data?.user?.confirmation_sent_at
-            ? `${window.location.origin}/reset-password/update`
-            : undefined,
+          resetLink: `${window.location.origin}/reset-password/update`,
         }),
       })
 
