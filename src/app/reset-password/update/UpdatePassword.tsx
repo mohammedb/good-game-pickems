@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,25 @@ export function UpdatePassword() {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    // Check if we have a session
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) {
+        toast({
+          title: 'Error',
+          description:
+            'Invalid or expired reset link. Please request a new one.',
+          variant: 'destructive',
+        })
+        router.push('/reset-password')
+      }
+    }
+    checkSession()
+  }, [router, supabase.auth, toast])
 
   const validatePassword = (password: string) => {
     try {
@@ -55,24 +74,27 @@ export function UpdatePassword() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password,
-      })
+      const { error } = await supabase.auth.updateUser({ password })
 
       if (error) {
         throw error
       }
 
       toast({
-        title: 'Password updated',
-        description: 'Your password has been successfully updated.',
+        title: 'Success',
+        description:
+          'Your password has been successfully updated. Please sign in with your new password.',
       })
 
+      // Sign out the user after password update
+      await supabase.auth.signOut()
       router.push('/login')
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Password update error:', error)
       toast({
         title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        description:
+          error?.message || 'Failed to update password. Please try again.',
         variant: 'destructive',
       })
     } finally {

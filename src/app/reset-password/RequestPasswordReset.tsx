@@ -20,36 +20,18 @@ export function RequestPasswordReset() {
     setIsLoading(true)
 
     try {
-      // First generate the reset token using Supabase
-      const { error: supabaseError } =
-        await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password/update`,
-        })
-
-      if (supabaseError) {
-        throw supabaseError
-      }
-
-      // Send the custom email using our API endpoint
-      const response = await fetch('/api/send-reset-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          resetLink: `${window.location.origin}/reset-password/update`,
-        }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password/update`,
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to send reset email')
+      if (error) {
+        throw error
       }
 
       toast({
-        title: 'Check your email',
+        title: 'Sjekk e-posten din',
         description:
-          "If an account exists with this email, you will receive a password reset link. Please check your spam folder if you don't see it.",
+          'Hvis en konto eksisterer med denne e-postadressen, vil du motta en lenke for å tilbakestille passordet. Sjekk spam-mappen hvis du ikke ser den.',
       })
 
       // Delay the redirect to give user time to read the message
