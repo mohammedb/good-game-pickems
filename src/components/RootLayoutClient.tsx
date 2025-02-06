@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster'
 import Navigation from '@/components/Navigation'
 import Onboarding from '@/components/Onboarding'
 import { useUserStore } from '@/stores/user-store'
+import { QueryProvider } from '@/providers/query-provider'
 
 export default function RootLayoutClient({
   children,
@@ -27,14 +28,16 @@ export default function RootLayoutClient({
   }, [fetchUser])
 
   return (
-    <ThemeProvider>
-      <Navigation />
-      <main>{children}</main>
-      <Toaster />
-      {!isLoading && user && profile && !hasCompletedOnboarding && (
-        <Onboarding onComplete={() => setHasCompletedOnboarding(true)} />
-      )}
-      <Analytics />
-    </ThemeProvider>
+    <QueryProvider>
+      <ThemeProvider>
+        <Navigation />
+        <main>{children}</main>
+        <Toaster />
+        {!isLoading && user && profile && !hasCompletedOnboarding && (
+          <Onboarding onComplete={() => setHasCompletedOnboarding(true)} />
+        )}
+        <Analytics />
+      </ThemeProvider>
+    </QueryProvider>
   )
 }

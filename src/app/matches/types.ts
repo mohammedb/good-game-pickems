@@ -22,7 +22,7 @@ export interface GoodGameSignup {
   team: GoodGameTeam
 }
 
-interface GoodGameVideo {
+export interface GoodGameVideo {
   url: string
   source: string
   remote_id: string
@@ -70,4 +70,4 @@ export interface Match {
   best_of: number
   round: string
   stream_link?: string
-} 
+}
