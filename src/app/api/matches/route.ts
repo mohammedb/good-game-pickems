@@ -70,64 +70,7 @@ export async function GET() {
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    // 1. Fetch matches from Good Game Ligaen
-    const ggMatches = await fetchGoodGameMatches()
-
-    // 2. Transform the data
-    const transformedMatches = await Promise.all(
-      ggMatches
-        .filter((match) => match.home_signup?.team && match.away_signup?.team)
-        .map(async (match) => {
-          const { data: existingMatch } = await supabase
-            .from('matches')
-            .select('id')
-            .eq('gg_ligaen_api_id', match.id.toString())
-            .single()
-
-          const matchData: Match = {
-            id: existingMatch?.id || crypto.randomUUID(),
-            team1: match.home_signup.team.name,
-            team2: match.away_signup.team.name,
-            team1_id: match.home_signup.team.id.toString(),
-            team2_id: match.away_signup.team.id.toString(),
-            team1_logo: match.home_signup.team.logo?.url,
-            team2_logo: match.away_signup.team.logo?.url,
-            team1_score: match.home_score,
-            team2_score: match.away_score,
-            start_time: match.start_time,
-            division_id: DIVISION_ID,
-            is_finished: !!match.finished_at,
-            winner_id:
-              match.winning_side === 'home'
-                ? match.home_signup.team.id.toString()
-                : match.winning_side === 'away'
-                  ? match.away_signup.team.id.toString()
-                  : null,
-            best_of: match.best_of || 3,
-            round: match.round_identifier_text,
-            stream_link: match.videos?.find(
-              (video: GoodGameVideo) =>
-                video.source === 'twitch' && video.status === 'online',
-            )?.url,
-          }
-
-          return matchData
-        }),
-    )
-
-    // 3. Store the matches
-    await supabase.from('matches').upsert(
-      transformedMatches.map((match) => ({
-        ...match,
-        synced_at: new Date().toISOString(),
-      })),
-      {
-        onConflict: 'gg_ligaen_api_id',
-        ignoreDuplicates: false,
-      },
-    )
-
-    // 4. Get matches from the last 24 hours and upcoming
+    // Get matches from the last 24 hours and upcoming directly from our database
     const { data: matches, error: dbError } = await supabase
       .from('matches')
       .select('*')

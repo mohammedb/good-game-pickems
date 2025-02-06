@@ -13,8 +13,8 @@ export function useMatches() {
   return useQuery({
     queryKey: ['matches'],
     queryFn: fetchMatches,
-    refetchInterval: 60000, // Refetch every minute
-    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes instead of every minute
+    staleTime: 4 * 60 * 1000, // Consider data stale after 4 minutes
     retry: 3,
     refetchOnWindowFocus: true,
   })
