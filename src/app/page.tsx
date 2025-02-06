@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
 import {
   Trophy,
   Calendar,
@@ -10,11 +9,9 @@ import {
   Activity,
   Users,
 } from 'lucide-react'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@/utils/supabase'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Button } from '@/components/ui/button'
+import { HeroSection } from '@/components/hero-section/hero-section'
 
 const container = {
   hidden: { opacity: 0 },
@@ -49,65 +46,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[90vh] overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src="/videos/hero-background.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 z-10 bg-gradient-to-br from-[#96AAFF]/20 via-background to-background" />
-
-        <div className="container relative z-20 flex h-full flex-col items-center justify-center text-center">
-          <motion.h1
-            className="mb-6 text-4xl font-bold sm:text-6xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            Legg Inn Dine Predictions
-            <span className="block bg-gradient-to-r from-[#64FFFF] to-[#BEFFD2] bg-clip-text text-transparent">
-              Vinn Stort
-            </span>
-          </motion.h1>
-
-          <motion.p
-            className="mb-8 max-w-2xl text-lg text-muted-foreground"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Bli med i fellesskapet av e-sport-entusiaster og test dine
-            predictions-ferdigheter. Legg inn predictions på kommende kamper og
-            klatre på topplisten!
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Link href="/matches">
-              <Button
-                size="lg"
-                className="group relative overflow-hidden bg-[#64FFFF] text-black hover:bg-[#64FFFF]/90"
-              >
-                <span className="relative z-10">Start å Predikere</span>
-                <motion.div
-                  className="absolute inset-0 bg-[#BEFFD2]/20"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: 0 }}
-                  transition={{ duration: 0.3 }}
-                />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Stats Section */}
       <section className="py-20">

@@ -12,6 +12,7 @@ function BaseTemplate({ children, previewText }: BaseTemplateProps) {
   // eslint-disable-next-line @next/next/no-head-element
   return (
     <html>
+      {/* eslint-disable-next-line @next/next/no-head-element */}
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
