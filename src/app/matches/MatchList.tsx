@@ -614,6 +614,10 @@ export default function MatchList({
                                       const team1Score = parseInt(value)
                                       const currentTeam2 =
                                         mapScores[match.id]?.team2 || 0
+                                      // Prevent equal scores
+                                      if (team1Score === currentTeam2) {
+                                        return
+                                      }
                                       handleMapScoreChange(
                                         match.id,
                                         team1Score,
@@ -631,14 +635,25 @@ export default function MatchList({
                                     <SelectContent>
                                       {Array.from(
                                         { length: match.best_of },
-                                        (_, i) => (
-                                          <SelectItem
-                                            key={i}
-                                            value={i.toString()}
-                                          >
-                                            {i}
-                                          </SelectItem>
-                                        ),
+                                        (_, i) => {
+                                          const currentTeam2 =
+                                            mapScores[match.id]?.team2 || 0
+                                          const isDisabled = i === currentTeam2
+                                          return (
+                                            <SelectItem
+                                              key={i}
+                                              value={i.toString()}
+                                              disabled={isDisabled}
+                                              className={
+                                                isDisabled
+                                                  ? 'cursor-not-allowed opacity-50'
+                                                  : ''
+                                              }
+                                            >
+                                              {i}
+                                            </SelectItem>
+                                          )
+                                        },
                                       )}
                                     </SelectContent>
                                   </Select>
@@ -654,6 +669,10 @@ export default function MatchList({
                                       const team2Score = parseInt(value)
                                       const currentTeam1 =
                                         mapScores[match.id]?.team1 || 0
+                                      // Prevent equal scores
+                                      if (team2Score === currentTeam1) {
+                                        return
+                                      }
                                       handleMapScoreChange(
                                         match.id,
                                         currentTeam1,
@@ -671,14 +690,25 @@ export default function MatchList({
                                     <SelectContent>
                                       {Array.from(
                                         { length: match.best_of },
-                                        (_, i) => (
-                                          <SelectItem
-                                            key={i}
-                                            value={i.toString()}
-                                          >
-                                            {i}
-                                          </SelectItem>
-                                        ),
+                                        (_, i) => {
+                                          const currentTeam1 =
+                                            mapScores[match.id]?.team1 || 0
+                                          const isDisabled = i === currentTeam1
+                                          return (
+                                            <SelectItem
+                                              key={i}
+                                              value={i.toString()}
+                                              disabled={isDisabled}
+                                              className={
+                                                isDisabled
+                                                  ? 'cursor-not-allowed opacity-50'
+                                                  : ''
+                                              }
+                                            >
+                                              {i}
+                                            </SelectItem>
+                                          )
+                                        },
                                       )}
                                     </SelectContent>
                                   </Select>
