@@ -110,6 +110,41 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-6"
         >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-8"
+          >
+            <motion.div
+              whileHover={{
+                scale: 1.05,
+                transition: {
+                  scale: { duration: 0.2 },
+                },
+              }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative cursor-pointer overflow-hidden rounded-full"
+            >
+              <motion.div
+                className="pointer-events-none absolute inset-0 w-[200%] -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: '100%' }}
+                transition={{
+                  duration: 1,
+                  ease: 'easeInOut',
+                }}
+              />
+              <Image
+                src="/logo.png"
+                alt="GGWP.NO Logo"
+                width={210}
+                height={210}
+                className="relative mx-auto"
+                priority
+              />
+            </motion.div>
+          </motion.div>
           <motion.h1 className="text-4xl font-bold sm:text-6xl">
             Legg Inn Dine Predictions
             <motion.span

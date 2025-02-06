@@ -2,8 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Trophy, Calendar, User2, Menu, X, LucideIcon, Users } from 'lucide-react'
+import {
+  Trophy,
+  Calendar,
+  User2,
+  Menu,
+  X,
+  LucideIcon,
+  Users,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/stores/onboarding-store'
 import { OnboardingTour } from './onboarding-tour'
@@ -24,26 +33,26 @@ const navItems: NavItem[] = [
     href: '/matches',
     label: 'Kamper',
     icon: Calendar,
-    id: 'nav-matches'
+    id: 'nav-matches',
   },
   {
     href: '/leaderboard',
     label: 'Toppliste',
     icon: Trophy,
-    id: 'nav-leaderboard'
+    id: 'nav-leaderboard',
   },
   {
     href: '/profile',
     label: 'Profil',
     icon: User2,
-    id: 'nav-profile'
+    id: 'nav-profile',
   },
   {
     href: '/om-oss',
     label: 'Om Oss',
     icon: Users,
-    id: 'nav-about'
-  }
+    id: 'nav-about',
+  },
 ]
 
 interface NavLinkProps {
@@ -60,18 +69,18 @@ function NavLink({ href, label, icon: Icon, isActive, id }: NavLinkProps) {
       href={href}
       id={id}
       className={cn(
-        'relative px-4 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent/50',
-        isActive && 'text-primary'
+        'relative rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/50',
+        isActive && 'text-primary',
       )}
     >
-      <span className="flex items-center gap-2 relative z-10">
+      <span className="relative z-10 flex items-center gap-2">
         <Icon className="h-4 w-4" />
         {label}
       </span>
       {isActive && (
         <motion.div
           layoutId="activeIndicator"
-          className="absolute inset-0 bg-accent rounded-md"
+          className="absolute inset-0 rounded-md bg-accent"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -86,7 +95,14 @@ interface MobileNavLinkProps extends NavLinkProps {
   onClose: () => void
 }
 
-function MobileNavLink({ href, label, icon: Icon, isActive, onClose, id }: MobileNavLinkProps) {
+function MobileNavLink({
+  href,
+  label,
+  icon: Icon,
+  isActive,
+  onClose,
+  id,
+}: MobileNavLinkProps) {
   return (
     <motion.div
       initial={{ x: -20, opacity: 0 }}
@@ -98,8 +114,8 @@ function MobileNavLink({ href, label, icon: Icon, isActive, onClose, id }: Mobil
         id={id}
         onClick={onClose}
         className={cn(
-          'flex items-center gap-2 px-4 py-3 text-lg rounded-lg transition-colors',
-          isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+          'flex items-center gap-2 rounded-lg px-4 py-3 text-lg transition-colors',
+          isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
         )}
       >
         <Icon className="h-5 w-5" />
@@ -129,7 +145,7 @@ export default function Navigation() {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-sm bg-background/80 w-full border-b border-b-foreground/10"
+        className="sticky top-0 z-50 w-full border-b border-b-foreground/10 bg-background/80 backdrop-blur-sm"
       >
         <div className="container mx-auto">
           <div className="flex h-16 items-center justify-between px-4">
@@ -137,7 +153,7 @@ export default function Navigation() {
               <Link href="/" className="flex items-center space-x-2">
                 <span className="font-bold">GGWP.NO</span>
               </Link>
-              <div className="hidden md:flex items-center gap-1">
+              <div className="hidden items-center gap-1 md:flex">
                 <AnimatePresence>
                   {navItems.map(({ href, label, icon, id }) => (
                     <NavLink
@@ -158,7 +174,10 @@ export default function Navigation() {
                 <ThemeSwitcher />
               </div>
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger className="md:hidden p-2 hover:bg-accent rounded-md" aria-label="Menu">
+                <SheetTrigger
+                  className="rounded-md p-2 hover:bg-accent md:hidden"
+                  aria-label="Menu"
+                >
                   <AnimatePresence mode="wait">
                     {isOpen ? (
                       <motion.div
@@ -183,7 +202,10 @@ export default function Navigation() {
                     )}
                   </AnimatePresence>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
+                <SheetContent
+                  side="right"
+                  className="w-[300px] p-0 sm:w-[400px]"
+                >
                   <nav className="flex flex-col gap-2 p-6">
                     <AnimatePresence>
                       {navItems.map(({ href, label, icon, id }, i) => (
@@ -215,4 +237,4 @@ export default function Navigation() {
       <OnboardingTour />
     </>
   )
-} 
+}
