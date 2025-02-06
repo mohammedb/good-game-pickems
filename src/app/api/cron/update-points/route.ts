@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 
 // Points configuration
-const POINTS_FOR_CORRECT_PICK = 10
+const POINTS_FOR_CORRECT_PICK = 2
 
 interface Match {
   id: string
