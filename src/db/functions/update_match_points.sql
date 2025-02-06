@@ -26,7 +26,7 @@ BEGIN
     ),
     points_awarded = 
       CASE 
-        -- 1 point for correct winner prediction
+        -- 2 points for correct winner prediction
         WHEN predicted_winner = (
           SELECT 
             CASE 
@@ -36,15 +36,15 @@ BEGIN
             END
           FROM matches
           WHERE id = match_id_param
-        ) THEN 1
+        ) THEN 2
         ELSE 0
       END +
-      -- 2 points for correct map score
+      -- 1 point for correct map score
       CASE 
         WHEN 
           predicted_team1_maps = (SELECT team1_map_score FROM matches WHERE id = match_id_param) AND
           predicted_team2_maps = (SELECT team2_map_score FROM matches WHERE id = match_id_param)
-        THEN 2
+        THEN 1
         ELSE 0
       END,
     map_score_points = 
@@ -52,7 +52,7 @@ BEGIN
         WHEN 
           predicted_team1_maps = (SELECT team1_map_score FROM matches WHERE id = match_id_param) AND
           predicted_team2_maps = (SELECT team2_map_score FROM matches WHERE id = match_id_param)
-        THEN 2
+        THEN 1
         ELSE 0
       END
   WHERE match_id = match_id_param;
