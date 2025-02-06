@@ -44,11 +44,21 @@ export function UpdatePassword() {
       }
 
       try {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          throw error
-        }
+        // Exchange the code for a session
+        const { error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code)
+        if (exchangeError) throw exchangeError
+
+        // Get the session to verify the exchange worked
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (!session) throw new Error('No session after code exchange')
+
+        // Immediately sign out - we only needed to verify the code
+        await supabase.auth.signOut()
       } catch (error) {
+        console.error('Recovery token error:', error)
         toast({
           title: 'Feil',
           description:
@@ -90,11 +100,22 @@ export function UpdatePassword() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({ password })
-
-      if (error) {
-        throw error
+      // Get the code from URL again as we might need to re-verify
+      const code = searchParams.get('code')
+      if (!code) {
+        throw new Error('Manglende tilbakestillingskode')
       }
+
+      // Re-exchange the code for a session
+      const { error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code)
+      if (exchangeError) throw exchangeError
+
+      // Now update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+      })
+      if (updateError) throw updateError
 
       toast({
         title: 'Suksess',
@@ -113,6 +134,9 @@ export function UpdatePassword() {
           'Kunne ikke oppdatere passordet. Vennligst prøv igjen.',
         variant: 'destructive',
       })
+      if (error.message.includes('token')) {
+        router.push('/reset-password')
+      }
     } finally {
       setIsLoading(false)
     }
