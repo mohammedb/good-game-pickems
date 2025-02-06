@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import '@/styles/animations.css'
 import RootLayoutClient from '@/components/RootLayoutClient'
@@ -46,6 +47,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <RootLayoutClient>{children}</RootLayoutClient>
+        <SpeedInsights />
       </body>
     </html>
   )
