@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
@@ -27,50 +27,6 @@ export function UpdatePassword() {
   const { toast } = useToast()
   const supabase = createClientComponentClient()
   const searchParams = useSearchParams()
-
-  useEffect(() => {
-    const handleRecoveryToken = async () => {
-      const code = searchParams.get('code')
-
-      if (!code) {
-        toast({
-          title: 'Feil',
-          description:
-            'Ugyldig eller utløpt tilbakestillingslenke. Vennligst be om en ny.',
-          variant: 'destructive',
-        })
-        router.push('/reset-password')
-        return
-      }
-
-      try {
-        // Exchange the code for a session
-        const { error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(code)
-        if (exchangeError) throw exchangeError
-
-        // Get the session to verify the exchange worked
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        if (!session) throw new Error('No session after code exchange')
-
-        // Immediately sign out - we only needed to verify the code
-        await supabase.auth.signOut()
-      } catch (error) {
-        console.error('Recovery token error:', error)
-        toast({
-          title: 'Feil',
-          description:
-            'Ugyldig eller utløpt tilbakestillingslenke. Vennligst be om en ny.',
-          variant: 'destructive',
-        })
-        router.push('/reset-password')
-      }
-    }
-
-    handleRecoveryToken()
-  }, [searchParams, router, supabase.auth, toast])
 
   const validatePassword = (password: string) => {
     try {
@@ -100,21 +56,21 @@ export function UpdatePassword() {
     setIsLoading(true)
 
     try {
-      // Get the code from URL again as we might need to re-verify
       const code = searchParams.get('code')
       if (!code) {
         throw new Error('Manglende tilbakestillingskode')
       }
 
-      // Re-exchange the code for a session
+      // Exchange the recovery token for a session
       const { error: exchangeError } =
         await supabase.auth.exchangeCodeForSession(code)
       if (exchangeError) throw exchangeError
 
-      // Now update the password
+      // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password,
       })
+
       if (updateError) throw updateError
 
       toast({
@@ -123,6 +79,7 @@ export function UpdatePassword() {
           'Passordet ditt har blitt oppdatert. Vennligst logg inn med ditt nye passord.',
       })
 
+      // Make sure we're signed out
       await supabase.auth.signOut()
       router.push('/login')
     } catch (error: any) {
@@ -134,7 +91,7 @@ export function UpdatePassword() {
           'Kunne ikke oppdatere passordet. Vennligst prøv igjen.',
         variant: 'destructive',
       })
-      if (error.message.includes('token')) {
+      if (error.message.includes('token') || error.message.includes('code')) {
         router.push('/reset-password')
       }
     } finally {
