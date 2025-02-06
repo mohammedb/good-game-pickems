@@ -6,8 +6,12 @@ import { redirect } from 'next/navigation'
 import { renderEmail, WelcomeEmail } from '@/lib/email-templates'
 import { sendEmail } from '@/lib/email'
 
-// Make sure we use the correct site URL
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://ggwp.no'
+// Make sure we use the correct site URL with www and https
+const SITE_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://www.ggwp.no' // Always use www and https in production
+    : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
 const REDIRECT_URL = `${SITE_URL}/api/auth/callback`
 
 async function sendWelcomeEmail(
