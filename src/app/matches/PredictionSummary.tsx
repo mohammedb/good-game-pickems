@@ -23,6 +23,7 @@ interface PredictionSummaryProps {
   onRoundChange: (round: string) => void
   matches: Match[]
   selectedWinners: Record<string, string>
+  mapScores: Record<string, { team1: number; team2: number }>
   username?: string
 }
 
@@ -34,6 +35,7 @@ export function PredictionSummary({
   onRoundChange,
   matches,
   selectedWinners,
+  mapScores,
   username,
 }: PredictionSummaryProps) {
   const router = useRouter()
@@ -42,27 +44,46 @@ export function PredictionSummary({
     totalPicks > 0 ? ((correctPicks / totalPicks) * 100).toFixed(1) : '0.0'
 
   const roundMatches = matches.filter((match) => match.round === roundName)
-  const predictions = roundMatches.map((match) => ({
-    team1: match.team1,
-    team2: match.team2,
-    team1_logo: match.team1_logo,
-    team2_logo: match.team2_logo,
-    predicted_winner: selectedWinners[match.id] || null,
-    is_finished: match.winner_id !== null,
-    winner_id: match.winner_id,
-    team1_id: match.team1_id,
-    team2_id: match.team2_id,
-    start_time: match.start_time,
-  }))
+  const predictions = roundMatches.map((match) => {
+    const mapScore = mapScores[match.id]
+    const team1MapScore = mapScore?.team1 ?? null
+    const team2MapScore = team1MapScore !== null ? (mapScore?.team2 ?? 0) : null
+
+    // Get the actual winner if match is finished
+    const actualWinner =
+      match.is_finished && match.winner_id
+        ? match.winner_id === match.team1_id
+          ? match.team1
+          : match.team2
+        : null
+
+    return {
+      t1: match.team1,
+      t2: match.team2,
+      t1l: match.team1_logo,
+      t2l: match.team2_logo,
+      pw: selectedWinners[match.id] || null,
+      f: match.is_finished,
+      w: actualWinner,
+      t1i: match.team1_id,
+      t2i: match.team2_id,
+      st: match.start_time,
+      t1m: team1MapScore,
+      t2m: team2MapScore,
+      // Actual match scores
+      at1m: match.team1_map_score,
+      at2m: match.team2_map_score,
+    }
+  })
 
   const handleShare = () => {
     const shareUrl = new URL('/share', window.location.origin)
-    shareUrl.searchParams.set('round', roundName)
-    shareUrl.searchParams.set('picks', totalPicks.toString())
-    shareUrl.searchParams.set('correct', correctPicks.toString())
-    shareUrl.searchParams.set('matches', JSON.stringify(predictions))
+    shareUrl.searchParams.set('r', roundName)
+    shareUrl.searchParams.set('p', totalPicks.toString())
+    shareUrl.searchParams.set('c', correctPicks.toString())
+    shareUrl.searchParams.set('m', btoa(JSON.stringify(predictions)))
     if (username) {
-      shareUrl.searchParams.set('username', username)
+      shareUrl.searchParams.set('u', username)
     }
     router.push(shareUrl.toString())
   }

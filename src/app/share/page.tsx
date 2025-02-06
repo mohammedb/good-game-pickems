@@ -8,40 +8,45 @@ import { toast } from '@/components/ui/use-toast'
 import Image from 'next/image'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface SharePageProps {
   searchParams: {
-    round?: string
-    picks?: string
-    correct?: string
-    matches?: string
-    username?: string
+    r?: string
+    p?: string
+    c?: string
+    m?: string
+    u?: string
   }
 }
 
 interface MatchPrediction {
-  team1: string
-  team2: string
-  team1_logo?: string
-  team2_logo?: string
-  predicted_winner: string | null
-  is_finished: boolean
-  winner_id: string | null
-  team1_id: string
-  team2_id: string
-  start_time: string
+  t1: string
+  t2: string
+  t1l?: string
+  t2l?: string
+  pw: string | null
+  f: boolean
+  w: string | null
+  t1i: string
+  t2i: string
+  st: string
+  t1m?: number | null
+  t2m?: number | null
+  at1m?: number | null
+  at2m?: number | null
 }
 
 export default function SharePage({ searchParams }: SharePageProps) {
-  const round = searchParams.round || 'Current Round'
-  const picks = parseInt(searchParams.picks || '0', 10)
-  const correct = parseInt(searchParams.correct || '0', 10)
+  const round = searchParams.r || 'Current Round'
+  const picks = parseInt(searchParams.p || '0', 10)
+  const correct = parseInt(searchParams.c || '0', 10)
   const accuracy = picks > 0 ? ((correct / picks) * 100).toFixed(1) : '0.0'
-  const username = searchParams.username
+  const username = searchParams.u
 
   let matches: MatchPrediction[] = []
   try {
-    matches = searchParams.matches ? JSON.parse(searchParams.matches) : []
+    matches = searchParams.m ? JSON.parse(atob(searchParams.m)) : []
   } catch (error) {
     console.error('Error parsing matches:', error)
   }
@@ -96,7 +101,7 @@ export default function SharePage({ searchParams }: SharePageProps) {
                 Kampene
               </h2>
               {matches.map((match, index) => {
-                const matchTime = new Date(match.start_time)
+                const matchTime = new Date(match.st)
                 const now = new Date()
                 const isUpcoming = matchTime > now
 
@@ -104,10 +109,10 @@ export default function SharePage({ searchParams }: SharePageProps) {
                   <Card key={index} className="p-4">
                     <div className="mb-4 flex items-center justify-between">
                       <Badge
-                        variant={match.is_finished ? 'default' : 'secondary'}
+                        variant={match.f ? 'default' : 'secondary'}
                         className="gap-1"
                       >
-                        {match.is_finished ? (
+                        {match.f ? (
                           <>
                             <CheckCircle2 className="h-3 w-3" />
                             Ferdig
@@ -134,10 +139,10 @@ export default function SharePage({ searchParams }: SharePageProps) {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {match.team1_logo ? (
+                        {match.t1l ? (
                           <Image
-                            src={match.team1_logo}
-                            alt={match.team1}
+                            src={match.t1l}
+                            alt={match.t1}
                             width={40}
                             height={40}
                             className="rounded-full"
@@ -145,18 +150,14 @@ export default function SharePage({ searchParams }: SharePageProps) {
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                             <span className="text-xs">
-                              {match.team1.substring(0, 2)}
+                              {match.t1.substring(0, 2)}
                             </span>
                           </div>
                         )}
                         <span
-                          className={
-                            match.predicted_winner === match.team1
-                              ? 'font-bold'
-                              : ''
-                          }
+                          className={match.pw === match.t1 ? 'font-bold' : ''}
                         >
-                          {match.team1}
+                          {match.t1}
                         </span>
                       </div>
                       <div className="px-4 text-sm text-muted-foreground">
@@ -164,18 +165,14 @@ export default function SharePage({ searchParams }: SharePageProps) {
                       </div>
                       <div className="flex items-center gap-3">
                         <span
-                          className={
-                            match.predicted_winner === match.team2
-                              ? 'font-bold'
-                              : ''
-                          }
+                          className={match.pw === match.t2 ? 'font-bold' : ''}
                         >
-                          {match.team2}
+                          {match.t2}
                         </span>
-                        {match.team2_logo ? (
+                        {match.t2l ? (
                           <Image
-                            src={match.team2_logo}
-                            alt={match.team2}
+                            src={match.t2l}
+                            alt={match.t2}
                             width={40}
                             height={40}
                             className="rounded-full"
@@ -183,38 +180,59 @@ export default function SharePage({ searchParams }: SharePageProps) {
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                             <span className="text-xs">
-                              {match.team2.substring(0, 2)}
+                              {match.t2.substring(0, 2)}
                             </span>
                           </div>
                         )}
                       </div>
                     </div>
-                    {match.predicted_winner && (
-                      <div className="mt-4 text-center text-sm">
-                        <span className="text-muted-foreground">
-                          Valgt vinner:{' '}
-                        </span>
-                        <span className="font-medium">
-                          {match.predicted_winner}
-                        </span>
-                        {match.is_finished && (
-                          <span
-                            className={
-                              match.predicted_winner ===
-                              (match.winner_id === match.team1_id
-                                ? match.team1
-                                : match.team2)
-                                ? ' text-green-500'
-                                : ' text-red-500'
-                            }
-                          >
-                            {match.predicted_winner ===
-                            (match.winner_id === match.team1_id
-                              ? match.team1
-                              : match.team2)
-                              ? ' ✓'
-                              : ' ✗'}
-                          </span>
+                    {match.pw && (
+                      <div className="mt-4 space-y-4 text-center">
+                        <div>
+                          <div className="text-sm text-muted-foreground">
+                            Valgt Vinner
+                          </div>
+                          <div className="font-medium">{match.pw}</div>
+                          {(match.t1m !== null || match.t2m !== null) && (
+                            <div className="mt-2">
+                              <div className="text-sm text-muted-foreground">
+                                Predicted Map Score
+                              </div>
+                              <div className="font-medium">
+                                {match.t1} {match.t1m ?? 0} - {match.t2m ?? 0}{' '}
+                                {match.t2}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {match.f && match.w && (
+                          <div className="border-t pt-2">
+                            <div className="text-sm text-muted-foreground">
+                              Resultat
+                            </div>
+                            <div
+                              className={cn(
+                                'font-medium',
+                                match.pw === match.w
+                                  ? 'text-green-500'
+                                  : 'text-red-500',
+                              )}
+                            >
+                              {match.w} vant
+                            </div>
+                            {match.at1m !== null && match.at2m !== null && (
+                              <div className="mt-1">
+                                <div className="text-sm text-muted-foreground">
+                                  Faktisk Map Score
+                                </div>
+                                <div className="font-medium">
+                                  {match.t1} {match.at1m} - {match.at2m}{' '}
+                                  {match.t2}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}

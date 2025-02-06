@@ -331,6 +331,7 @@ export default function MatchList({
         onRoundChange={roundStats.onRoundChange}
         matches={matches}
         selectedWinners={selectedWinners}
+        mapScores={mapScores}
         username={username}
       />
 
