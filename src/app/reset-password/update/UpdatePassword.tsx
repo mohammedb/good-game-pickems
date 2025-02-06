@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,10 +12,10 @@ import { z } from 'zod'
 const passwordSchema = z.object({
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .min(8, 'Passordet må være minst 8 tegn')
+    .regex(/[A-Z]/, 'Passordet må inneholde minst én stor bokstav')
+    .regex(/[a-z]/, 'Passordet må inneholde minst én liten bokstav')
+    .regex(/[0-9]/, 'Passordet må inneholde minst ett tall'),
 })
 
 export function UpdatePassword() {
@@ -26,25 +26,41 @@ export function UpdatePassword() {
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClientComponentClient()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if we have a session
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (!session) {
+    const handleRecoveryToken = async () => {
+      const code = searchParams.get('code')
+
+      if (!code) {
         toast({
-          title: 'Error',
+          title: 'Feil',
           description:
-            'Invalid or expired reset link. Please request a new one.',
+            'Ugyldig eller utløpt tilbakestillingslenke. Vennligst be om en ny.',
+          variant: 'destructive',
+        })
+        router.push('/reset-password')
+        return
+      }
+
+      try {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          throw error
+        }
+      } catch (error) {
+        toast({
+          title: 'Feil',
+          description:
+            'Ugyldig eller utløpt tilbakestillingslenke. Vennligst be om en ny.',
           variant: 'destructive',
         })
         router.push('/reset-password')
       }
     }
-    checkSession()
-  }, [router, supabase.auth, toast])
+
+    handleRecoveryToken()
+  }, [searchParams, router, supabase.auth, toast])
 
   const validatePassword = (password: string) => {
     try {
@@ -63,7 +79,7 @@ export function UpdatePassword() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError('Passordene matcher ikke')
       return
     }
 
@@ -81,20 +97,20 @@ export function UpdatePassword() {
       }
 
       toast({
-        title: 'Success',
+        title: 'Suksess',
         description:
-          'Your password has been successfully updated. Please sign in with your new password.',
+          'Passordet ditt har blitt oppdatert. Vennligst logg inn med ditt nye passord.',
       })
 
-      // Sign out the user after password update
       await supabase.auth.signOut()
       router.push('/login')
     } catch (error: any) {
       console.error('Password update error:', error)
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
-          error?.message || 'Failed to update password. Please try again.',
+          error?.message ||
+          'Kunne ikke oppdatere passordet. Vennligst prøv igjen.',
         variant: 'destructive',
       })
     } finally {
@@ -107,7 +123,7 @@ export function UpdatePassword() {
       <div className="space-y-2">
         <Input
           type="password"
-          placeholder="New password"
+          placeholder="Nytt passord"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value)
@@ -118,7 +134,7 @@ export function UpdatePassword() {
         />
         <Input
           type="password"
-          placeholder="Confirm new password"
+          placeholder="Bekreft nytt passord"
           value={confirmPassword}
           onChange={(e) => {
             setConfirmPassword(e.target.value)
@@ -135,10 +151,10 @@ export function UpdatePassword() {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating Password
+            Oppdaterer Passord
           </>
         ) : (
-          'Update Password'
+          'Oppdater Passord'
         )}
       </Button>
     </form>
