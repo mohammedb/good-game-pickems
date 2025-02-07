@@ -65,9 +65,8 @@ export function UpdatePassword() {
     const handleRecoveryToken = async () => {
       try {
         const code = searchParams.get('code')
-        const type = searchParams.get('type')
 
-        if (!code || type !== 'recovery') {
+        if (!code) {
           throw new Error('TokenInvalid')
         }
 
@@ -78,10 +77,8 @@ export function UpdatePassword() {
 
         if (!existingSession) {
           // Exchange the recovery code for a session
-          const { data, error: exchangeError } = await supabase.auth.verifyOtp({
-            token_hash: code,
-            type: 'recovery',
-          })
+          const { data, error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code)
 
           if (exchangeError) {
             if (exchangeError.message.includes('expired')) {
@@ -90,7 +87,11 @@ export function UpdatePassword() {
             throw exchangeError
           }
 
-          if (!data.session) {
+          // Verify the session was created
+          const {
+            data: { session: newSession },
+          } = await supabase.auth.getSession()
+          if (!newSession) {
             throw new Error('SessionError')
           }
         }
