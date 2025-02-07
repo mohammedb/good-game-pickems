@@ -137,14 +137,6 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
                   required
                 />
               </div>
-              <div className="flex justify-end">
-                <Link
-                  href="/reset-password"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Glemt passord?
-                </Link>
-              </div>
             </div>
 
             <Button type="submit" className="h-11 w-full" disabled={isLoading}>
