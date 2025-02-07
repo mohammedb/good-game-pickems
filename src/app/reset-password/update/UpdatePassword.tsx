@@ -63,39 +63,34 @@ export function UpdatePassword() {
   useEffect(() => {
     let mounted = true
     const handleRecoveryToken = async () => {
-      const code = searchParams.get('code')
-
-      if (!code) {
-        toast({
-          title: 'Feil',
-          description: ERROR_MESSAGES.TokenMissing,
-          variant: 'destructive',
-        })
-        router.push('/reset-password')
-        return
-      }
-
       try {
-        // First check if we already have a valid session
+        const code = searchParams.get('code')
+        const type = searchParams.get('type')
+
+        if (!code || type !== 'recovery') {
+          throw new Error('TokenInvalid')
+        }
+
+        // Try to get the existing session first
         const {
-          data: { session },
+          data: { session: existingSession },
         } = await supabase.auth.getSession()
 
-        if (!session) {
-          // Only exchange the code if we don't have a session
-          const { error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) {
-            if (error.message.includes('expired')) {
+        if (!existingSession) {
+          // Exchange the recovery code for a session
+          const { data, error: exchangeError } = await supabase.auth.verifyOtp({
+            token_hash: code,
+            type: 'recovery',
+          })
+
+          if (exchangeError) {
+            if (exchangeError.message.includes('expired')) {
               throw new Error('TokenExpired')
             }
-            throw error
+            throw exchangeError
           }
 
-          // Verify the session was created
-          const {
-            data: { session: newSession },
-          } = await supabase.auth.getSession()
-          if (!newSession) {
+          if (!data.session) {
             throw new Error('SessionError')
           }
         }
@@ -171,18 +166,22 @@ export function UpdatePassword() {
     setIsLoading(true)
 
     try {
-      // Verify we still have a valid session before updating
+      // Get the current session
       const {
         data: { session },
       } = await supabase.auth.getSession()
+
       if (!session) {
         throw new Error('SessionError')
       }
 
-      const { error } = await supabase.auth.updateUser({ password })
+      // Update the user's password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+      })
 
-      if (error) {
-        throw error
+      if (updateError) {
+        throw updateError
       }
 
       toast({
@@ -191,7 +190,7 @@ export function UpdatePassword() {
           'Passordet ditt har blitt oppdatert. Vennligst logg inn med ditt nye passord.',
       })
 
-      // Clear the session and redirect
+      // Sign out and redirect
       await supabase.auth.signOut()
       router.push('/login')
     } catch (error: any) {
@@ -201,6 +200,7 @@ export function UpdatePassword() {
         (error.message === 'NetworkError'
           ? ERROR_MESSAGES.NetworkError
           : ERROR_MESSAGES.default)
+
       toast({
         title: 'Feil',
         description: errorMessage,
