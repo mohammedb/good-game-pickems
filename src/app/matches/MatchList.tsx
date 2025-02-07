@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { submitPrediction, removeUnlockedPredictions } from './actions'
 import { Match } from './types'
 import Image from 'next/image'
-import { Trash2, Lock, Twitch } from 'lucide-react'
+import { Trash2, Lock, Twitch, CheckCircle2, Timer } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
 import {
@@ -378,10 +378,20 @@ export default function MatchList({
                               <time className="text-sm text-muted-foreground">
                                 {matchTime.toLocaleString('nb-NO')}
                               </time>
-                              {isLocked && (
+                              {match.is_finished ? (
+                                <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  Ferdig
+                                </span>
+                              ) : isLocked ? (
                                 <span className="flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500">
                                   <Lock className="h-3 w-3" />
                                   Låst
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-500">
+                                  <Timer className="h-3 w-3" />
+                                  Åpen
                                 </span>
                               )}
                             </div>
@@ -424,21 +434,6 @@ export default function MatchList({
                               <span className="font-medium text-muted-foreground">
                                 vs
                               </span>
-                              {match.is_finished && (
-                                <div className="mt-1 text-center">
-                                  <span className="font-bold">
-                                    {match.team1_score} - {match.team2_score}
-                                  </span>
-                                  {match.winner_id && (
-                                    <div className="mt-1 text-xs text-muted-foreground">
-                                      Vinner:{' '}
-                                      {match.winner_id === match.team1_id
-                                        ? match.team1
-                                        : match.team2}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
                             </div>
 
                             <div className="flex-1 text-right">
@@ -475,23 +470,43 @@ export default function MatchList({
                         <div className="relative">
                           {(isLocked || match.is_finished) && (
                             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
-                              <div className="text-center">
+                              <div className="space-y-3 text-center">
                                 {match.is_finished ? (
                                   <>
-                                    <div className="mb-2 text-2xl font-bold">
-                                      {match.team1_score} - {match.team2_score}
+                                    <div className="flex flex-col items-center gap-2">
+                                      <div className="flex items-center gap-3">
+                                        <span
+                                          className={cn(
+                                            'text-lg font-semibold',
+                                            match.winner_id ===
+                                              match.team1_id &&
+                                              'text-green-500',
+                                          )}
+                                        >
+                                          {match.team1}
+                                        </span>
+                                        <div className="text-3xl font-bold">
+                                          {match.team1_map_score} -{' '}
+                                          {match.team2_map_score}
+                                        </div>
+                                        <span
+                                          className={cn(
+                                            'text-lg font-semibold',
+                                            match.winner_id ===
+                                              match.team2_id &&
+                                              'text-green-500',
+                                          )}
+                                        >
+                                          {match.team2}
+                                        </span>
+                                      </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground">
-                                      Ferdig
-                                    </p>
-                                    {match.winner_id && (
-                                      <p className="mt-1 text-sm font-medium">
-                                        Vinner:{' '}
-                                        {match.winner_id === match.team1_id
-                                          ? match.team1
-                                          : match.team2}
+                                    <div className="flex items-center justify-center gap-2">
+                                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                      <p className="text-sm text-muted-foreground">
+                                        Ferdig
                                       </p>
-                                    )}
+                                    </div>
                                   </>
                                 ) : (
                                   <>
