@@ -30,7 +30,7 @@ BEGIN
       COUNT(*) FILTER (WHERE is_correct = true)::bigint as correct_picks,
       COUNT(*)::bigint as total_picks,
       COALESCE(SUM(map_score_points), 0)::bigint as map_score_points,
-      (COUNT(*) FILTER (WHERE is_correct = true) + COALESCE(SUM(map_score_points), 0))::bigint as total_points
+      (COALESCE(SUM(points_awarded), 0) + COALESCE(SUM(map_score_points), 0))::bigint as total_points
     FROM filtered_picks p
     GROUP BY p.user_id, p.username
     ORDER BY total_points DESC, correct_picks DESC

@@ -231,41 +231,108 @@ export default function SharePage({ searchParams }: SharePageProps) {
 
                       {match.pw && (
                         <div className="mt-4 space-y-3">
-                          <div className="flex items-center justify-center gap-2">
-                            <Badge variant="outline" className="text-sm">
-                              Din Prediction:{' '}
-                              <span className="ml-1 font-semibold">
-                                {match.pw}
-                              </span>
-                            </Badge>
-                            {match.f && match.w && (
-                              <Badge
-                                variant={
-                                  match.pw === match.w
-                                    ? 'success'
-                                    : 'destructive'
-                                }
-                                className="text-sm"
-                              >
-                                {match.pw === match.w ? '✓ Riktig' : '✗ Feil'}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {match.f &&
-                            match.w &&
-                            match.at1m !== null &&
-                            match.at2m !== null && (
-                              <div className="rounded-lg bg-muted/50 p-2 text-center">
-                                <div className="text-sm font-medium">
-                                  Faktisk Resultat
-                                </div>
-                                <div className="mt-1 text-base font-semibold">
-                                  {match.t1} {match.at1m} - {match.at2m}{' '}
-                                  {match.t2}
-                                </div>
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-full rounded-lg border bg-card p-3 text-center">
+                              <div className="mb-2 text-sm font-medium text-muted-foreground">
+                                Din Prediction
                               </div>
-                            )}
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="font-semibold">
+                                  {match.pw}
+                                </span>
+                                {match.t1m !== null && match.t2m !== null && (
+                                  <span className="text-muted-foreground">
+                                    ({match.t1m}-{match.t2m})
+                                  </span>
+                                )}
+                              </div>
+                              {match.f && match.w && (
+                                <div className="mt-3 flex items-center justify-center gap-2">
+                                  <Badge
+                                    variant={
+                                      match.pw === match.w
+                                        ? 'success'
+                                        : 'destructive'
+                                    }
+                                    className="text-sm"
+                                  >
+                                    {match.pw === match.w ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle2 className="h-3 w-3" />
+                                        <span>Riktig Vinner (+2)</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1">
+                                        <span>✗</span>
+                                        <span>Feil Vinner</span>
+                                      </div>
+                                    )}
+                                  </Badge>
+                                  {match.at1m !== null &&
+                                    match.at2m !== null &&
+                                    match.t1m !== null &&
+                                    match.t2m !== null && (
+                                      <Badge
+                                        variant={
+                                          match.t1m === match.at1m &&
+                                          match.t2m === match.at2m
+                                            ? 'success'
+                                            : 'destructive'
+                                        }
+                                        className="text-sm"
+                                      >
+                                        {match.t1m === match.at1m &&
+                                        match.t2m === match.at2m ? (
+                                          <div className="flex items-center gap-1">
+                                            <CheckCircle2 className="h-3 w-3" />
+                                            <span>Riktig Maps (+1)</span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <span>✗</span>
+                                            <span>Feil Maps</span>
+                                          </div>
+                                        )}
+                                      </Badge>
+                                    )}
+                                </div>
+                              )}
+                            </div>
+
+                            {match.f &&
+                              match.w &&
+                              match.at1m !== null &&
+                              match.at2m !== null && (
+                                <div className="w-full rounded-lg bg-muted/50 p-3 text-center">
+                                  <div className="mb-2 text-sm font-medium text-muted-foreground">
+                                    Faktisk Resultat
+                                  </div>
+                                  <div className="flex items-center justify-center gap-3">
+                                    <span
+                                      className={cn(
+                                        'font-semibold',
+                                        match.w === match.t1 &&
+                                          'text-green-500',
+                                      )}
+                                    >
+                                      {match.t1}
+                                    </span>
+                                    <span className="font-bold">
+                                      {match.at1m} - {match.at2m}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        'font-semibold',
+                                        match.w === match.t2 &&
+                                          'text-green-500',
+                                      )}
+                                    >
+                                      {match.t2}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                          </div>
                         </div>
                       )}
                     </Card>

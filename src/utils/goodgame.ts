@@ -15,7 +15,6 @@ export async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
       order_by: 'round_number',
       order_dir: 'asc',
       season: '13162',
-      status: 'unfinished',
     })
 
     const url = `${API_BASE_URL}/matches?${params.toString()}`
@@ -73,6 +72,17 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
     // Find the first Twitch stream if available
     const stream = match.videos?.find((video) => video.source === 'twitch')
 
+    // Determine winner ID based on winning_side and finished status
+    let winnerId = null
+    if (match.finished_at && match.winning_side) {
+      winnerId =
+        match.winning_side === 'home'
+          ? match.home_signup.team.id.toString()
+          : match.winning_side === 'away'
+            ? match.away_signup.team.id.toString()
+            : null
+    }
+
     return {
       id: match.id.toString(),
       team1: match.home_signup.team.name,
@@ -84,12 +94,9 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
       start_time: match.start_time,
       division_id: DIVISION_ID,
       is_finished: !!match.finished_at,
-      winner_id:
-        match.winning_side === 'home'
-          ? match.home_signup.team.id.toString()
-          : match.winning_side === 'away'
-            ? match.away_signup.team.id.toString()
-            : null,
+      winner_id: winnerId,
+      team1_map_score: match.home_score,
+      team2_map_score: match.away_score,
       best_of: match.best_of || 3, // Default to BO3 if not specified
       round: match.round_identifier_text,
       stream_link: stream ? `https://twitch.tv/${stream.remote_id}` : undefined,
@@ -132,16 +139,25 @@ export async function syncMatches(supabase: any) {
               // Get the existing match ID if it exists
               const { data: existingMatch } = await supabase
                 .from('matches')
-                .select('id')
+                .select('id, is_finished, points_processed')
                 .eq('gg_ligaen_api_id', match.id.toString())
                 .single()
 
               const matchData = transformGoodGameMatch(match)
+
+              // Check if we need to process points for this match
+              const needsPointsProcessing =
+                matchData.is_finished &&
+                matchData.winner_id &&
+                (!existingMatch?.points_processed ||
+                  existingMatch.is_finished !== matchData.is_finished)
+
               return {
                 ...matchData,
                 id: existingMatch?.id || crypto.randomUUID(),
                 gg_ligaen_api_id: match.id.toString(),
                 synced_at: new Date().toISOString(),
+                needs_points_processing: needsPointsProcessing,
               }
             } catch (error) {
               console.error(`Error processing match ${match.id}:`, error)
@@ -185,7 +201,47 @@ export async function syncMatches(supabase: any) {
       }
     }
 
-    // 4. Log the sync
+    // 4. Process points for finished matches that need it
+    const matchesNeedingPoints = allTransformedMatches.filter(
+      (m): m is typeof m & { id: string } =>
+        m !== null &&
+        typeof m.needs_points_processing === 'boolean' &&
+        m.needs_points_processing === true &&
+        typeof m.id === 'string',
+    )
+
+    if (matchesNeedingPoints.length > 0) {
+      console.log(
+        `Processing points for ${matchesNeedingPoints.length} finished matches`,
+      )
+
+      for (const match of matchesNeedingPoints) {
+        try {
+          await supabase.rpc('update_match_points', {
+            match_id_param: match.id,
+          })
+          console.log(`Processed points for match ${match.id}`)
+
+          // Update points_processed flag
+          await supabase
+            .from('matches')
+            .update({ points_processed: true })
+            .eq('id', match.id)
+        } catch (error) {
+          console.error(`Error processing points for match ${match.id}:`, error)
+        }
+      }
+
+      // Update user rankings after processing points
+      try {
+        await supabase.rpc('update_user_total_points')
+        console.log('Updated user rankings')
+      } catch (error) {
+        console.error('Error updating user rankings:', error)
+      }
+    }
+
+    // 5. Log the sync
     const { error: logError } = await supabase.from('sync_logs').insert({
       matches_synced: allTransformedMatches.length,
     })

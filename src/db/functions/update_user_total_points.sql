@@ -5,24 +5,29 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Update the total_points column in the users table
-  UPDATE users
-  SET total_points = (
-    SELECT COALESCE(SUM(points_awarded), 0)
+  -- First update total points for each user
+  WITH user_points AS (
+    SELECT 
+      user_id,
+      COALESCE(SUM(points_awarded), 0) + COALESCE(SUM(map_score_points), 0) as calculated_points
     FROM picks
-    WHERE picks.user_id = users.id
-    AND points_awarded IS NOT NULL
-  );
+    GROUP BY user_id
+  )
+  UPDATE users u
+  SET total_points = up.calculated_points
+  FROM user_points up
+  WHERE u.id = up.user_id;
 
-  -- Update the rank column based on total points
-  UPDATE users
-  SET rank = ranks.rank
-  FROM (
+  -- Then update ranks based on total points
+  WITH user_ranks AS (
     SELECT 
       id,
-      RANK() OVER (ORDER BY total_points DESC) as rank
+      RANK() OVER (ORDER BY total_points DESC) as calculated_rank
     FROM users
-  ) ranks
-  WHERE users.id = ranks.id;
+  )
+  UPDATE users u
+  SET rank = ur.calculated_rank
+  FROM user_ranks ur
+  WHERE u.id = ur.id;
 END;
 $$; 
