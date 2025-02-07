@@ -38,6 +38,7 @@ export function RequestPasswordReset() {
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password/update`,
+        captchaToken: undefined, // Explicitly set to undefined to avoid PKCE issues
       })
 
       if (error) {

@@ -64,9 +64,11 @@ export function UpdatePassword() {
     let mounted = true
     const handleRecoveryToken = async () => {
       try {
-        const code = searchParams.get('code')
+        // Get both token and type from URL
+        const token = searchParams.get('token')
+        const type = searchParams.get('type')
 
-        if (!code) {
+        if (!token || type !== 'recovery') {
           throw new Error('TokenInvalid')
         }
 
@@ -76,22 +78,21 @@ export function UpdatePassword() {
         } = await supabase.auth.getSession()
 
         if (!existingSession) {
-          // Exchange the recovery code for a session
-          const { data, error: exchangeError } =
-            await supabase.auth.exchangeCodeForSession(code)
+          // Verify the recovery token
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery',
+          })
 
-          if (exchangeError) {
-            if (exchangeError.message.includes('expired')) {
+          if (verifyError) {
+            if (verifyError.message.includes('expired')) {
               throw new Error('TokenExpired')
             }
-            throw exchangeError
+            throw verifyError
           }
 
-          // Verify the session was created
-          const {
-            data: { session: newSession },
-          } = await supabase.auth.getSession()
-          if (!newSession) {
+          // Check if we got a session back
+          if (!data?.session) {
             throw new Error('SessionError')
           }
         }
