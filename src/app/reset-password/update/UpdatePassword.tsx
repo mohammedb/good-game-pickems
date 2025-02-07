@@ -64,11 +64,24 @@ export function UpdatePassword() {
     let mounted = true
     const handleRecoveryToken = async () => {
       try {
-        // Get both token and type from URL
+        // Get the hash fragment from the URL
+        const hash = window.location.hash
+
+        // If we have a hash, we need to handle it
+        if (hash) {
+          const { data, error } = await supabase.auth.getSession()
+          if (error) throw error
+          if (data?.session) {
+            setIsTokenValid(true)
+            return
+          }
+        }
+
+        // Otherwise try to get the token from search params
         const token = searchParams.get('token')
         const type = searchParams.get('type')
 
-        if (!token || type !== 'recovery') {
+        if (!token) {
           throw new Error('TokenInvalid')
         }
 
@@ -78,21 +91,22 @@ export function UpdatePassword() {
         } = await supabase.auth.getSession()
 
         if (!existingSession) {
-          // Verify the recovery token
-          const { data, error: verifyError } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery',
-          })
+          // Exchange the recovery code for a session
+          const { data, error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(token)
 
-          if (verifyError) {
-            if (verifyError.message.includes('expired')) {
+          if (exchangeError) {
+            if (exchangeError.message.includes('expired')) {
               throw new Error('TokenExpired')
             }
-            throw verifyError
+            throw exchangeError
           }
 
-          // Check if we got a session back
-          if (!data?.session) {
+          // Verify the session was created
+          const {
+            data: { session: newSession },
+          } = await supabase.auth.getSession()
+          if (!newSession) {
             throw new Error('SessionError')
           }
         }
