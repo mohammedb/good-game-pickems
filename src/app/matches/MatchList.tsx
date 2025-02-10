@@ -319,16 +319,73 @@ export default function MatchList({
       </div>
 
       <Card className="mb-8 bg-muted/50 p-4">
-        <div className="space-y-2 text-sm">
-          <h3 className="mb-3 font-semibold">Poeng System</h3>
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-              <span>2 poeng for riktig vinner</span>
+        <div className="space-y-4 text-sm">
+          <div>
+            <h3 className="mb-3 text-base font-semibold">Poeng System</h3>
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <span>2 poeng for riktig vinner</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <span>+1 bonus poeng for riktig map score</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-              <span>+1 bonus poeng for riktig map score</span>
+          </div>
+
+          <Separator />
+
+          <div>
+            <h3 className="mb-3 text-base font-semibold">
+              Regler for Predictions
+            </h3>
+            <div className="grid gap-2">
+              <div className="flex items-start gap-2">
+                <Lock className="mt-1 h-3 w-3 shrink-0 text-yellow-500" />
+                <span>
+                  Predictions låses <strong>2 timer</strong> før kampstart
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Timer className="mt-1 h-3 w-3 shrink-0 text-blue-500" />
+                <span>Du kan endre predictions helt frem til låsing</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-1 h-3 w-3 shrink-0 text-green-500" />
+                <span>
+                  Poeng deles ut når kampen er ferdig og resultatet er bekreftet
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <h3 className="mb-3 text-base font-semibold">Status Forklaring</h3>
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-500">
+                  <Timer className="h-3 w-3" />
+                  Åpen
+                </span>
+                <span>Du kan legge inn eller endre prediction</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500">
+                  <Lock className="h-3 w-3" />
+                  Låst
+                </span>
+                <span>Prediction er låst og kan ikke endres</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Ferdig
+                </span>
+                <span>Kampen er ferdig og poeng er delt ut</span>
+              </div>
             </div>
           </div>
         </div>
