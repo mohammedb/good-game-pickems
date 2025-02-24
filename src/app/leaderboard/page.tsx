@@ -17,6 +17,18 @@ interface LeaderboardEntry {
   correct_picks: number
   total_picks: number
   map_score_points: number
+  recentCorrectPicks?: RecentCorrectPick[]
+}
+
+interface RecentCorrectPick {
+  id: string
+  match_id: string
+  predicted_winner: string
+  team1: string
+  team2: string
+  team1_logo: string | null
+  team2_logo: string | null
+  created_at: string
 }
 
 interface LeaderboardResult {
@@ -40,13 +52,24 @@ export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedUsers, setExpandedUsers] = useState<Record<string, boolean>>(
+    {},
+  )
 
   const supabase = createBrowserClient()
+
+  const toggleUserExpand = (userId: string) => {
+    setExpandedUsers((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }))
+  }
 
   useEffect(() => {
     async function fetchLeaderboard() {
       setIsLoading(true)
       setError(null)
+      setExpandedUsers({})
 
       try {
         const now = new Date()
@@ -79,6 +102,29 @@ export default function LeaderboardPage() {
           total_picks: entry.total_picks,
           map_score_points: entry.map_score_points,
         }))
+
+        // Fetch recent correct picks for all users in parallel
+        const topUsers = formattedData.slice(0, 20) // Limit to top 20 for performance
+
+        await Promise.all(
+          topUsers.map(async (user) => {
+            try {
+              const { data: pickData, error: pickError } = await supabase.rpc(
+                'get_user_recent_correct_picks',
+                { user_id_param: user.user_id },
+              )
+
+              if (pickError) throw pickError
+
+              user.recentCorrectPicks = pickData as RecentCorrectPick[]
+            } catch (err) {
+              console.error(
+                `Error fetching picks for user ${user.user_id}:`,
+                err,
+              )
+            }
+          }),
+        )
 
         setLeaderboard(formattedData)
       } catch (err) {
@@ -198,6 +244,117 @@ export default function LeaderboardPage() {
                       variant={index < 3 ? 'success' : 'default'}
                       showValue
                     />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full justify-start text-xs text-muted-foreground"
+                      onClick={() => toggleUserExpand(entry.user_id)}
+                    >
+                      {expandedUsers[entry.user_id] ? 'Skjul' : 'Vis'} siste 5
+                      riktige picks
+                      <span className="ml-2">↓</span>
+                    </Button>
+
+                    {expandedUsers[entry.user_id] &&
+                      entry.recentCorrectPicks && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-2 overflow-hidden rounded-md bg-muted/50 p-3"
+                        >
+                          {entry.recentCorrectPicks.length > 0 ? (
+                            <div className="flex flex-wrap justify-center gap-2">
+                              {entry.recentCorrectPicks.map((pick) => {
+                                const isTeam1Winner =
+                                  pick.predicted_winner === pick.team1
+                                const winnerLogo = isTeam1Winner
+                                  ? pick.team1_logo
+                                  : pick.team2_logo
+                                const winnerName = isTeam1Winner
+                                  ? pick.team1
+                                  : pick.team2
+                                const loserLogo = isTeam1Winner
+                                  ? pick.team2_logo
+                                  : pick.team1_logo
+                                const loserName = isTeam1Winner
+                                  ? pick.team2
+                                  : pick.team1
+
+                                return (
+                                  <div
+                                    key={pick.id}
+                                    className="relative flex flex-col items-center"
+                                    title={`${pick.team1} vs ${pick.team2} - Valgte: ${winnerName}`}
+                                  >
+                                    <div className="relative mb-1 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-1 shadow-md">
+                                      {/* Winner logo */}
+                                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white">
+                                        {winnerLogo ? (
+                                          <img
+                                            src={winnerLogo}
+                                            alt={winnerName}
+                                            className="h-10 w-10 object-contain"
+                                          />
+                                        ) : (
+                                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-xs font-medium">
+                                            {winnerName
+                                              .substring(0, 2)
+                                              .toUpperCase()}
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Checkmark badge */}
+                                      <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow-md">
+                                        <svg
+                                          width="12"
+                                          height="12"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M20 6L9 17L4 12"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                        </svg>
+                                      </div>
+
+                                      {/* Loser logo small */}
+                                      <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/90 shadow-md">
+                                        {loserLogo ? (
+                                          <img
+                                            src={loserLogo}
+                                            alt={loserName}
+                                            className="h-6 w-6 object-contain opacity-60"
+                                          />
+                                        ) : (
+                                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium opacity-60">
+                                            {loserName
+                                              .substring(0, 2)
+                                              .toUpperCase()}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <span className="mt-1 text-center text-xs font-medium leading-tight">
+                                      {winnerName}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Ingen riktige picks ennå
+                            </p>
+                          )}
+                        </motion.div>
+                      )}
                   </div>
                 </div>
               </Card>
