@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:magicui.design)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx shadcn@latest add https://magicui.design/registry/shimmer -y)",
+      "Bash(npx shadcn@latest add \"https://magicui.design/r/shimmer-button\" -y)",
+      "Bash(npx shadcn:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(find:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(pnpm lint:*)"
+    ],
+    "deny": []
+  }
+}

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Loader2 } from 'lucide-react'
+import { MatchSkeleton } from '@/components/matches/match-skeleton'
 
 export default function MatchesPage() {
   const router = useRouter()
@@ -93,8 +94,8 @@ export default function MatchesPage() {
 
   if (isLoading || !userId) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container max-w-4xl py-8">
+        <MatchSkeleton />
       </div>
     )
   }

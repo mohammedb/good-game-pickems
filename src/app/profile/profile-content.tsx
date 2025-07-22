@@ -12,6 +12,9 @@ import Link from 'next/link'
 import { useUserStore } from '@/stores/user-store'
 import { createBrowserClient } from '@/utils/supabase'
 import { useRouter } from 'next/navigation'
+import { BorderBeam } from '@/components/magicui/border-beam'
+import { ProfileSkeleton } from '@/components/profile/profile-skeleton'
+import { SparklesText } from '@/components/magicui/sparkles-text'
 
 interface Match {
   team1: string
@@ -55,24 +58,28 @@ const getAchievements = (stats: ProfileStats) => {
       icon: 'star' as const,
       variant: 'bronze' as const,
       isLocked: stats.totalPicks === 0,
-      progress: stats.totalPicks > 0 ? 100 : 0
+      progress: stats.totalPicks > 0 ? 100 : 0,
     },
     {
       title: 'Perfekt Rekke',
       description: 'Få 5 riktige tips på rad',
-      icon: 'trophy' as const,
+      icon: 'medal' as const,
       variant: 'silver' as const,
       isLocked: stats.correctPicks < 5,
-      progress: (stats.correctPicks / 5) * 100
+      progress: (stats.correctPicks / 5) * 100,
     },
     {
       title: 'Tipsemester',
       description: 'Oppnå 80% treffsikkerhet med 20+ tips',
-      icon: 'crown' as const,
+      icon: 'trophy' as const,
       variant: 'gold' as const,
-      isLocked: stats.totalPicks < 20 || (stats.correctPicks / stats.totalPicks) < 0.8,
-      progress: stats.totalPicks >= 20 ? (stats.correctPicks / stats.totalPicks) * 100 : (stats.totalPicks / 20) * 100
-    }
+      isLocked:
+        stats.totalPicks < 20 || stats.correctPicks / stats.totalPicks < 0.8,
+      progress:
+        stats.totalPicks >= 20
+          ? (stats.correctPicks / stats.totalPicks) * 100
+          : (stats.totalPicks / 20) * 100,
+    },
   ]
 
   return achievements
@@ -94,17 +101,17 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
 
   const handleUpdateUsername = async () => {
     if (!profile) return
-    
+
     try {
       setIsUpdating(true)
       console.log('Starting username update for profile:', profile.id)
-      
+
       // Validate username
       if (!newUsername.trim()) {
         toast({
           title: 'Feil',
           description: 'Brukernavn kan ikke være tomt',
-          variant: 'destructive'
+          variant: 'destructive',
         })
         return
       }
@@ -113,7 +120,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
         toast({
           title: 'Feil',
           description: 'Brukernavn må være mellom 3 og 20 tegn',
-          variant: 'destructive'
+          variant: 'destructive',
         })
         return
       }
@@ -121,8 +128,9 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       if (!/^[a-zA-Z0-9_-]+$/.test(newUsername)) {
         toast({
           title: 'Feil',
-          description: 'Brukernavn kan kun inneholde bokstaver, tall, understrek og bindestrek',
-          variant: 'destructive'
+          description:
+            'Brukernavn kan kun inneholde bokstaver, tall, understrek og bindestrek',
+          variant: 'destructive',
         })
         return
       }
@@ -143,7 +151,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
         toast({
           title: 'Feil',
           description: 'Brukernavnet er allerede i bruk',
-          variant: 'destructive'
+          variant: 'destructive',
         })
         return
       }
@@ -153,9 +161,9 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       // First update the database
       const { data: updateData, error: updateError } = await supabase
         .from('users')
-        .update({ 
+        .update({
           username: newUsername,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', profile.id)
         .select()
@@ -169,7 +177,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
 
       // Then update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-        data: { username: newUsername }
+        data: { username: newUsername },
       })
 
       if (metadataError) {
@@ -181,11 +189,11 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
 
       // Fetch updated user data
       await fetchUser()
-      
+
       setIsEditingUsername(false)
       toast({
         title: 'Suksess',
-        description: 'Brukernavn oppdatert'
+        description: 'Brukernavn oppdatert',
       })
 
       // Force a hard refresh of the page to ensure all data is updated
@@ -195,7 +203,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       toast({
         title: 'Feil',
         description: 'Kunne ikke oppdatere brukernavn. Vennligst prøv igjen.',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setIsUpdating(false)
@@ -203,14 +211,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
   }
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mb-4" />
-          <div className="h-4 w-32 bg-muted rounded" />
-        </div>
-      </div>
-    )
+    return <ProfileSkeleton />
   }
 
   return (
@@ -218,10 +219,13 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="relative mb-8 rounded-lg border bg-card p-6"
       >
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold">{profile?.username || 'Profil'}</h1>
+        <BorderBeam size={350} duration={12} delay={9} />
+        <div className="mb-2 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">
+            {profile?.username || 'Profil'}
+          </h1>
           {!isEditingUsername ? (
             <Button
               variant="outline"
@@ -229,8 +233,10 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                 setNewUsername(profile?.username || '')
                 setIsEditingUsername(true)
               }}
+              className="relative overflow-hidden"
             >
-              Endre Brukernavn
+              <span className="relative z-10">Endre Brukernavn</span>
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
             </Button>
           ) : (
             <div className="flex items-center gap-2">
@@ -241,10 +247,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                 className="w-48"
                 disabled={isUpdating}
               />
-              <Button
-                onClick={handleUpdateUsername}
-                disabled={isUpdating}
-              >
+              <Button onClick={handleUpdateUsername} disabled={isUpdating}>
                 {isUpdating ? 'Lagrer...' : 'Lagre'}
               </Button>
               <Button
@@ -261,11 +264,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       </motion.div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-3">
-        <StatsCard
-          title="Totale Poeng"
-          value={stats.totalPoints}
-          trend={10}
-        />
+        <StatsCard title="Totale Poeng" value={stats.totalPoints} trend={10} />
         <StatsCard
           title="Riktige Tips"
           value={stats.correctPicks}
@@ -310,41 +309,61 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                     </div>
                     <div className="mt-1 text-sm text-muted-foreground">
                       Tippet: {pick.predicted_winner}
-                      {pick.predicted_team1_maps !== null && pick.predicted_team2_maps !== null && (
-                        <span className="ml-2">
-                          ({pick.predicted_team1_maps}-{pick.predicted_team2_maps})
-                        </span>
-                      )}
-                    </div>
-                    {pick.match.team1_map_score !== null && pick.match.team2_map_score !== null && (
-                      <div className="mt-1 text-sm">
-                        Resultat: {pick.match.team1_map_score}-{pick.match.team2_map_score}
-                        {pick.map_score_correct && (
-                          <span className="ml-2 text-green-500">(+2 poeng)</span>
+                      {pick.predicted_team1_maps !== null &&
+                        pick.predicted_team2_maps !== null && (
+                          <span className="ml-2">
+                            ({pick.predicted_team1_maps}-
+                            {pick.predicted_team2_maps})
+                          </span>
                         )}
-                      </div>
-                    )}
+                    </div>
+                    {pick.match.team1_map_score !== null &&
+                      pick.match.team2_map_score !== null && (
+                        <div className="mt-1 text-sm">
+                          Resultat: {pick.match.team1_map_score}-
+                          {pick.match.team2_map_score}
+                          {pick.map_score_correct && (
+                            <span className="ml-2 text-green-500">
+                              (+2 poeng)
+                            </span>
+                          )}
+                        </div>
+                      )}
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <div className={`rounded-full px-3 py-1 text-sm ${
-                      pick.is_correct === null 
-                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        : pick.is_correct 
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {pick.is_correct === null 
-                        ? 'Venter på kamp' 
-                        : pick.is_correct 
-                          ? 'Riktig' 
-                          : 'Feil'}
+                    <div
+                      className={`rounded-full px-3 py-1 text-sm ${
+                        pick.is_correct === null
+                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : pick.is_correct
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}
+                    >
+                      {pick.is_correct === null ? (
+                        'Venter på kamp'
+                      ) : pick.is_correct ? (
+                        <SparklesText
+                          sparklesCount={3}
+                          colors={{
+                            first: 'rgb(34 197 94)', // green-500
+                            second: 'rgb(74 222 128)', // green-400
+                          }}
+                        >
+                          Riktig
+                        </SparklesText>
+                      ) : (
+                        'Feil'
+                      )}
                     </div>
                     {pick.map_score_correct !== null && (
-                      <div className={`text-sm ${
-                        pick.map_score_correct
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
+                      <div
+                        className={`text-sm ${
+                          pick.map_score_correct
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}
+                      >
                         {pick.map_score_correct ? 'Riktig score' : 'Feil score'}
                       </div>
                     )}
@@ -357,11 +376,11 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
             ))
           ) : (
             <div className="rounded-lg border border-dashed p-8 text-center">
-              <p className="text-muted-foreground mb-4">Ingen tips er lagt inn ennå</p>
+              <p className="mb-4 text-muted-foreground">
+                Ingen tips er lagt inn ennå
+              </p>
               <Link href="/matches">
-                <Button>
-                  Legg Inn Ditt Første Tips
-                </Button>
+                <Button>Legg Inn Ditt Første Tips</Button>
               </Link>
             </div>
           )}
@@ -369,4 +388,4 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       </motion.div>
     </div>
   )
-} 
+}

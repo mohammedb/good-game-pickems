@@ -13,6 +13,8 @@ import Image from 'next/image'
 import { Trash2, Lock, Twitch, CheckCircle2, Timer } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
+import { BorderBeam } from '@/components/magicui/border-beam'
+import { SparklesText } from '@/components/magicui/sparkles-text'
 import {
   Select,
   SelectContent,
@@ -423,8 +425,11 @@ export default function MatchList({
                   return (
                     <Card
                       key={match.id}
-                      className="p-6 transition-shadow hover:shadow-md"
+                      className="relative p-6 transition-shadow hover:shadow-md"
                     >
+                      {!match.is_finished && !isLocked && (
+                        <BorderBeam size={250} duration={12} delay={9} />
+                      )}
                       <div className="space-y-6">
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center justify-between">

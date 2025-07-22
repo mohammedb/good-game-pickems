@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/tailwind'
+import { NumberTicker } from '@/components/magicui/number-ticker'
 
 interface StatsCardProps {
   title: string
@@ -19,7 +20,7 @@ export function StatsCard({
   total,
   trend,
   className,
-  children
+  children,
 }: StatsCardProps) {
   const percentage = total ? (value / total) * 100 : null
 
@@ -30,13 +31,15 @@ export function StatsCard({
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className={cn(
         'relative overflow-hidden rounded-lg border bg-card p-6 shadow-sm',
-        className
+        className,
       )}
     >
       <div className="flex justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <h2 className="mt-2 text-3xl font-bold">{value}</h2>
+          <h2 className="mt-2 text-3xl font-bold">
+            <NumberTicker value={value} />
+          </h2>
           {total && (
             <p className="mt-1 text-sm text-muted-foreground">
               out of {total} ({Math.round(percentage!)}%)
@@ -52,7 +55,7 @@ export function StatsCard({
               'flex items-center rounded-full px-2 py-1',
               trend >= 0
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
             )}
           >
             <svg
@@ -68,9 +71,7 @@ export function StatsCard({
                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
               />
             </svg>
-            <span className="ml-1 text-sm font-medium">
-              {Math.abs(trend)}%
-            </span>
+            <span className="ml-1 text-sm font-medium">{Math.abs(trend)}%</span>
           </motion.div>
         )}
       </div>
@@ -85,7 +86,7 @@ export function StatsCard({
                 type: 'spring',
                 stiffness: 100,
                 damping: 20,
-                delay: 0.1
+                delay: 0.1,
               }}
             />
           </div>
@@ -103,4 +104,4 @@ export function StatsCard({
       )}
     </motion.div>
   )
-} 
+}

@@ -4,6 +4,7 @@ import * as React from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/tailwind'
 import { Trophy, Target, Sparkles, Medal, Crown } from 'lucide-react'
+import { NumberTicker } from '@/components/magicui/number-ticker'
 
 interface Achievement {
   id: string
@@ -33,14 +34,15 @@ const iconMap = {
   target: Target,
   sparkles: Sparkles,
   medal: Medal,
-  crown: Crown
+  crown: Crown,
 }
 
 const rarityColors = {
   common: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100',
   rare: 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100',
   epic: 'bg-purple-100 text-purple-900 dark:bg-purple-900 dark:text-purple-100',
-  legendary: 'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100'
+  legendary:
+    'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100',
 }
 
 export function StatsSection({ stats, className }: StatsSectionProps) {
@@ -64,7 +66,7 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <div className="text-2xl font-bold">
-              {accuracy.toFixed(1)}%
+              <NumberTicker value={parseFloat(accuracy.toFixed(1))} />%
             </div>
             <div className="text-sm text-muted-foreground">
               ({stats.correctPredictions}/{stats.totalPredictions})
@@ -88,7 +90,9 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
             Current Win Streak
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-2xl font-bold">{stats.winStreak}</div>
+            <div className="text-2xl font-bold">
+              <NumberTicker value={stats.winStreak} />
+            </div>
             <div className="text-sm text-muted-foreground">predictions</div>
           </div>
           <div className="mt-2 text-sm text-muted-foreground">
@@ -106,7 +110,9 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
             Leaderboard Rank
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-2xl font-bold">#{stats.rank}</div>
+            <div className="text-2xl font-bold">
+              #<NumberTicker value={stats.rank} />
+            </div>
             <div className="text-sm text-muted-foreground">
               of {stats.totalParticipants}
             </div>
@@ -114,7 +120,9 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
           <div className="mt-2 h-2 w-full rounded-full bg-accent">
             <div
               className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${(1 - (stats.rank / stats.totalParticipants)) * 100}%` }}
+              style={{
+                width: `${(1 - stats.rank / stats.totalParticipants) * 100}%`,
+              }}
             />
           </div>
         </motion.div>
@@ -129,8 +137,12 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
             Total Predictions
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <div className="text-2xl font-bold">{stats.totalPredictions}</div>
-            <div className="text-sm text-muted-foreground">matches predicted</div>
+            <div className="text-2xl font-bold">
+              <NumberTicker value={stats.totalPredictions} />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              matches predicted
+            </div>
           </div>
           <div className="mt-2 text-sm text-muted-foreground">
             Keep predicting to earn more achievements!
@@ -154,12 +166,12 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
                   delay: index * 0.1,
                   type: 'spring',
                   stiffness: 300,
-                  damping: 20
+                  damping: 20,
                 }}
                 whileHover={{ scale: 1.02 }}
                 className={cn(
                   'relative overflow-hidden rounded-lg border p-4 shadow-sm transition-colors',
-                  rarityColors[achievement.rarity]
+                  rarityColors[achievement.rarity],
                 )}
               >
                 <div className="flex items-start justify-between">
@@ -181,7 +193,7 @@ export function StatsSection({ stats, className }: StatsSectionProps) {
                     <div
                       className={cn(
                         'h-full rounded-full bg-current transition-all',
-                        achievement.progress === 100 && 'animate-pulse'
+                        achievement.progress === 100 && 'animate-pulse',
                       )}
                       style={{ width: `${achievement.progress}%` }}
                     />

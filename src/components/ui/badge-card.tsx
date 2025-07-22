@@ -4,13 +4,14 @@ import * as React from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/tailwind'
 import { Trophy, Medal, Star, Award, Crown } from 'lucide-react'
+import { SparklesText } from '@/components/magicui/sparkles-text'
 
 const badgeIcons = {
   trophy: Trophy,
   medal: Medal,
   star: Star,
   award: Award,
-  crown: Crown
+  crown: Crown,
 }
 
 interface BadgeCardProps {
@@ -30,15 +31,18 @@ export function BadgeCard({
   variant = 'bronze',
   isLocked = false,
   progress,
-  className
+  className,
 }: BadgeCardProps) {
   const Icon = badgeIcons[icon]
-  
+
   const variants = {
-    bronze: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    silver: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400',
+    bronze:
+      'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    silver:
+      'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400',
     gold: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    platinum: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400'
+    platinum:
+      'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
   }
 
   return (
@@ -48,23 +52,55 @@ export function BadgeCard({
       className={cn(
         'relative overflow-hidden rounded-lg border p-4',
         isLocked ? 'opacity-50 grayscale' : variants[variant],
-        className
+        className,
       )}
     >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 260,
-          damping: 20
-        }}
-        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 dark:bg-black/90"
-      >
-        <Icon className="h-6 w-6" />
-      </motion.div>
-      <h3 className="mb-1 font-semibold">{title}</h3>
-      <p className="text-sm opacity-90">{description}</p>
+      <div className="flex items-start space-x-3">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 260,
+            damping: 20,
+          }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/90 dark:bg-black/90"
+        >
+          <Icon className="h-6 w-6" />
+        </motion.div>
+        <div className="min-w-0 flex-1">
+          <h3 className="mb-1 font-semibold">
+            {!isLocked && progress === 100 ? (
+              <SparklesText
+                sparklesCount={4}
+                colors={{
+                  first:
+                    variant === 'gold'
+                      ? 'rgb(250 204 21)' // yellow-400
+                      : variant === 'silver'
+                        ? 'rgb(148 163 184)' // slate-400
+                        : variant === 'bronze'
+                          ? 'rgb(251 146 60)' // orange-400
+                          : 'rgb(6 182 212)', // cyan-500
+                  second:
+                    variant === 'gold'
+                      ? 'rgb(254 240 138)' // yellow-200
+                      : variant === 'silver'
+                        ? 'rgb(203 213 225)' // slate-300
+                        : variant === 'bronze'
+                          ? 'rgb(254 215 170)' // orange-200
+                          : 'rgb(103 232 249)', // cyan-300
+                }}
+              >
+                {title}
+              </SparklesText>
+            ) : (
+              title
+            )}
+          </h3>
+          <p className="text-sm opacity-90">{description}</p>
+        </div>
+      </div>
       {progress !== undefined && (
         <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
           <motion.div
@@ -97,4 +133,4 @@ export function BadgeCard({
       )}
     </motion.div>
   )
-} 
+}
