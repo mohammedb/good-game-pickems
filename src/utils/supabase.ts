@@ -43,6 +43,21 @@ export const createServerClient = (cookieStore: ReturnType<typeof cookies>) =>
     },
   )
 
+export const createServiceRoleClient = () =>
+  serverClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get() {
+          return ''
+        },
+        set() {},
+        remove() {},
+      },
+    },
+  )
+
 export const createMiddlewareClient = (request: NextRequest) => {
   // Create an unmodified response
   let response = NextResponse.next({ request: { headers: request.headers } })

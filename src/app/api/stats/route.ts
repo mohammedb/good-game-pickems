@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/utils/supabase'
-import { cookies } from 'next/headers'
+import { createServiceRoleClient } from '@/utils/supabase'
 
 export async function GET() {
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = createServiceRoleClient()
 
     // Initialize response object
     const stats = {
@@ -14,11 +13,12 @@ export async function GET() {
       upcomingMatches: 0,
     }
 
-    // Try to get total matches first (simpler query)
+    // Try to get upcoming matches (matches not yet started)
     try {
       const { count: matchCount } = await supabase
         .from('matches')
         .select('*', { count: 'exact', head: true })
+        .gt('start_time', new Date().toISOString())
 
       if (matchCount !== null) {
         stats.upcomingMatches = matchCount
