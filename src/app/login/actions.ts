@@ -13,7 +13,7 @@ export async function login(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
-    password
+    password,
   })
 
   if (error) {
@@ -34,4 +34,4 @@ export async function signOut() {
   }
 
   return { success: true }
-} 
+}

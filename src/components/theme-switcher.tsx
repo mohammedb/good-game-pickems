@@ -3,7 +3,11 @@
 import * as React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Moon, Sun, Laptop, EyeOff } from 'lucide-react'
-import { useThemeStore, type ThemeMode, type ThemeStyle } from '@/stores/theme-store'
+import {
+  useThemeStore,
+  type ThemeMode,
+  type ThemeStyle,
+} from '@/stores/theme-store'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,18 +17,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 
-const themeModes: { value: ThemeMode; label: string; icon: typeof Sun; description: string }[] = [
-  { value: 'light', label: 'Light', icon: Sun, description: 'Light mode for daytime use' },
-  { value: 'dark', label: 'Dark', icon: Moon, description: 'Dark mode for low-light conditions' },
-  { value: 'system', label: 'System', icon: Laptop, description: 'Follows your system preferences' }
+const themeModes: {
+  value: ThemeMode
+  label: string
+  icon: typeof Sun
+  description: string
+}[] = [
+  {
+    value: 'light',
+    label: 'Light',
+    icon: Sun,
+    description: 'Light mode for daytime use',
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    icon: Moon,
+    description: 'Dark mode for low-light conditions',
+  },
+  {
+    value: 'system',
+    label: 'System',
+    icon: Laptop,
+    description: 'Follows your system preferences',
+  },
 ]
 
-const themeStyles: { value: ThemeStyle; label: string; icon: typeof Sun; description: string }[] = [
-  { value: 'default', label: 'Default', icon: Sun, description: 'Standard interface style' },
-  { value: 'high-contrast', label: 'High Contrast', icon: EyeOff, description: 'Maximum readability' }
+const themeStyles: {
+  value: ThemeStyle
+  label: string
+  icon: typeof Sun
+  description: string
+}[] = [
+  {
+    value: 'default',
+    label: 'Default',
+    icon: Sun,
+    description: 'Standard interface style',
+  },
+  {
+    value: 'high-contrast',
+    label: 'High Contrast',
+    icon: EyeOff,
+    description: 'Maximum readability',
+  },
 ]
 
 export function ThemeSwitcher() {
@@ -33,7 +72,7 @@ export function ThemeSwitcher() {
 
   const Icon = React.useMemo(
     () => themeModes.find((t) => t.value === mode)?.icon || Sun,
-    [mode]
+    [mode],
   )
 
   return (
@@ -61,9 +100,14 @@ export function ThemeSwitcher() {
       <DropdownMenuContent align="end" className="w-[240px]">
         <DropdownMenuLabel>Appearance</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Mode</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={mode} onValueChange={(value) => setMode(value as ThemeMode)}>
+
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
+          Mode
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={mode}
+          onValueChange={(value) => setMode(value as ThemeMode)}
+        >
           {themeModes.map(({ value, label, icon: Icon, description }) => (
             <DropdownMenuRadioItem
               key={value}
@@ -73,16 +117,23 @@ export function ThemeSwitcher() {
               <Icon className="mr-2 h-4 w-4" />
               <div className="flex flex-col">
                 <span>{label}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
+                <span className="text-xs text-muted-foreground">
+                  {description}
+                </span>
               </div>
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
 
         <DropdownMenuSeparator />
-        
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Style</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={style} onValueChange={(value) => setStyle(value as ThemeStyle)}>
+
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
+          Style
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={style}
+          onValueChange={(value) => setStyle(value as ThemeStyle)}
+        >
           {themeStyles.map(({ value, label, icon: Icon, description }) => (
             <DropdownMenuRadioItem
               key={value}
@@ -92,7 +143,9 @@ export function ThemeSwitcher() {
               <Icon className="mr-2 h-4 w-4" />
               <div className="flex flex-col">
                 <span>{label}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
+                <span className="text-xs text-muted-foreground">
+                  {description}
+                </span>
               </div>
             </DropdownMenuRadioItem>
           ))}
@@ -100,4 +153,4 @@ export function ThemeSwitcher() {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-} 
+}

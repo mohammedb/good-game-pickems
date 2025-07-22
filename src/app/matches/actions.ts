@@ -18,7 +18,7 @@ export async function submitPrediction(
   predictedWinner: string,
   userId: string,
   team1Maps?: number,
-  team2Maps?: number
+  team2Maps?: number,
 ) {
   try {
     const cookieStore = cookies()
@@ -40,7 +40,7 @@ export async function submitPrediction(
           predicted_winner: predictedWinner,
           predicted_team1_maps: team1Maps,
           predicted_team2_maps: team2Maps,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', existingPick.id)
 
@@ -50,15 +50,13 @@ export async function submitPrediction(
       }
     } else {
       // Insert new prediction
-      const { error } = await supabase
-        .from('picks')
-        .insert({
-          match_id: matchId,
-          user_id: userId,
-          predicted_winner: predictedWinner,
-          predicted_team1_maps: team1Maps,
-          predicted_team2_maps: team2Maps
-        })
+      const { error } = await supabase.from('picks').insert({
+        match_id: matchId,
+        user_id: userId,
+        predicted_winner: predictedWinner,
+        predicted_team1_maps: team1Maps,
+        predicted_team2_maps: team2Maps,
+      })
 
       if (error) {
         console.error('Error saving prediction:', error)
@@ -81,14 +79,16 @@ export async function removeUnlockedPredictions(userId: string) {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
     const now = new Date()
-    const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000))
-    
+    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+
     // Call the database function to remove unlocked picks
-    const { data: deletedPicks, error } = await supabase
-      .rpc('remove_unlocked_picks', {
+    const { data: deletedPicks, error } = await supabase.rpc(
+      'remove_unlocked_picks',
+      {
         user_id_param: userId,
-        cutoff_time: twoHoursFromNow.toISOString()
-      })
+        cutoff_time: twoHoursFromNow.toISOString(),
+      },
+    )
 
     if (error) {
       console.error('Error removing predictions:', error)
@@ -100,14 +100,14 @@ export async function removeUnlockedPredictions(userId: string) {
     // Revalidate both matches and profile pages
     revalidatePath('/matches')
     revalidatePath('/profile')
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       message: `Fjernet ${deletedPicks?.length || 0} ulåste tips`,
-      deletedPicks 
+      deletedPicks,
     }
   } catch (error) {
     console.error('Error in removeUnlockedPredictions:', error)
     return { error: 'En uventet feil oppstod' }
   }
-} 
+}

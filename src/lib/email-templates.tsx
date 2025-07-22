@@ -1,6 +1,5 @@
 import { type ReactNode } from 'react'
 import { render } from '@react-email/render'
-import Image from 'next/image'
 
 interface BaseTemplateProps {
   children: ReactNode
@@ -60,11 +59,11 @@ function BaseTemplate({ children, previewText }: BaseTemplateProps) {
                         marginBottom: '30px',
                       }}
                     >
-                      <Image
-                        src="/images/logo.png"
+                      <img
+                        src="https://www.ggwp.no/images/logo.png"
                         alt="GGWP.no"
-                        width={150}
-                        height={50}
+                        width="150"
+                        height="50"
                         style={{
                           height: 'auto',
                           marginBottom: '20px',

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatsCard } from '@/components/ui/stats-card'
-import { BadgeCard } from '@/components/ui/badge-card'
+import { AchievementCard } from '@/components/profile/achievement-card'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast'
 import Link from 'next/link'
@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { BorderBeam } from '@/components/magicui/border-beam'
 import { ProfileSkeleton } from '@/components/profile/profile-skeleton'
 import { SparklesText } from '@/components/magicui/sparkles-text'
+import { Trophy, Target, Sparkles, Medal, Crown } from 'lucide-react'
 
 interface Match {
   team1: string
@@ -38,51 +39,46 @@ interface Pick {
   match: Match
 }
 
+interface Achievement {
+  id: string
+  name: string
+  title: string
+  description: string
+  icon: 'trophy' | 'target' | 'sparkles' | 'medal' | 'crown'
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  points: number
+  unlocked: boolean
+  unlockedAt?: string
+  progress: number
+}
+
 interface ProfileStats {
   totalPicks: number
   correctPicks: number
   totalPoints: number
   mapScorePoints: number
   recentPicks: Pick[]
+  achievements: Achievement[]
+  userStats: {
+    totalPredictions: number
+    correctPredictions: number
+    currentStreak: number
+    longestStreak: number
+    totalPoints: number
+    mapScorePoints: number
+  } | null
 }
 
 interface ProfileContentProps {
   stats: ProfileStats
 }
 
-const getAchievements = (stats: ProfileStats) => {
-  const achievements = [
-    {
-      title: 'Første Tips',
-      description: 'La inn ditt første tips',
-      icon: 'star' as const,
-      variant: 'bronze' as const,
-      isLocked: stats.totalPicks === 0,
-      progress: stats.totalPicks > 0 ? 100 : 0,
-    },
-    {
-      title: 'Perfekt Rekke',
-      description: 'Få 5 riktige tips på rad',
-      icon: 'medal' as const,
-      variant: 'silver' as const,
-      isLocked: stats.correctPicks < 5,
-      progress: (stats.correctPicks / 5) * 100,
-    },
-    {
-      title: 'Tipsemester',
-      description: 'Oppnå 80% treffsikkerhet med 20+ tips',
-      icon: 'trophy' as const,
-      variant: 'gold' as const,
-      isLocked:
-        stats.totalPicks < 20 || stats.correctPicks / stats.totalPicks < 0.8,
-      progress:
-        stats.totalPicks >= 20
-          ? (stats.correctPicks / stats.totalPicks) * 100
-          : (stats.totalPicks / 20) * 100,
-    },
-  ]
-
-  return achievements
+const iconMap = {
+  trophy: Trophy,
+  target: Target,
+  sparkles: Sparkles,
+  medal: Medal,
+  crown: Crown,
 }
 
 export default function ProfileContent({ stats }: ProfileContentProps) {
@@ -90,9 +86,11 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
   const [isEditingUsername, setIsEditingUsername] = useState(false)
   const [newUsername, setNewUsername] = useState(profile?.username || '')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [achievementFilter, setAchievementFilter] = useState<
+    'all' | 'unlocked' | 'progress'
+  >('all')
   const { toast } = useToast()
   const supabase = createBrowserClient()
-  const achievements = getAchievements(stats)
   const router = useRouter()
 
   useEffect(() => {
@@ -277,6 +275,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
         />
       </div>
 
+      {/* Achievement Summary Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -284,11 +283,203 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
         className="mb-8"
       >
         <h2 className="mb-4 text-xl font-semibold">Prestasjoner</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {achievements.map((achievement) => (
-            <BadgeCard key={achievement.title} {...achievement} />
-          ))}
+
+        {/* Achievement Progress Overview */}
+        <div className="mb-6 grid gap-4 md:grid-cols-4">
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 dark:border-amber-800 dark:from-amber-950/20 dark:to-amber-900/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Legendarisk
+                </p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                  {
+                    stats.achievements.filter(
+                      (a) => a.rarity === 'legendary' && a.unlocked,
+                    ).length
+                  }
+                  /
+                  {
+                    stats.achievements.filter((a) => a.rarity === 'legendary')
+                      .length
+                  }
+                </p>
+              </div>
+              <Crown className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+          </Card>
+
+          <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  Episk
+                </p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                  {
+                    stats.achievements.filter(
+                      (a) => a.rarity === 'epic' && a.unlocked,
+                    ).length
+                  }
+                  /
+                  {stats.achievements.filter((a) => a.rarity === 'epic').length}
+                </p>
+              </div>
+              <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+            </div>
+          </Card>
+
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 dark:border-blue-800 dark:from-blue-950/20 dark:to-blue-900/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Sjelden
+                </p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  {
+                    stats.achievements.filter(
+                      (a) => a.rarity === 'rare' && a.unlocked,
+                    ).length
+                  }
+                  /
+                  {stats.achievements.filter((a) => a.rarity === 'rare').length}
+                </p>
+              </div>
+              <Medal className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            </div>
+          </Card>
+
+          <Card className="border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 dark:border-gray-800 dark:from-gray-950/20 dark:to-gray-900/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Total Poeng
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {stats.achievements
+                    .filter((a) => a.unlocked)
+                    .reduce((sum, a) => sum + a.points, 0)}
+                </p>
+              </div>
+              <Trophy className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+            </div>
+          </Card>
         </div>
+
+        {/* Recently Unlocked Achievements */}
+        {stats.achievements.filter((a) => a.unlocked).length > 0 && (
+          <Card className="mb-6 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
+            <h3 className="mb-4 text-lg font-semibold text-green-900 dark:text-green-100">
+              🎉 Sist Opplåst
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {stats.achievements
+                .filter((a) => a.unlocked)
+                .sort(
+                  (a, b) =>
+                    new Date(b.unlockedAt!).getTime() -
+                    new Date(a.unlockedAt!).getTime(),
+                )
+                .slice(0, 3)
+                .map((achievement) => {
+                  const Icon = iconMap[achievement.icon]
+                  return (
+                    <motion.div
+                      key={achievement.id}
+                      whileHover={{ scale: 1.05 }}
+                      className={`flex items-center gap-2 rounded-full px-4 py-2 ${
+                        achievement.rarity === 'legendary'
+                          ? 'bg-amber-200 dark:bg-amber-800'
+                          : achievement.rarity === 'epic'
+                            ? 'bg-purple-200 dark:bg-purple-800'
+                            : achievement.rarity === 'rare'
+                              ? 'bg-blue-200 dark:bg-blue-800'
+                              : 'bg-gray-200 dark:bg-gray-800'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        {achievement.title}
+                      </span>
+                      <span className="text-xs opacity-75">
+                        +{achievement.points}p
+                      </span>
+                    </motion.div>
+                  )
+                })}
+            </div>
+          </Card>
+        )}
+
+        {/* Achievement Tabs */}
+        <div className="mb-6 flex gap-2">
+          <Button
+            variant={achievementFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setAchievementFilter('all')}
+          >
+            Alle ({stats.achievements.length})
+          </Button>
+          <Button
+            variant={achievementFilter === 'unlocked' ? 'default' : 'outline'}
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setAchievementFilter('unlocked')}
+          >
+            Opplåst ({stats.achievements.filter((a) => a.unlocked).length})
+          </Button>
+          <Button
+            variant={achievementFilter === 'progress' ? 'default' : 'outline'}
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setAchievementFilter('progress')}
+          >
+            I Progresjon (
+            {
+              stats.achievements.filter((a) => !a.unlocked && a.progress > 0)
+                .length
+            }
+            )
+          </Button>
+        </div>
+
+        {/* Achievement Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {stats.achievements
+            .filter((achievement) => {
+              if (achievementFilter === 'unlocked') return achievement.unlocked
+              if (achievementFilter === 'progress')
+                return !achievement.unlocked && achievement.progress > 0
+              return true
+            })
+            .sort((a, b) => {
+              // Sort by: unlocked first, then by rarity (legendary first), then by progress
+              if (a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1
+              const rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 }
+              if (a.rarity !== b.rarity)
+                return rarityOrder[a.rarity] - rarityOrder[b.rarity]
+              return b.progress - a.progress
+            })
+            .map((achievement, index) => (
+              <motion.div
+                key={achievement.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <AchievementCard {...achievement} />
+              </motion.div>
+            ))}
+        </div>
+
+        {stats.achievements.length === 0 && (
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <p className="text-muted-foreground">
+              Ingen prestasjoner tilgjengelig ennå
+            </p>
+          </div>
+        )}
       </motion.div>
 
       <motion.div

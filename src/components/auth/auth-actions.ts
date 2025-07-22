@@ -6,7 +6,7 @@ import { createServerClient } from '@/utils/supabase'
 export async function signOut() {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
-  
+
   const { error } = await supabase.auth.signOut()
 
   if (error) {
@@ -14,4 +14,4 @@ export async function signOut() {
   }
 
   return { success: true }
-} 
+}

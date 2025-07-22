@@ -9,6 +9,7 @@ Good Game Pickems - A competitive prediction platform for CS2 matches in the Goo
 ## Essential Commands
 
 ### Development
+
 ```bash
 pnpm dev          # Start development server (http://localhost:3000)
 pnpm build        # Build production bundle
@@ -16,6 +17,7 @@ pnpm start        # Start production server
 ```
 
 ### Code Quality
+
 ```bash
 pnpm lint         # Run ESLint
 pnpm format       # Format code with Prettier
@@ -25,6 +27,7 @@ pnpm test:ci      # Run tests in CI mode
 ```
 
 ### Single Test Execution
+
 ```bash
 pnpm test path/to/test.test.ts              # Run specific test file
 pnpm test --testNamePattern="test name"     # Run tests matching pattern
@@ -34,6 +37,7 @@ pnpm test --watch                           # Run tests in watch mode
 ## Architecture Overview
 
 ### Tech Stack
+
 - **Frontend**: Next.js 14 (App Router) + React 18 + TypeScript
 - **Database**: Supabase (PostgreSQL with RLS)
 - **Styling**: TailwindCSS + shadcn/ui components + MagicUI animations
@@ -55,7 +59,7 @@ pnpm test --watch                           # Run tests in watch mode
 
 4. **Points Calculation Flow**:
    ```
-   User makes pick → Match completes → sync_match_results() → 
+   User makes pick → Match completes → sync_match_results() →
    calculate_pick_points() → update_user_total_points()
    ```
 
@@ -106,8 +110,9 @@ src/
    - Use `use client` directive sparingly
 
 3. **API Routes**: Return consistent error responses:
+
    ```typescript
-   return NextResponse.json({ error: "Description" }, { status: 400 })
+   return NextResponse.json({ error: 'Description' }, { status: 400 })
    ```
 
 4. **Database Migrations**:
@@ -123,18 +128,21 @@ src/
 ### Common Tasks
 
 **Adding a new match field**:
+
 1. Update database schema in migrations
 2. Modify `goodgame.ts` API types
 3. Update sync logic in API route
 4. Add UI components as needed
 
 **Modifying points calculation**:
+
 1. Update `calculate_pick_points` SQL function
 2. Test with various scenarios
 3. Consider impact on historical data
 4. Update leaderboard function if needed
 
 **Adding new user features**:
+
 1. Check/update RLS policies
 2. Add database fields via migration
 3. Update TypeScript types
@@ -143,12 +151,14 @@ src/
 ### MagicUI Components
 
 The project includes MagicUI animated components:
+
 - **BorderBeam**: Animated border effect for highlighting active/upcoming matches
 - **NumberTicker**: Smooth number animations for statistics
 - **SparklesText**: Text with sparkle effects for achievements
 - **ShimmerButton**: Button with shimmer loading effect
 
 To add new MagicUI components:
+
 ```bash
 npx shadcn@latest add "https://magicui.design/r/[component-name]" -y
 ```

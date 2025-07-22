@@ -17,10 +17,10 @@ export const useThemeStore = create<ThemeState>()(
       mode: 'system',
       style: 'default',
       setMode: (mode) => set({ mode }),
-      setStyle: (style) => set({ style })
+      setStyle: (style) => set({ style }),
     }),
     {
-      name: 'theme-store'
-    }
-  )
-) 
+      name: 'theme-store',
+    },
+  ),
+)

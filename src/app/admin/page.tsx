@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Card,
@@ -15,12 +15,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Check, X, Loader2, RefreshCw, Calculator } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Separator } from '@/components/ui/separator'
-import { StatsCard } from '@/components/ui/stats-card'
+import { MagicStatsCard } from '@/components/admin/magic-stats-card'
 import { ActivityCharts } from '@/components/admin/activity-charts'
-import { ActionButton } from '@/components/admin/action-button'
+import { MagicActionButton } from '@/components/admin/magic-action-button'
+import { Users, TrendingUp, Clock, RefreshCcw } from 'lucide-react'
 import { FilterBar, FilterOptions } from '@/components/admin/filter-bar'
-import { ActivityLog } from '@/components/admin/activity-log'
+import { MagicActivityLog } from '@/components/admin/magic-activity-log'
 import { RateLimitMonitor } from '@/components/admin/rate-limit-monitor'
+import { SyncProgressIndicator } from '@/components/admin/sync-progress-indicator'
+import { MagicRecentActivity } from '@/components/admin/magic-recent-activity'
+import { AnimatedGridPattern } from '@/components/magicui/animated-grid-pattern'
+import { Confetti } from '@/components/ui/confetti'
+import { SyncScheduleCard } from '@/components/admin/sync-schedule-card'
+import { cn } from '@/lib/utils'
+
+// Lazy load heavy components
+const SystemStatus = React.lazy(() =>
+  import('@/components/admin/system-status').then((mod) => ({
+    default: mod.SystemStatus,
+  })),
+)
 
 interface AdminStats {
   totalUsers: number
@@ -70,6 +84,11 @@ export default function AdminPage() {
   const [syncError, setSyncError] = useState(false)
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState(false)
+  const [syncProgress, setSyncProgress] = useState(0)
+  const [syncStatus, setSyncStatus] = useState<
+    'idle' | 'syncing' | 'success' | 'error'
+  >('idle')
+  const [syncMessage, setSyncMessage] = useState<string | undefined>()
   const [recentPicks, setRecentPicks] = useState<Pick[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -211,10 +230,20 @@ export default function AdminPage() {
   }
 
   const handleSync = async () => {
+    let progressInterval: NodeJS.Timeout | undefined
+
     try {
       setIsSyncing(true)
       setSyncSuccess(false)
       setSyncError(false)
+      setSyncStatus('syncing')
+      setSyncProgress(0)
+      setSyncMessage('Initializing sync...')
+
+      // Simulate progress updates
+      progressInterval = setInterval(() => {
+        setSyncProgress((prev) => Math.min(prev + 10, 90))
+      }, 200)
 
       const response = await fetch('/api/admin/sync', {
         method: 'POST',
@@ -236,6 +265,10 @@ export default function AdminPage() {
         description: `Synced ${result.synced_matches} matches`,
       })
 
+      clearInterval(progressInterval)
+      setSyncProgress(100)
+      setSyncStatus('success')
+      setSyncMessage(`Synced ${result.synced_matches} matches successfully!`)
       setSyncSuccess(true)
 
       // Refresh the page data with animation
@@ -246,8 +279,17 @@ export default function AdminPage() {
 
       // Add sync event to activity log
       await fetchActivityLogs()
+
+      // Reset status after delay
+      setTimeout(() => {
+        setSyncStatus('idle')
+        setSyncMessage(undefined)
+      }, 3000)
     } catch (err) {
       console.error('Error syncing:', err)
+      if (progressInterval) clearInterval(progressInterval)
+      setSyncStatus('error')
+      setSyncMessage('Sync failed!')
       setSyncError(true)
       toast({
         title: 'Error',
@@ -255,6 +297,12 @@ export default function AdminPage() {
           err instanceof Error ? err.message : 'Failed to sync matches',
         variant: 'destructive',
       })
+
+      // Reset status after delay
+      setTimeout(() => {
+        setSyncStatus('idle')
+        setSyncMessage(undefined)
+      }, 3000)
     } finally {
       setIsSyncing(false)
     }
@@ -362,176 +410,172 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-8 p-4">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Monitor and manage your platform&apos;s performance
-        </p>
-      </div>
+    <div className="relative min-h-screen">
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.1}
+        duration={3}
+        repeatDelay={1}
+        className={cn(
+          '[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]',
+          'inset-x-0 inset-y-[-30%] h-[200%] skew-y-12',
+          'fixed',
+        )}
+      />
+      <div className="container relative z-10 mx-auto space-y-8 p-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor and manage your platform&apos;s performance
+          </p>
+        </div>
 
-      <FilterBar onFilterChange={handleFilterChange} />
+        <FilterBar onFilterChange={handleFilterChange} />
 
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg border-l-4 border-l-destructive bg-destructive/10 p-4 text-destructive"
-        >
-          {error}
-        </motion.div>
-      )}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-lg border-l-4 border-l-destructive bg-destructive/10 p-4 text-destructive"
+          >
+            {error}
+          </motion.div>
+        )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Users"
-          value={stats?.totalUsers || 0}
-          className="hover:border-primary/50"
-        >
-          <div className="mt-2 text-sm text-muted-foreground">
-            Active users on the platform
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <MagicStatsCard
+            title="Total Users"
+            value={stats?.totalUsers || 0}
+            description="Active users on the platform"
+            icon={<Users className="h-5 w-5" />}
+            highlight={!!stats?.totalUsers && stats.totalUsers >= 1000}
+          />
+
+          <MagicStatsCard
+            title="Total Predictions"
+            value={stats?.totalPicks || 0}
+            description="Predictions made by users"
+            icon={<TrendingUp className="h-5 w-5" />}
+            trend={
+              stats?.totalPicks ? { value: 12, isPositive: true } : undefined
+            }
+          />
+
+          <MagicStatsCard
+            title="Pending Matches"
+            value={stats?.pendingMatches || 0}
+            description="Matches awaiting results"
+            icon={<Clock className="h-5 w-5" />}
+            highlight={!!stats?.pendingMatches && stats.pendingMatches > 0}
+          />
+
+          <MagicStatsCard
+            title="Last Sync"
+            value={stats?.lastSyncMatches || 0}
+            description={
+              stats?.lastSyncTime
+                ? `Last updated ${formatDistanceToNow(
+                    new Date(stats.lastSyncTime),
+                  )} ago`
+                : 'No sync data available'
+            }
+            icon={<RefreshCcw className="h-5 w-5" />}
+          />
+        </div>
+
+        <ActivityCharts data={activityData} isLoading={isLoadingActivity} />
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
+            <MagicActivityLog logs={activityLogs} isLoading={isLoadingLogs} />
+            <MagicRecentActivity picks={recentPicks} />
           </div>
-        </StatsCard>
-
-        <StatsCard
-          title="Total Predictions"
-          value={stats?.totalPicks || 0}
-          className="hover:border-primary/50"
-        >
-          <div className="mt-2 text-sm text-muted-foreground">
-            Predictions made by users
+          <div className="space-y-4">
+            <SyncScheduleCard
+              lastSyncTime={stats?.lastSyncTime}
+              lastSyncMatches={stats?.lastSyncMatches}
+            />
+            <React.Suspense
+              fallback={
+                <Card className="animate-pulse">
+                  <CardContent className="h-[400px]" />
+                </Card>
+              }
+            >
+              <SystemStatus stats={stats || undefined} />
+            </React.Suspense>
           </div>
-        </StatsCard>
+        </div>
 
-        <StatsCard
-          title="Pending Matches"
-          value={stats?.pendingMatches || 0}
-          className="hover:border-primary/50"
-        >
-          <div className="mt-2 text-sm text-muted-foreground">
-            Matches awaiting results
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Rate Limits
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Monitor API rate limits and usage
+            </p>
           </div>
-        </StatsCard>
+          <RateLimitMonitor />
+        </div>
 
-        <StatsCard
-          title="Last Sync"
-          value={stats?.lastSyncMatches || 0}
-          className="hover:border-primary/50"
-        >
-          <div className="mt-2 text-sm text-muted-foreground">
-            {stats?.lastSyncTime
-              ? `Last updated ${formatDistanceToNow(
-                  new Date(stats.lastSyncTime),
-                )} ago`
-              : 'No sync data available'}
-          </div>
-        </StatsCard>
-      </div>
-
-      <ActivityCharts data={activityData} isLoading={isLoadingActivity} />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <ActivityLog logs={activityLogs} isLoading={isLoadingLogs} />
-
-        <Card className="overflow-hidden">
+        <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest predictions made by users</CardDescription>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Manage platform data and settings</CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="space-y-1">
-              {recentPicks.map((pick) => (
-                <motion.div
-                  key={pick.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center justify-between border-b p-4 last:border-0 hover:bg-muted/50"
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Sync Matches</div>
+                  <div className="text-sm text-muted-foreground">
+                    Update match data from external sources
+                  </div>
+                </div>
+                <MagicActionButton
+                  onClick={handleSync}
+                  isLoading={isSyncing}
+                  isSuccess={syncSuccess}
+                  isError={syncError}
+                  loadingText="Syncing..."
+                  icon={<RefreshCw className="h-4 w-4" />}
                 >
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium">{pick.user.email}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {pick.match.team1} vs {pick.match.team2}
-                    </div>
+                  Sync
+                </MagicActionButton>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Update Points</div>
+                  <div className="text-sm text-muted-foreground">
+                    Recalculate user points and rankings
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(pick.created_at))} ago
-                    </div>
-                    {pick.is_correct === true && (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        <Check className="h-4 w-4" />
-                      </div>
-                    )}
-                    {pick.is_correct === false && (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                        <X className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                </div>
+                <MagicActionButton
+                  onClick={handleUpdatePoints}
+                  isLoading={isUpdatingPoints}
+                  isSuccess={updateSuccess}
+                  isError={updateError}
+                  loadingText="Updating..."
+                  icon={<Calculator className="h-4 w-4" />}
+                  variant="success"
+                >
+                  Update
+                </MagicActionButton>
+              </div>
             </div>
           </CardContent>
         </Card>
-      </div>
+        <SyncProgressIndicator
+          isActive={isSyncing}
+          progress={syncProgress}
+          status={syncStatus}
+          message={syncMessage}
+        />
 
-      <div className="grid gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold tracking-tight">Rate Limits</h2>
-          <p className="text-sm text-muted-foreground">
-            Monitor API rate limits and usage
-          </p>
-        </div>
-        <RateLimitMonitor />
+        <Confetti isActive={syncSuccess || updateSuccess} />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Manage platform data and settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Sync Matches</div>
-                <div className="text-sm text-muted-foreground">
-                  Update match data from external sources
-                </div>
-              </div>
-              <ActionButton
-                onClick={handleSync}
-                isLoading={isSyncing}
-                isSuccess={syncSuccess}
-                isError={syncError}
-                loadingText="Syncing..."
-                icon={<RefreshCw className="h-4 w-4" />}
-              >
-                Sync
-              </ActionButton>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Update Points</div>
-                <div className="text-sm text-muted-foreground">
-                  Recalculate user points and rankings
-                </div>
-              </div>
-              <ActionButton
-                onClick={handleUpdatePoints}
-                isLoading={isUpdatingPoints}
-                isSuccess={updateSuccess}
-                isError={updateError}
-                loadingText="Updating..."
-                icon={<Calculator className="h-4 w-4" />}
-              >
-                Update
-              </ActionButton>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

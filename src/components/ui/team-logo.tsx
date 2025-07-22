@@ -16,7 +16,7 @@ export function TeamLogo({
   alt,
   size = 'md',
   className,
-  interactive = false
+  interactive = false,
 }: TeamLogoProps) {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState(false)
@@ -24,7 +24,7 @@ export function TeamLogo({
   const sizeClasses = {
     sm: 'h-8 w-8',
     md: 'h-12 w-12',
-    lg: 'h-16 w-16'
+    lg: 'h-16 w-16',
   }
 
   return (
@@ -33,13 +33,17 @@ export function TeamLogo({
         'relative flex items-center justify-center rounded-full bg-accent/50',
         sizeClasses[size],
         interactive && 'cursor-pointer',
-        className
+        className,
       )}
-      whileHover={interactive ? {
-        scale: 1.05,
-        rotate: [0, -5, 5, 0],
-        transition: { duration: 0.3 }
-      } : undefined}
+      whileHover={
+        interactive
+          ? {
+              scale: 1.05,
+              rotate: [0, -5, 5, 0],
+              transition: { duration: 0.3 },
+            }
+          : undefined
+      }
       whileTap={interactive ? { scale: 0.95 } : undefined}
     >
       {isLoading && !error && (
@@ -52,24 +56,24 @@ export function TeamLogo({
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </motion.div>
       )}
-      
+
       <motion.img
         src={src}
         alt={alt}
         className={cn(
           'rounded-full object-contain',
           error ? 'hidden' : 'block',
-          isLoading ? 'opacity-0' : 'opacity-100'
+          isLoading ? 'opacity-0' : 'opacity-100',
         )}
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ 
-          opacity: isLoading ? 0 : 1, 
+        animate={{
+          opacity: isLoading ? 0 : 1,
           scale: isLoading ? 0.8 : 1,
-          rotate: interactive ? [0, 360] : 0
+          rotate: interactive ? [0, 360] : 0,
         }}
         transition={{
           duration: 0.3,
-          rotate: { duration: 0.8, ease: 'easeOut' }
+          rotate: { duration: 0.8, ease: 'easeOut' },
         }}
         onLoad={() => setIsLoading(false)}
         onError={() => {
@@ -84,9 +88,12 @@ export function TeamLogo({
           animate={{ opacity: 1 }}
           className="flex h-full w-full items-center justify-center rounded-full bg-accent text-accent-foreground"
         >
-          {alt.split(' ').map(word => word[0]).join('')}
+          {alt
+            .split(' ')
+            .map((word) => word[0])
+            .join('')}
         </motion.div>
       )}
     </motion.div>
   )
-} 
+}

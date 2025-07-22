@@ -25,12 +25,34 @@ interface Pick {
   match: Match
 }
 
+interface Achievement {
+  id: string
+  name: string
+  title: string
+  description: string
+  icon: 'trophy' | 'target' | 'sparkles' | 'medal' | 'crown'
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  points: number
+  unlocked: boolean
+  unlockedAt?: string
+  progress: number
+}
+
 interface ProfileStats {
   totalPicks: number
   correctPicks: number
   totalPoints: number
   mapScorePoints: number
   recentPicks: Pick[]
+  achievements: Achievement[]
+  userStats: {
+    totalPredictions: number
+    correctPredictions: number
+    currentStreak: number
+    longestStreak: number
+    totalPoints: number
+    mapScorePoints: number
+  } | null
 }
 
 async function getProfileData(userId: string): Promise<ProfileStats> {
@@ -41,7 +63,8 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
     // Fetch picks with match data
     const { data: picks, error: picksError } = await supabase
       .from('picks')
-      .select(`
+      .select(
+        `
         *,
         match:matches (
           team1,
@@ -52,7 +75,8 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
           is_finished,
           winner_id
         )
-      `)
+      `,
+      )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
@@ -63,35 +87,116 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
         correctPicks: 0,
         totalPoints: 0,
         mapScorePoints: 0,
-        recentPicks: []
+        recentPicks: [],
+        achievements: [],
+        userStats: null,
       }
     }
 
     // Process picks to ensure correct status
-    const processedPicks = picks?.map(pick => {
-      const matchStartTime = new Date(pick.match.start_time)
-      const now = new Date()
-      
-      // If match hasn't started yet or isn't finished, set is_correct to null
-      if (matchStartTime > now || !pick.match.is_finished) {
-        return {
-          ...pick,
-          is_correct: null,
-          map_score_correct: null
+    const processedPicks =
+      picks?.map((pick) => {
+        const matchStartTime = new Date(pick.match.start_time)
+        const now = new Date()
+
+        // If match hasn't started yet or isn't finished, set is_correct to null
+        if (matchStartTime > now || !pick.match.is_finished) {
+          return {
+            ...pick,
+            is_correct: null,
+            map_score_correct: null,
+          }
         }
-      }
-      
-      return pick
-    }) || []
+
+        return pick
+      }) || []
+
+    // Fetch user stats
+    const { data: userStats } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    // Fetch all achievements with user progress
+    const { data: allAchievements } = await supabase
+      .from('achievements')
+      .select('*')
+      .order('points', { ascending: false })
+
+    const { data: userAchievements } = await supabase
+      .from('user_achievements')
+      .select('achievement_id, unlocked_at, progress')
+      .eq('user_id', userId)
+
+    // Map achievements with user progress
+    const achievementsMap = new Map(
+      userAchievements?.map((ua) => [ua.achievement_id, ua]) || [],
+    )
+
+    const achievements: Achievement[] = (allAchievements || []).map(
+      (achievement) => {
+        const userAchievement = achievementsMap.get(achievement.id)
+        const unlocked = !!userAchievement
+
+        // Calculate progress based on achievement criteria
+        let progress = 0
+        if (unlocked) {
+          progress = 100
+        } else if (userStats) {
+          const criteria = achievement.criteria as any
+          switch (criteria.type) {
+            case 'predictions_count':
+              progress = Math.min(
+                100,
+                (userStats.totalPredictions / criteria.value) * 100,
+              )
+              break
+            case 'streak':
+              progress = Math.min(
+                100,
+                (userStats.longestStreak / criteria.value) * 100,
+              )
+              break
+            case 'map_scores':
+              const mapScorePicks = processedPicks.filter(
+                (p) => p.map_score_correct,
+              ).length
+              progress = Math.min(100, (mapScorePicks / criteria.value) * 100)
+              break
+          }
+        }
+
+        return {
+          id: achievement.id,
+          name: achievement.name,
+          title: achievement.title,
+          description: achievement.description,
+          icon: achievement.icon as any,
+          rarity: achievement.rarity as any,
+          points: achievement.points,
+          unlocked,
+          unlockedAt: userAchievement?.unlocked_at,
+          progress: Math.round(progress),
+        }
+      },
+    )
 
     const stats: ProfileStats = {
       totalPicks: processedPicks.length,
-      correctPicks: processedPicks.filter(pick => pick.is_correct).length,
-      totalPoints: processedPicks.reduce((sum, pick) => 
-        sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0), 0),
-      mapScorePoints: processedPicks.reduce((sum, pick) => 
-        sum + (pick.map_score_points || 0), 0),
-      recentPicks: processedPicks.slice(0, 5) as Pick[]
+      correctPicks: processedPicks.filter((pick) => pick.is_correct).length,
+      totalPoints: processedPicks.reduce(
+        (sum, pick) =>
+          sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0),
+        0,
+      ),
+      mapScorePoints: processedPicks.reduce(
+        (sum, pick) => sum + (pick.map_score_points || 0),
+        0,
+      ),
+      recentPicks: processedPicks.slice(0, 5) as Pick[],
+      achievements,
+      userStats,
     }
 
     return stats
@@ -102,7 +207,9 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
       correctPicks: 0,
       totalPoints: 0,
       mapScorePoints: 0,
-      recentPicks: []
+      recentPicks: [],
+      achievements: [],
+      userStats: null,
     }
   }
 }
@@ -111,7 +218,9 @@ export default async function ProfilePage() {
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
@@ -120,4 +229,4 @@ export default async function ProfilePage() {
   const stats = await getProfileData(user.id)
 
   return <ProfileContent stats={stats} />
-} 
+}

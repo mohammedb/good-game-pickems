@@ -19,7 +19,9 @@ export default function AuthButton() {
   useEffect(() => {
     fetchUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         fetchUser()
       } else {
@@ -36,24 +38,33 @@ export default function AuthButton() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true)
+
+      // Clear user state immediately
+      useUserStore.setState({ user: null, profile: null })
+
       const result = await signOut()
 
       if (result.error) {
+        // Re-fetch user if sign out failed
+        fetchUser()
         toast({
           title: 'Error',
           description: result.error,
-          variant: 'destructive'
+          variant: 'destructive',
         })
         return
       }
 
+      // Navigate and refresh
       router.push('/login')
       router.refresh()
     } catch (error) {
+      // Re-fetch user if sign out failed
+      fetchUser()
       toast({
         title: 'Error',
         description: 'Failed to sign out. Please try again.',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setIsSigningOut(false)
@@ -61,7 +72,11 @@ export default function AuthButton() {
   }
 
   if (isLoading) {
-    return <Button variant="ghost" disabled>Loading...</Button>
+    return (
+      <Button variant="ghost" disabled>
+        Loading...
+      </Button>
+    )
   }
 
   if (!user) {
@@ -74,7 +89,7 @@ export default function AuthButton() {
 
   return (
     <div className="flex items-center gap-4">
-      <span className="text-sm text-muted-foreground hidden md:inline">
+      <span className="hidden text-sm text-muted-foreground md:inline">
         {profile?.username || profile?.email}
       </span>
       <form action={handleSignOut}>

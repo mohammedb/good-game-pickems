@@ -44,11 +44,11 @@ export function MatchCard({ match, className }: MatchCardProps) {
       if (isExpanded) {
         videoRef.current.pause()
       } else {
-        videoRef.current.play().catch(error => {
+        videoRef.current.play().catch((error) => {
           toast({
             title: 'Error',
             description: 'Unable to play video',
-            variant: 'destructive'
+            variant: 'destructive',
           })
         })
       }
@@ -63,7 +63,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
       exit={{ opacity: 0, y: -20 }}
       className={cn(
         'overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md',
-        className
+        className,
       )}
     >
       <div className="p-6">
@@ -103,10 +103,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
         </div>
 
         {match.highlightVideo && (
-          <motion.div
-            layout
-            className="mt-4"
-          >
+          <motion.div layout className="mt-4">
             <Button
               variant="outline"
               className="w-full"
@@ -137,7 +134,11 @@ export function MatchCard({ match, className }: MatchCardProps) {
                     <div className="flex h-48 items-center justify-center rounded-md bg-accent/50">
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: 'linear',
+                        }}
                       >
                         <Play className="h-8 w-8 text-muted-foreground" />
                       </motion.div>
@@ -148,7 +149,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
                     src={match.highlightVideo}
                     className={cn(
                       'w-full rounded-md',
-                      isVideoLoading ? 'hidden' : 'block'
+                      isVideoLoading ? 'hidden' : 'block',
                     )}
                     controls
                     onLoadedData={() => setIsVideoLoading(false)}
@@ -157,7 +158,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
                       toast({
                         title: 'Error',
                         description: 'Failed to load video',
-                        variant: 'destructive'
+                        variant: 'destructive',
                       })
                     }}
                   />
@@ -183,4 +184,4 @@ export function MatchCard({ match, className }: MatchCardProps) {
       </div>
     </motion.div>
   )
-} 
+}

@@ -16,15 +16,21 @@ export default function SignUpWrapper() {
       {/* Animated background */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-br from-background via-accent to-background opacity-50"
+        initial={{
+          backgroundPosition: '0% 0%',
+          backgroundSize: '400% 400%',
+        }}
         animate={{
           backgroundPosition: ['0% 0%', '100% 100%'],
-          backgroundSize: '400% 400%',
         }}
         transition={{
           duration: 20,
           repeat: Infinity,
           repeatType: 'reverse',
           ease: 'linear',
+        }}
+        style={{
+          backgroundSize: '400% 400%',
         }}
       />
 

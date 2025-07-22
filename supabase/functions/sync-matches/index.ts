@@ -18,7 +18,7 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
     // Get matches that need to be synced
@@ -27,15 +27,17 @@ serve(async (req: Request) => {
       .select('id, gg_ligaen_api_id')
       .eq('is_finished', false)
       .lt('start_time', new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString())
-      .gt('start_time', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .gt(
+        'start_time',
+        new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      )
 
     if (matchError) throw matchError
 
     if (!matches || matches.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No matches to sync' }),
-        { headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ message: 'No matches to sync' }), {
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Fetch results for each match
@@ -45,13 +47,16 @@ serve(async (req: Request) => {
           `${API_BASE_URL}/matches/${match.gg_ligaen_api_id}`,
           {
             headers: {
-              'Authorization': `Bearer ${Deno.env.get('GOOD_GAME_LIGAEN_TOKEN')}`
-            }
-          }
+              Authorization: `Bearer ${Deno.env.get('GOOD_GAME_LIGAEN_TOKEN')}`,
+            },
+          },
         )
 
         if (!response.ok) {
-          console.error(`Failed to fetch match ${match.gg_ligaen_api_id}:`, response.statusText)
+          console.error(
+            `Failed to fetch match ${match.gg_ligaen_api_id}:`,
+            response.statusText,
+          )
           return null
         }
 
@@ -67,8 +72,9 @@ serve(async (req: Request) => {
             is_finished: true,
             team1_score: ggMatch.home_score,
             team2_score: ggMatch.away_score,
-            winner_id: ggMatch.winning_side === 'home' ? 'team1_id' : 'team2_id',
-            synced_at: new Date().toISOString()
+            winner_id:
+              ggMatch.winning_side === 'home' ? 'team1_id' : 'team2_id',
+            synced_at: new Date().toISOString(),
           })
           .eq('id', match.id)
 
@@ -78,16 +84,21 @@ serve(async (req: Request) => {
         }
 
         // Call the update_match_points function
-        const { error: pointsError } = await supabaseClient
-          .rpc('update_match_points', { match_id_param: match.id })
+        const { error: pointsError } = await supabaseClient.rpc(
+          'update_match_points',
+          { match_id_param: match.id },
+        )
 
         if (pointsError) {
-          console.error(`Failed to update points for match ${match.id}:`, pointsError)
+          console.error(
+            `Failed to update points for match ${match.id}:`,
+            pointsError,
+          )
           return null
         }
 
         return match.id
-      })
+      }),
     )
 
     // Filter out null values and count successful updates
@@ -95,26 +106,24 @@ serve(async (req: Request) => {
 
     // Log the sync if any matches were updated
     if (successfulUpdates.length > 0) {
-      await supabaseClient
-        .from('sync_logs')
-        .insert({
-          matches_synced: successfulUpdates.length,
-          synced_by: null // System sync
-        })
+      await supabaseClient.from('sync_logs').insert({
+        matches_synced: successfulUpdates.length,
+        synced_by: null, // System sync
+      })
     }
 
     return new Response(
       JSON.stringify({
         message: `Successfully synced ${successfulUpdates.length} matches`,
-        updated_matches: successfulUpdates
+        updated_matches: successfulUpdates,
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' } },
     )
   } catch (error) {
     console.error('Error in sync-matches function:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
-}) 
+})

@@ -3,15 +3,21 @@
 import { useState, useEffect } from 'react'
 
 export default function ReactQueryDevTools() {
-  const [DevTools, setDevTools] = useState<React.ComponentType<any> | null>(null)
+  const [DevTools, setDevTools] = useState<React.ComponentType<any> | null>(
+    null,
+  )
 
   useEffect(() => {
     // Only load DevTools in development
     if (process.env.NODE_ENV === 'development') {
-      Promise.resolve().then(async () => {
-        const { ReactQueryDevtools } = await import('@tanstack/react-query-devtools')
-        setDevTools(() => ReactQueryDevtools)
-      }).catch(console.error)
+      Promise.resolve()
+        .then(async () => {
+          const { ReactQueryDevtools } = await import(
+            '@tanstack/react-query-devtools'
+          )
+          setDevTools(() => ReactQueryDevtools)
+        })
+        .catch(console.error)
     }
   }, [])
 
@@ -20,4 +26,4 @@ export default function ReactQueryDevTools() {
   }
 
   return <DevTools initialIsOpen={false} />
-} 
+}

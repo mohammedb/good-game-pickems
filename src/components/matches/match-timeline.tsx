@@ -21,7 +21,7 @@ const eventIcons = {
   goal: CircleDot,
   card: X,
   substitution: Star,
-  highlight: Trophy
+  highlight: Trophy,
 }
 
 export function MatchTimeline({ events, className }: MatchTimelineProps) {
@@ -54,7 +54,7 @@ export function MatchTimeline({ events, className }: MatchTimelineProps) {
               transition={{ delay: index * 0.1 }}
               className={cn(
                 'relative flex items-center',
-                event.team === 'away' && 'flex-row-reverse'
+                event.team === 'away' && 'flex-row-reverse',
               )}
             >
               {/* Event dot */}
@@ -64,13 +64,15 @@ export function MatchTimeline({ events, className }: MatchTimelineProps) {
                 onClick={() => setSelectedEvent(isSelected ? null : event.id)}
                 className={cn(
                   'absolute left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border bg-background shadow-sm transition-colors',
-                  isSelected && 'border-primary bg-primary/10'
+                  isSelected && 'border-primary bg-primary/10',
                 )}
               >
-                <Icon className={cn(
-                  'h-4 w-4',
-                  isSelected ? 'text-primary' : 'text-muted-foreground'
-                )} />
+                <Icon
+                  className={cn(
+                    'h-4 w-4',
+                    isSelected ? 'text-primary' : 'text-muted-foreground',
+                  )}
+                />
               </motion.button>
 
               {/* Event content */}
@@ -78,12 +80,14 @@ export function MatchTimeline({ events, className }: MatchTimelineProps) {
                 className={cn(
                   'w-[calc(50%-2rem)] rounded-lg border bg-card p-4 shadow-sm',
                   event.team === 'home' ? 'mr-8' : 'ml-8',
-                  event.isHighlight && 'border-primary bg-primary/5'
+                  event.isHighlight && 'border-primary bg-primary/5',
                 )}
               >
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{event.minute}&apos;</span>
+                  <span className="text-sm font-medium">
+                    {event.minute}&apos;
+                  </span>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -116,4 +120,4 @@ export function MatchTimeline({ events, className }: MatchTimelineProps) {
       </div>
     </div>
   )
-} 
+}

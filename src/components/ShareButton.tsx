@@ -22,7 +22,12 @@ interface ShareButtonProps {
   }
 }
 
-export default function ShareButton({ userId, mode, rank, stats }: ShareButtonProps) {
+export default function ShareButton({
+  userId,
+  mode,
+  rank,
+  stats,
+}: ShareButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const supabase = createBrowserClient()
@@ -35,7 +40,10 @@ export default function ShareButton({ userId, mode, rank, stats }: ShareButtonPr
       if (mode === 'leaderboard' && rank) {
         shareText = `🏆 I'm ranked #${rank} on GGWP.NO! Come join and make your predictions!`
       } else if (mode === 'profile' && stats) {
-        const accuracy = stats.totalPicks > 0 ? Math.round((stats.correctPicks / stats.totalPicks) * 100) : 0
+        const accuracy =
+          stats.totalPicks > 0
+            ? Math.round((stats.correctPicks / stats.totalPicks) * 100)
+            : 0
         shareText = `🎮 I've made ${stats.correctPicks} correct predictions out of ${stats.totalPicks} (${accuracy}% accuracy) on GGWP.NO!`
       }
 
@@ -57,13 +65,13 @@ export default function ShareButton({ userId, mode, rank, stats }: ShareButtonPr
         case 'twitter':
           window.open(
             `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-            '_blank'
+            '_blank',
           )
           break
         case 'facebook':
           window.open(
             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
-            '_blank'
+            '_blank',
           )
           break
         case 'copy':
@@ -92,21 +100,21 @@ export default function ShareButton({ userId, mode, rank, stats }: ShareButtonPr
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem
-          className="gap-2 cursor-pointer"
+          className="cursor-pointer gap-2"
           onClick={() => handleShare('twitter')}
         >
           <Twitter className="h-4 w-4" />
           Share on Twitter
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="gap-2 cursor-pointer"
+          className="cursor-pointer gap-2"
           onClick={() => handleShare('facebook')}
         >
           <Facebook className="h-4 w-4" />
           Share on Facebook
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="gap-2 cursor-pointer"
+          className="cursor-pointer gap-2"
           onClick={() => handleShare('copy')}
         >
           <LinkIcon className="h-4 w-4" />
@@ -115,4 +123,4 @@ export default function ShareButton({ userId, mode, rank, stats }: ShareButtonPr
       </DropdownMenuContent>
     </DropdownMenu>
   )
-} 
+}

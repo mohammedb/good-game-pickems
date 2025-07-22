@@ -108,6 +108,22 @@ export async function signUp(formData: FormData) {
       } catch (error) {
         // Log the error but don't fail the signup
         console.error('Error in signup process:', error)
+
+        // Log to admin_logs table for visibility
+        try {
+          await supabase.from('admin_logs').insert({
+            action: 'email_send_failed',
+            details: {
+              user_id: authData.user.id,
+              email: validatedData.email,
+              error: error instanceof Error ? error.message : String(error),
+              timestamp: new Date().toISOString(),
+            },
+            created_at: new Date().toISOString(),
+          })
+        } catch (logError) {
+          console.error('Failed to log email error:', logError)
+        }
       }
 
       return {

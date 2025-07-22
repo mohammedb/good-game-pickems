@@ -30,7 +30,10 @@ const resetDailyCounter = () => {
 resetDailyCounter()
 
 if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY is not defined')
+  console.error('RESEND_API_KEY is not defined in environment variables')
+  throw new Error(
+    'RESEND_API_KEY is not defined - please check your .env.local file',
+  )
 }
 
 // Make sure we use the correct site URL with www and https
@@ -87,6 +90,10 @@ const processEmailQueue = async () => {
     resolve({ success: true, data })
   } catch (error) {
     console.error('Error sending email:', error)
+    console.error('Email details:', { to: params.to, subject: params.subject })
+    if (error instanceof Error && error.message.includes('API key')) {
+      console.error('Resend API key issue detected')
+    }
     reject({ success: false, error })
   }
 

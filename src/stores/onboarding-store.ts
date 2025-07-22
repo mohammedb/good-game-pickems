@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type OnboardingStep = 
+export type OnboardingStep =
   | 'welcome'
   | 'predictions'
   | 'leaderboard'
@@ -26,14 +26,21 @@ export const useOnboardingStore = create<OnboardingState>()(
       hasCompletedOnboarding: false,
       currentStep: 'welcome',
       isOpen: false,
-      setHasCompletedOnboarding: (completed) => set({ hasCompletedOnboarding: completed }),
+      setHasCompletedOnboarding: (completed) =>
+        set({ hasCompletedOnboarding: completed }),
       setCurrentStep: (step) => set({ currentStep: step }),
       setIsOpen: (isOpen) => set({ isOpen }),
-      startOnboarding: () => set({ isOpen: true, currentStep: 'welcome', hasCompletedOnboarding: false }),
-      completeOnboarding: () => set({ hasCompletedOnboarding: true, isOpen: false })
+      startOnboarding: () =>
+        set({
+          isOpen: true,
+          currentStep: 'welcome',
+          hasCompletedOnboarding: false,
+        }),
+      completeOnboarding: () =>
+        set({ hasCompletedOnboarding: true, isOpen: false }),
     }),
     {
-      name: 'onboarding-store'
-    }
-  )
-) 
+      name: 'onboarding-store',
+    },
+  ),
+)

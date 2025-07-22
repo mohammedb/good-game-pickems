@@ -1,6 +1,6 @@
 1. Overview
-Product Name:
-Good Game Ligaen Pickems / Fantasy Page
+   Product Name:
+   Good Game Ligaen Pickems / Fantasy Page
 
 Description:
 A Next.js-based platform where users can predict the outcome of Good Game Ligaen matches each round. Participants earn points for correct predictions and can share their picks on social media. The system integrates with Good Game Ligaen’s official API for match data. Supabase manages user authentication and stores user picks. TailwindCSS and shadcn components ensure a clean, modern UI.
@@ -10,8 +10,7 @@ Goals & Objectives:
 Increase viewer engagement and community interaction around Good Game Ligaen.
 Gamify the league experience with a fun, competitive prediction element.
 Promote social sharing to boost visibility and attract new fans.
-Provide a stable, secure, and easy-to-use platform leveraging Next.js, Supabase, and the official Good Game Ligaen API.
-2. Tech Stack & Integration
+Provide a stable, secure, and easy-to-use platform leveraging Next.js, Supabase, and the official Good Game Ligaen API. 2. Tech Stack & Integration
 Next.js (App Router)
 
 Reasoning: Server-side rendering (SSR) for improved performance and SEO, plus built-in API routes where we can securely fetch Good Game Ligaen data (using server-side environment variables to store the personal API token).
@@ -44,8 +43,7 @@ Additional endpoints (Teams, Users, Heats) as needed for deeper stats or display
 Usage:
 Scheduled or on-demand calls to fetch upcoming matches for user predictions.
 Calls to fetch final results to calculate user points.
-Constraints: Must not expose the personal token on the client side. All calls done from Next.js server routes or server components.
-3. Key Features & Functionality
+Constraints: Must not expose the personal token on the client side. All calls done from Next.js server routes or server components. 3. Key Features & Functionality
 Match Predictions
 
 Display Upcoming Matches: Pulled from the Good Game Ligaen API.
@@ -74,8 +72,7 @@ Admin / Moderator Panel (Minimal)
 
 Match Sync: Trigger manual re-sync with Good Game Ligaen API in case of discrepancies.
 Points Override: Fix anomalies (e.g., if a match is canceled or rescheduled).
-Basic Stats: Show number of active players, total picks, etc.
-4. User Stories & Use Cases
+Basic Stats: Show number of active players, total picks, etc. 4. User Stories & Use Cases
 User Story: Make a Pick
 
 As a user, I want to see a list of upcoming Good Game Ligaen matches so that I can choose who will win and earn points for correct predictions.
@@ -100,8 +97,7 @@ Admin Use Case: Match Result Synchronization
 As an admin or system process, I need to pull finished match results from the Good Game Ligaen API and update scores.
 Acceptance Criteria:
 A server-side function (cron job or manual trigger) that fetches all relevant matches from the API.
-System updates user picks status (win/loss) and recalculates points.
-5. Functional Requirements
+System updates user picks status (win/loss) and recalculates points. 5. Functional Requirements
 5.1 Data Flows & Integration with Good Game Ligaen API
 Server-Side Fetching
 
@@ -163,8 +159,7 @@ Never exposed to the client. All requests are made through Next.js server-side l
 Supabase:
 Use Row-Level Security (RLS) to ensure only the owner can read/write their picks.
 Environment Variables:
-Store the Good Game Ligaen token as GOOD_GAME_LIGAEN_TOKEN in a secure place.
-6. Non-Functional Requirements
+Store the Good Game Ligaen token as GOOD_GAME_LIGAEN_TOKEN in a secure place. 6. Non-Functional Requirements
 Performance
 
 Page loads under 2 seconds.
@@ -184,8 +179,7 @@ WCAG 2.1 guidelines to make the platform accessible to all users.
 Maintainability
 
 Clear separation of concerns: UI in Next.js pages/components, API integration in server routes, data in Supabase.
-Document code architecture and any custom logic thoroughly.
-7. High-Level User Flows
+Document code architecture and any custom logic thoroughly. 7. High-Level User Flows
 7.1 User Registration & Login
 User navigates to the site.
 User signs up or logs in via Supabase Auth (email/password, social providers if configured).
@@ -210,7 +204,7 @@ System generates a shareable link or dynamic OG image with user’s picks/points
 User shares via Twitter, Facebook, Discord, etc.
 
 9. Potential Risks & Mitigation
-API Rate Limits: If Good Game Ligaen imposes strict rate limits, caching or careful scheduling might be required.
+   API Rate Limits: If Good Game Ligaen imposes strict rate limits, caching or careful scheduling might be required.
 
 Mitigation: Use revalidation in Next.js (ISR) or serverless Cron to limit direct calls.
 Token Security: Exposing the token is a major risk.
@@ -224,14 +218,12 @@ Scalability & Traffic Spikes: High user volume around match times.
 Mitigation: Host on a scalable platform (Vercel), optimize queries, and enable caching.
 User Friction: Complexity in the user flow if they must sign up just to view or share picks.
 
-Mitigation: Allow limited “guest” predictions or viewing before requiring sign-up to store picks.
-10. KPIs & Success Metrics
+Mitigation: Allow limited “guest” predictions or viewing before requiring sign-up to store picks. 10. KPIs & Success Metrics
 Number of Active Participants: Unique users making picks each round.
 Engagement Rate: Average number of matches picked per user.
 Leaderboard Views: Frequency of visits to the leaderboard page.
 Social Shares: Count of posts or link shares from the platform.
-Retention: Percentage of users returning for subsequent rounds.
-11. Future Enhancements
+Retention: Percentage of users returning for subsequent rounds. 11. Future Enhancements
 Private Leagues/Friend Groups: Let users create or join mini-leagues.
 Mobile App / Notifications: Send push notifications before match deadlines.
 In-depth Stats & Analysis: Integrate advanced stats from the Good Game Ligaen API (e.g., team performance, head-to-head).
