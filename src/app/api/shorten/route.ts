@@ -68,8 +68,8 @@ setInterval(
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Get the authenticated user
     const {

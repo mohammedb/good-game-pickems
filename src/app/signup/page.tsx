@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@/utils/supabase'
+import { createBrowserClient } from '@/utils/supabase-client'
 import SignUpWrapper from './SignUpWrapper'
 
 export default function SignUpPage() {

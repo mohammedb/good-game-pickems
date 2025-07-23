@@ -5,8 +5,8 @@ import { syncMatches } from '@/utils/goodgame'
 import { addAdminLog } from '@/lib/admin-logs'
 
 async function isAdmin(userId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const { data } = await supabase
     .from('users')
@@ -20,8 +20,8 @@ async function isAdmin(userId: string) {
 // GET endpoint to check sync status
 export async function GET(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and is admin
     const {
@@ -79,8 +79,8 @@ export async function GET(request: Request) {
 // POST endpoint to trigger sync
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and is admin
     const {

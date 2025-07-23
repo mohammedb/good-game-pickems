@@ -5,8 +5,8 @@ import { z } from 'zod'
 import { adjustmentSchema } from '@/lib/validations/schemas'
 
 async function isAdmin(userId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const { data } = await supabase
     .from('users')
@@ -19,8 +19,8 @@ async function isAdmin(userId: string) {
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and is admin
     const {

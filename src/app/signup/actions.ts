@@ -36,8 +36,8 @@ async function sendWelcomeEmail(
 }
 
 export async function signUp(formData: FormData) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string

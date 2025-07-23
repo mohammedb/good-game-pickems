@@ -5,7 +5,7 @@ import { eachDayOfInterval, subDays, format } from 'date-fns'
 
 export async function GET() {
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and admin
     const {

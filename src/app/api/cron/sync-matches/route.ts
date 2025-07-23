@@ -13,8 +13,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     const result = await syncMatches(supabase)
 

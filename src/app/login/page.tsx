@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -12,10 +12,11 @@ import { login } from './actions'
 import '../../styles/animations.css'
 
 interface LoginFormProps {
-  searchParams?: { message: string }
+  searchParams: Promise<{ message?: string }>
 }
 
 export default function LoginPage({ searchParams }: LoginFormProps) {
+  const params = use(searchParams)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({ email: '', password: '' })
   const { toast } = useToast()
@@ -159,13 +160,13 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               </Link>
             </p>
 
-            {searchParams?.message && (
+            {params?.message && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground"
               >
-                {searchParams.message}
+                {params.message}
               </motion.div>
             )}
           </motion.form>

@@ -12,8 +12,8 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const { data: stats, count } = await supabase
     .from('users')

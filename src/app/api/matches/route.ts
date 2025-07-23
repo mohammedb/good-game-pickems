@@ -65,7 +65,7 @@ async function fetchGoodGameMatches() {
 
 export async function GET() {
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = await createServerClient()
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 

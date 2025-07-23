@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     const validatedData = pickSchema.parse(body)
 
     // Initialize Supabase client
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Insert the pick into the database
     const { data, error } = await supabase
@@ -58,8 +58,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Get the current user
     const {

@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card'
-import { createBrowserClient } from '@/utils/supabase'
+import { createBrowserClient } from '@/utils/supabase-client'
 import { toast } from '@/components/ui/use-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, X, Loader2, RefreshCw, Calculator } from 'lucide-react'

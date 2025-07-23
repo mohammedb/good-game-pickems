@@ -7,8 +7,8 @@ export async function GET(
   { params }: { params: { code: string } },
 ) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Look up the short code
     const { data, error } = await supabase

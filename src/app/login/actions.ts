@@ -5,8 +5,8 @@ import { createServerClient } from '@/utils/supabase'
 import { redirect } from 'next/navigation'
 
 export async function login(formData: FormData) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -24,8 +24,8 @@ export async function login(formData: FormData) {
 }
 
 export async function signOut() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const { error } = await supabase.auth.signOut()
 

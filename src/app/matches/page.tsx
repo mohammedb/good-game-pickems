@@ -5,7 +5,7 @@ import { useMatches } from '@/hooks/use-matches'
 import MatchList from './MatchList'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@/utils/supabase'
+import { createBrowserClient } from '@/utils/supabase-client'
 import { Loader2 } from 'lucide-react'
 import { MatchSkeleton } from '@/components/matches/match-skeleton'
 

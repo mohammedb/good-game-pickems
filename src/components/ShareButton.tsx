@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Share2, Twitter, Facebook, Link as LinkIcon } from 'lucide-react'
-import { createBrowserClient } from '@/utils/supabase'
+import { createBrowserClient } from '@/utils/supabase-client'
 
 interface ShareButtonProps {
   userId?: string

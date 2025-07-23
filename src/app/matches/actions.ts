@@ -21,8 +21,8 @@ export async function submitPrediction(
   team2Maps?: number,
 ) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // First check if prediction exists
     const { data: existingPick } = await supabase
@@ -76,8 +76,8 @@ export async function submitPrediction(
 export async function removeUnlockedPredictions(userId: string) {
   try {
     console.log('Starting removeUnlockedPredictions for user:', userId)
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
     const now = new Date()
     const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000)
 

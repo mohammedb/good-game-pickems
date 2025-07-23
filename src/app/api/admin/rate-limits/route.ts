@@ -6,8 +6,8 @@ import { createServerClient } from '@/utils/supabase'
 // Note: This is a simple implementation. In production, you'd want to use Redis or similar
 export async function GET(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(cookieStore)
+    // const cookieStore = cookies() - removed in Next.js 15
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and admin
     const {

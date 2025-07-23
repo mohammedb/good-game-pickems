@@ -25,7 +25,7 @@ interface FormattedLog {
 
 export async function GET(request: Request) {
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = await createServerClient()
 
     // Check if user is authenticated and admin
     const {

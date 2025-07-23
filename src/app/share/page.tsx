@@ -1,5 +1,6 @@
 'use client'
 
+import { use } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -12,13 +13,13 @@ import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
 
 interface SharePageProps {
-  searchParams: {
+  searchParams: Promise<{
     r?: string
     p?: string
     c?: string
     m?: string
     u?: string
-  }
+  }>
 }
 
 interface MatchPrediction {
@@ -39,15 +40,16 @@ interface MatchPrediction {
 }
 
 export default function SharePage({ searchParams }: SharePageProps) {
-  const round = searchParams.r || 'Nåværende Runde'
-  const picks = parseInt(searchParams.p || '0', 10)
-  const correct = parseInt(searchParams.c || '0', 10)
+  const params = use(searchParams)
+  const round = params.r || 'Nåværende Runde'
+  const picks = parseInt(params.p || '0', 10)
+  const correct = parseInt(params.c || '0', 10)
   const accuracy = picks > 0 ? ((correct / picks) * 100).toFixed(1) : '0.0'
-  const username = searchParams.u
+  const username = params.u
 
   let matches: MatchPrediction[] = []
   try {
-    matches = searchParams.m ? JSON.parse(atob(searchParams.m)) : []
+    matches = params.m ? JSON.parse(atob(params.m)) : []
   } catch (error) {
     console.error('Error parsing matches:', error)
   }

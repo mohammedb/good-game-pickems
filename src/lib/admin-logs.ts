@@ -9,7 +9,7 @@ export async function addAdminLog(
   details?: string,
 ) {
   try {
-    const supabase = createServerClient(cookies())
+    const supabase = await createServerClient()
 
     // Get current user
     const {

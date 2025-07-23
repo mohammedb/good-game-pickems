@@ -6,12 +6,13 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ProgressBar } from '@/components/ui/progress-bar'
 import { BadgeCard } from '@/components/ui/badge-card'
-import { createBrowserClient } from '@/utils/supabase'
+import { createBrowserClient } from '@/utils/supabase-client'
 import { SparklesText } from '@/components/magicui/sparkles-text'
 import { NumberTicker } from '@/components/magicui/number-ticker'
 import confetti from 'canvas-confetti'
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import Image from 'next/image'
 
 type TimeRange = 'all' | 'weekly' | 'monthly'
 
@@ -681,9 +682,11 @@ export default function LeaderboardPage() {
                                                 <div className="relative">
                                                   <div className="h-8 w-8 overflow-hidden rounded-full bg-white shadow-sm">
                                                     {winnerLogo ? (
-                                                      <img
+                                                      <Image
                                                         src={winnerLogo}
                                                         alt={winnerName}
+                                                        width={32}
+                                                        height={32}
                                                         className="h-full w-full object-contain p-0.5"
                                                       />
                                                     ) : (
@@ -740,9 +743,11 @@ export default function LeaderboardPage() {
                                               <div className="flex items-center gap-1.5 opacity-60">
                                                 <div className="h-6 w-6 overflow-hidden rounded-full bg-white shadow-sm">
                                                   {loserLogo ? (
-                                                    <img
+                                                    <Image
                                                       src={loserLogo}
                                                       alt={loserName}
+                                                      width={24}
+                                                      height={24}
                                                       className="h-full w-full object-contain p-0.5"
                                                     />
                                                   ) : (

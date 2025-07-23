@@ -56,8 +56,8 @@ interface ProfileStats {
 }
 
 async function getProfileData(userId: string): Promise<ProfileStats> {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   try {
     // Fetch picks with match data
@@ -215,8 +215,8 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
 }
 
 export default async function ProfilePage() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(cookieStore)
+  // const cookieStore = cookies() - removed in Next.js 15
+  const supabase = await createServerClient()
 
   const {
     data: { user },
