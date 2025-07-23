@@ -1,11 +1,11 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@/utils/supabase'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { eachDayOfInterval, subDays, format } from 'date-fns'
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createServerClient(cookies())
 
     // Check if user is authenticated and admin
     const {

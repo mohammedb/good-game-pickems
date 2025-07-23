@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@/utils/supabase'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { Match, GoodGameMatch, GoodGameVideo } from '@/app/matches/types'
@@ -65,8 +65,7 @@ async function fetchGoodGameMatches() {
 
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+    const supabase = createServerClient(cookies())
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 

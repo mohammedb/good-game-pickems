@@ -6,7 +6,14 @@ const { createSecureHeaders } = require('next-secure-headers')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['i.bo3.no'], // Allow images from Good Game Ligaen
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.bo3.no',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   async headers() {
     return [

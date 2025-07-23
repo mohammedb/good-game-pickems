@@ -5,13 +5,13 @@ import { useMatches } from '@/hooks/use-matches'
 import MatchList from './MatchList'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/utils/supabase'
 import { Loader2 } from 'lucide-react'
 import { MatchSkeleton } from '@/components/matches/match-skeleton'
 
 export default function MatchesPage() {
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const { data: matches, isLoading, isError, error } = useMatches()
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState<string>()

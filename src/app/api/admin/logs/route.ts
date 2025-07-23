@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@/utils/supabase'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -25,7 +25,7 @@ interface FormattedLog {
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createServerClient(cookies())
 
     // Check if user is authenticated and admin
     const {

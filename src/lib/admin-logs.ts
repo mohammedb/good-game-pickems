@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@/utils/supabase'
 import { cookies } from 'next/headers'
 
 type LogType = 'sync' | 'points' | 'user' | 'match' | 'error' | 'success'
@@ -9,7 +9,7 @@ export async function addAdminLog(
   details?: string,
 ) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerClient(cookies())
 
     // Get current user
     const {
