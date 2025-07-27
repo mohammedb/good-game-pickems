@@ -48,7 +48,7 @@ export default function AuthButton() {
         // Re-fetch user if sign out failed
         fetchUser()
         toast({
-          title: 'Error',
+          title: 'Feil',
           description: result.error,
           variant: 'destructive',
         })
@@ -62,8 +62,8 @@ export default function AuthButton() {
       // Re-fetch user if sign out failed
       fetchUser()
       toast({
-        title: 'Error',
-        description: 'Failed to sign out. Please try again.',
+        title: 'Feil',
+        description: 'Kunne ikke logge ut. Vennligst prøv igjen.',
         variant: 'destructive',
       })
     } finally {
@@ -74,7 +74,7 @@ export default function AuthButton() {
   if (isLoading) {
     return (
       <Button variant="ghost" disabled>
-        Loading...
+        Laster...
       </Button>
     )
   }
@@ -82,7 +82,7 @@ export default function AuthButton() {
   if (!user) {
     return (
       <Link href="/login">
-        <Button variant="outline">Sign In</Button>
+        <Button variant="outline">Logg Inn</Button>
       </Link>
     )
   }
@@ -94,7 +94,7 @@ export default function AuthButton() {
       </span>
       <form action={handleSignOut}>
         <Button variant="outline" type="submit" disabled={isSigningOut}>
-          {isSigningOut ? 'Signing out...' : 'Sign Out'}
+          {isSigningOut ? 'Logger ut...' : 'Logg Ut'}
         </Button>
       </form>
     </div>

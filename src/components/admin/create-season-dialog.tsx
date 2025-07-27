@@ -46,8 +46,8 @@ export function CreateSeasonDialog({
     // Validation
     if (!formData.season_id || !formData.name || !formData.start_date) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
+        title: 'Valideringsfeil',
+        description: 'Vennligst fyll ut alle påkrevde felt',
         variant: 'destructive',
       })
       return
@@ -77,8 +77,8 @@ export function CreateSeasonDialog({
       }
 
       toast({
-        title: 'Success',
-        description: `Season "${formData.name}" created successfully${formData.activate ? ' and activated' : ''}`,
+        title: 'Suksess',
+        description: `Sesongen "${formData.name}" ble opprettet${formData.activate ? ' og aktivert' : ''}`,
       })
 
       // Reset form
@@ -94,9 +94,9 @@ export function CreateSeasonDialog({
     } catch (error) {
       console.error('Error creating season:', error)
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
-          error instanceof Error ? error.message : 'Failed to create season',
+          error instanceof Error ? error.message : 'Kunne ikke opprette sesong',
         variant: 'destructive',
       })
     } finally {
@@ -116,45 +116,45 @@ export function CreateSeasonDialog({
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Season</DialogTitle>
+            <DialogTitle>Opprett Ny Sesong</DialogTitle>
             <DialogDescription>
-              Create a new competition season. You can activate it immediately
-              or later.
+              Opprett en ny konkurransesesong. Du kan aktivere den umiddelbart
+              eller senere.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="season_id">Season ID *</Label>
+              <Label htmlFor="season_id">Sesong-ID *</Label>
               <Input
                 id="season_id"
-                placeholder="e.g., 13163"
+                placeholder="f.eks. 13163"
                 value={formData.season_id}
                 onChange={(e) => handleInputChange('season_id', e.target.value)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                The Good Game Ligaen season ID
+                Good Game Ligaen sesong-ID
               </p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="name">Season Name *</Label>
+              <Label htmlFor="name">Sesongnavn *</Label>
               <Input
                 id="name"
-                placeholder="e.g., Spring 2024"
+                placeholder="f.eks. Vår 2024"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                A friendly name for the season
+                Et vennlig navn for sesongen
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="start_date">Start Date *</Label>
+                <Label htmlFor="start_date">Startdato *</Label>
                 <Input
                   id="start_date"
                   type="date"
@@ -167,7 +167,7 @@ export function CreateSeasonDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="end_date">End Date</Label>
+                <Label htmlFor="end_date">Sluttdato</Label>
                 <Input
                   id="end_date"
                   type="date"
@@ -177,17 +177,17 @@ export function CreateSeasonDialog({
                   }
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">Optional</p>
+                <p className="text-xs text-muted-foreground">Valgfritt</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
               <div className="space-y-0.5">
                 <Label htmlFor="activate" className="cursor-pointer text-base">
-                  Activate immediately
+                  Aktiver umiddelbart
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Make this the active season right away
+                  Gjør denne til den aktive sesongen med en gang
                 </p>
               </div>
               <Switch
@@ -204,9 +204,9 @@ export function CreateSeasonDialog({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Activating this season will deactivate the current active
-                  season. This will reset the main leaderboard view to show only
-                  this season&apos;s data.
+                  Å aktivere denne sesongen vil deaktivere den nåværende aktive
+                  sesongen. Dette vil resette hovedvisningen av leaderboarden
+                  til å vise kun denne sesongens data.
                 </AlertDescription>
               </Alert>
             )}
@@ -219,11 +219,11 @@ export function CreateSeasonDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Avbryt
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Season
+              Opprett Sesong
             </Button>
           </DialogFooter>
         </form>

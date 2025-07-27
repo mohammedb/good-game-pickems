@@ -59,17 +59,19 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       }
 
       toast({
-        title: 'Success',
-        description: `Season "${season.name}" is now active`,
+        title: 'Suksess',
+        description: `Sesongen "${season.name}" er nå aktiv`,
       })
 
       if (onAction) onAction()
     } catch (error) {
       console.error('Error activating season:', error)
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
-          error instanceof Error ? error.message : 'Failed to activate season',
+          error instanceof Error
+            ? error.message
+            : 'Kunne ikke aktivere sesongen',
         variant: 'destructive',
       })
     } finally {
@@ -101,17 +103,19 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       }
 
       toast({
-        title: 'Success',
-        description: `Season "${season.name}" has been ended`,
+        title: 'Suksess',
+        description: `Sesongen "${season.name}" har blitt avsluttet`,
       })
 
       if (onAction) onAction()
     } catch (error) {
       console.error('Error ending season:', error)
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
-          error instanceof Error ? error.message : 'Failed to end season',
+          error instanceof Error
+            ? error.message
+            : 'Kunne ikke avslutte sesongen',
         variant: 'destructive',
       })
     } finally {
@@ -134,17 +138,17 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       }
 
       toast({
-        title: 'Success',
-        description: `Season "${season.name}" has been deleted`,
+        title: 'Suksess',
+        description: `Sesongen "${season.name}" har blitt slettet`,
       })
 
       if (onAction) onAction()
     } catch (error) {
       console.error('Error deleting season:', error)
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
-          error instanceof Error ? error.message : 'Failed to delete season',
+          error instanceof Error ? error.message : 'Kunne ikke slette sesongen',
         variant: 'destructive',
       })
     } finally {
@@ -170,26 +174,26 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>Handlinger</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           {canActivate && (
             <DropdownMenuItem onClick={() => setShowActivateDialog(true)}>
               <Play className="mr-2 h-4 w-4" />
-              Activate Season
+              Aktiver Sesong
             </DropdownMenuItem>
           )}
 
           {canEnd && (
             <DropdownMenuItem onClick={() => setShowEndDialog(true)}>
               <StopCircle className="mr-2 h-4 w-4" />
-              End Season
+              Avslutt Sesong
             </DropdownMenuItem>
           )}
 
           <DropdownMenuItem disabled>
             <Edit className="mr-2 h-4 w-4" />
-            Edit Details
+            Rediger Detaljer
           </DropdownMenuItem>
 
           {canDelete && (
@@ -200,7 +204,7 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
                 className="text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete Season
+                Slett Sesong
               </DropdownMenuItem>
             </>
           )}
@@ -214,17 +218,17 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Activate Season</AlertDialogTitle>
+            <AlertDialogTitle>Aktiver Sesong</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to activate &quot;{season.name}&quot;? This
-              will deactivate any currently active season and make this the
-              primary season for all new matches and leaderboards.
+              Er du sikker på at du vil aktivere &quot;{season.name}&quot;?
+              Dette vil deaktivere den nåværende aktive sesongen og gjøre denne
+              til hovedsesongen for alle nye matcher og leaderboards.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction onClick={handleActivate}>
-              Activate Season
+              Aktiver Sesong
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -234,17 +238,17 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>End Season</AlertDialogTitle>
+            <AlertDialogTitle>Avslutt Sesong</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to end &quot;{season.name}&quot;? This will
-              mark the season as completed and deactivate it. You&apos;ll need
-              to activate another season for new matches.
+              Er du sikker på at du vil avslutte &quot;{season.name}&quot;?
+              Dette vil markere sesongen som fullført og deaktivere den. Du må
+              aktivere en annen sesong for nye matcher.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction onClick={handleEnd}>
-              End Season
+              Avslutt Sesong
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -254,20 +258,20 @@ export function SeasonActions({ season, onAction }: SeasonActionsProps) {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Season</AlertDialogTitle>
+            <AlertDialogTitle>Slett Sesong</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{season.name}&quot;? This
-              action cannot be undone. The season can only be deleted because it
-              has no associated matches or predictions.
+              Er du sikker på at du vil slette &quot;{season.name}&quot;? Denne
+              handlingen kan ikke angres. Sesongen kan kun slettes fordi den
+              ikke har noen tilknyttede matcher eller predictions.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete Season
+              Slett Sesong
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

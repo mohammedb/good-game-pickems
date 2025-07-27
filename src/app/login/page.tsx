@@ -35,7 +35,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
 
       if (result.error) {
         toast({
-          title: 'Error',
+          title: 'Feil',
           description: result.error,
           variant: 'destructive',
         })
@@ -46,7 +46,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
       router.refresh()
     } catch (error: unknown) {
       toast({
-        title: 'Error',
+        title: 'Feil',
         description:
           error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
@@ -91,7 +91,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               >
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Back
+              Tilbake
             </motion.div>
           </Link>
 
@@ -100,9 +100,9 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2 text-center"
           >
-            <h1 className="text-3xl font-bold">Welcome Back</h1>
+            <h1 className="text-3xl font-bold">Velkommen Tilbake</h1>
             <p className="text-muted-foreground">
-              Sign in to continue making predictions
+              Logg inn for å fortsette med predictions
             </p>
           </motion.div>
 
@@ -117,7 +117,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               <div className="space-y-2">
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder="E-post"
                   value={formData.email}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -129,7 +129,7 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
               <div className="space-y-2">
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Passord"
                   value={formData.password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -149,14 +149,14 @@ export default function LoginPage({ searchParams }: LoginFormProps) {
                   ⚡
                 </motion.div>
               ) : (
-                'Sign In'
+                'Logg Inn'
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
+              Har du ikke en konto?{' '}
               <Link href="/signup" className="text-primary hover:underline">
-                Sign up
+                Registrer deg
               </Link>
             </p>
 
