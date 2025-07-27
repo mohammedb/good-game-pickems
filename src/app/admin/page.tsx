@@ -27,6 +27,7 @@ import { MagicRecentActivity } from '@/components/admin/magic-recent-activity'
 import { AnimatedGridPattern } from '@/components/magicui/animated-grid-pattern'
 import { Confetti } from '@/components/ui/confetti'
 import { SyncScheduleCard } from '@/components/admin/sync-schedule-card'
+import { SeasonManagementCard } from '@/components/admin/season-management-card'
 import { cn } from '@/lib/utils'
 
 // Lazy load heavy components
@@ -518,6 +519,8 @@ export default function AdminPage() {
           </div>
           <RateLimitMonitor />
         </div>
+
+        <SeasonManagementCard onSeasonChange={() => router.refresh()} />
 
         <Card>
           <CardHeader>

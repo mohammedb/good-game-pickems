@@ -38,6 +38,38 @@
     --info: 189 100% 40%; /* Blue aligned with brand */
     --info-foreground: 0 0% 98%;
     
+    /* Status colors */
+    --status-active: 142 76% 36%; /* Green for active/live */
+    --status-active-foreground: 0 0% 98%;
+    --status-upcoming: 38 92% 50%; /* Amber/yellow for upcoming */
+    --status-upcoming-foreground: 0 0% 0%;
+    --status-completed: 220 13% 60%; /* Gray for completed */
+    --status-completed-foreground: 0 0% 98%;
+    --status-locked: 38 92% 50%; /* Yellow for locked */
+    --status-locked-foreground: 0 0% 0%;
+    
+    /* Achievement/Tier colors */
+    --tier-bronze: 30 60% 50%; /* Bronze */
+    --tier-bronze-foreground: 0 0% 98%;
+    --tier-silver: 0 0% 70%; /* Silver */
+    --tier-silver-foreground: 0 0% 0%;
+    --tier-gold: 48 95% 53%; /* Gold */
+    --tier-gold-foreground: 0 0% 0%;
+    --tier-platinum: 270 50% 60%; /* Purple/Platinum */
+    --tier-platinum-foreground: 0 0% 98%;
+    
+    /* Activity type colors */
+    --activity-sync: 210 100% 56%; /* Blue for sync */
+    --activity-sync-foreground: 0 0% 98%;
+    --activity-user: 142 76% 36%; /* Green for user actions */
+    --activity-user-foreground: 0 0% 98%;
+    --activity-system: 270 50% 60%; /* Purple for system */
+    --activity-system-foreground: 0 0% 98%;
+    --activity-pick: 38 92% 50%; /* Yellow for picks */
+    --activity-pick-foreground: 0 0% 0%;
+    --activity-match: 160 84% 39%; /* Emerald for matches */
+    --activity-match-foreground: 0 0% 98%;
+    
     /* Borders and inputs */
     --border: 220 13% 90%; /* Softer border color */
     --input: 220 13% 90%;
@@ -84,6 +116,38 @@
     --warning-foreground: 0 0% 0%;
     --info: 189 90% 60%;
     --info-foreground: 0 0% 0%;
+    
+    /* Dark mode status colors */
+    --status-active: 142 70% 45%;
+    --status-active-foreground: 0 0% 98%;
+    --status-upcoming: 38 90% 60%;
+    --status-upcoming-foreground: 0 0% 0%;
+    --status-completed: 220 10% 40%;
+    --status-completed-foreground: 210 40% 98%;
+    --status-locked: 38 90% 60%;
+    --status-locked-foreground: 0 0% 0%;
+    
+    /* Dark mode achievement/tier colors */
+    --tier-bronze: 30 50% 40%;
+    --tier-bronze-foreground: 210 40% 98%;
+    --tier-silver: 0 0% 60%;
+    --tier-silver-foreground: 210 40% 98%;
+    --tier-gold: 48 90% 50%;
+    --tier-gold-foreground: 0 0% 0%;
+    --tier-platinum: 270 60% 70%;
+    --tier-platinum-foreground: 0 0% 0%;
+    
+    /* Dark mode activity type colors */
+    --activity-sync: 210 90% 60%;
+    --activity-sync-foreground: 0 0% 0%;
+    --activity-user: 142 70% 45%;
+    --activity-user-foreground: 0 0% 98%;
+    --activity-system: 270 60% 70%;
+    --activity-system-foreground: 0 0% 0%;
+    --activity-pick: 38 90% 60%;
+    --activity-pick-foreground: 0 0% 0%;
+    --activity-match: 160 70% 50%;
+    --activity-match-foreground: 0 0% 98%;
     
     /* Dark mode borders */
     --border: 217.2 32.6% 17.5%;
@@ -156,6 +220,170 @@
   }
   .border-info {
     border-color: hsl(var(--info));
+  }
+  
+  /* Status color utilities */
+  .text-status-active {
+    color: hsl(var(--status-active));
+  }
+  .bg-status-active {
+    background-color: hsl(var(--status-active));
+  }
+  .border-status-active {
+    border-color: hsl(var(--status-active));
+  }
+  
+  .text-status-upcoming {
+    color: hsl(var(--status-upcoming));
+  }
+  .bg-status-upcoming {
+    background-color: hsl(var(--status-upcoming));
+  }
+  .border-status-upcoming {
+    border-color: hsl(var(--status-upcoming));
+  }
+  
+  .text-status-completed {
+    color: hsl(var(--status-completed));
+  }
+  .bg-status-completed {
+    background-color: hsl(var(--status-completed));
+  }
+  .border-status-completed {
+    border-color: hsl(var(--status-completed));
+  }
+  
+  .text-status-locked {
+    color: hsl(var(--status-locked));
+  }
+  .bg-status-locked {
+    background-color: hsl(var(--status-locked));
+  }
+  .border-status-locked {
+    border-color: hsl(var(--status-locked));
+  }
+  
+  /* Tier color utilities */
+  .text-tier-bronze {
+    color: hsl(var(--tier-bronze));
+  }
+  .bg-tier-bronze {
+    background-color: hsl(var(--tier-bronze));
+  }
+  .border-tier-bronze {
+    border-color: hsl(var(--tier-bronze));
+  }
+  
+  .text-tier-silver {
+    color: hsl(var(--tier-silver));
+  }
+  .bg-tier-silver {
+    background-color: hsl(var(--tier-silver));
+  }
+  .border-tier-silver {
+    border-color: hsl(var(--tier-silver));
+  }
+  
+  .text-tier-gold {
+    color: hsl(var(--tier-gold));
+  }
+  .bg-tier-gold {
+    background-color: hsl(var(--tier-gold));
+  }
+  .border-tier-gold {
+    border-color: hsl(var(--tier-gold));
+  }
+  
+  .text-tier-platinum {
+    color: hsl(var(--tier-platinum));
+  }
+  .bg-tier-platinum {
+    background-color: hsl(var(--tier-platinum));
+  }
+  .border-tier-platinum {
+    border-color: hsl(var(--tier-platinum));
+  }
+  
+  /* Activity color utilities */
+  .text-activity-sync {
+    color: hsl(var(--activity-sync));
+  }
+  .bg-activity-sync {
+    background-color: hsl(var(--activity-sync));
+  }
+  .border-activity-sync {
+    border-color: hsl(var(--activity-sync));
+  }
+  
+  .text-activity-user {
+    color: hsl(var(--activity-user));
+  }
+  .bg-activity-user {
+    background-color: hsl(var(--activity-user));
+  }
+  .border-activity-user {
+    border-color: hsl(var(--activity-user));
+  }
+  
+  .text-activity-system {
+    color: hsl(var(--activity-system));
+  }
+  .bg-activity-system {
+    background-color: hsl(var(--activity-system));
+  }
+  .border-activity-system {
+    border-color: hsl(var(--activity-system));
+  }
+  
+  .text-activity-pick {
+    color: hsl(var(--activity-pick));
+  }
+  .bg-activity-pick {
+    background-color: hsl(var(--activity-pick));
+  }
+  .border-activity-pick {
+    border-color: hsl(var(--activity-pick));
+  }
+  
+  .text-activity-match {
+    color: hsl(var(--activity-match));
+  }
+  .bg-activity-match {
+    background-color: hsl(var(--activity-match));
+  }
+  .border-activity-match {
+    border-color: hsl(var(--activity-match));
+  }
+  
+  /* Brand color utilities */
+  .text-brand-cyan {
+    color: hsl(var(--brand-cyan));
+  }
+  .bg-brand-cyan {
+    background-color: hsl(var(--brand-cyan));
+  }
+  .border-brand-cyan {
+    border-color: hsl(var(--brand-cyan));
+  }
+  
+  .text-brand-green {
+    color: hsl(var(--brand-green));
+  }
+  .bg-brand-green {
+    background-color: hsl(var(--brand-green));
+  }
+  .border-brand-green {
+    border-color: hsl(var(--brand-green));
+  }
+  
+  .text-brand-purple {
+    color: hsl(var(--brand-purple));
+  }
+  .bg-brand-purple {
+    background-color: hsl(var(--brand-purple));
+  }
+  .border-brand-purple {
+    border-color: hsl(var(--brand-purple));
   }
 }
 

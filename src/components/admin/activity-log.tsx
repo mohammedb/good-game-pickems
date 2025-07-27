@@ -12,15 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { formatDistanceToNow } from 'date-fns'
-import {
-  RefreshCw,
-  Calculator,
-  UserPlus,
-  Trophy,
-  AlertTriangle,
-  CheckCircle2,
-  Activity,
-} from 'lucide-react'
+import { Icons } from '@/lib/icons'
 
 interface ActivityLogEntry {
   id: string
@@ -37,24 +29,21 @@ interface ActivityLogProps {
 }
 
 const activityIcons = {
-  sync: RefreshCw,
-  points: Calculator,
-  user: UserPlus,
-  match: Trophy,
-  error: AlertTriangle,
-  success: CheckCircle2,
+  sync: Icons.sync,
+  points: Icons.calculator,
+  user: Icons.user,
+  match: Icons.trophy,
+  error: Icons.error,
+  success: Icons.success,
 }
 
 const activityColors = {
-  sync: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  points:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  user: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  match:
-    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  success:
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  sync: 'bg-activity-sync/10 text-activity-sync',
+  points: 'bg-activity-system/10 text-activity-system',
+  user: 'bg-activity-user/10 text-activity-user',
+  match: 'bg-activity-pick/10 text-activity-pick',
+  error: 'bg-destructive/10 text-destructive',
+  success: 'bg-activity-match/10 text-activity-match',
 }
 
 export function ActivityLog({ logs, isLoading }: ActivityLogProps) {
@@ -96,7 +85,7 @@ export function ActivityLog({ logs, isLoading }: ActivityLogProps) {
             Recent admin actions and system events
           </CardDescription>
         </div>
-        <Activity className="h-4 w-4 text-muted-foreground" />
+        <Icons.activity className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">

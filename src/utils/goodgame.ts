@@ -1,12 +1,15 @@
 import { GoodGameMatch, Match } from '@/app/matches/types'
 
 const DIVISION_ID = '12517' // CS:GO Division
-const SEASON_ID = '13162' // Current Season
+const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13162' // Current Season (configurable)
 const API_BASE_URL = 'https://www.goodgameligaen.no/api'
 const BATCH_SIZE = 25 // Process matches in smaller batches
 
-export async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
+export async function fetchGoodGameMatches(
+  seasonId?: string,
+): Promise<GoodGameMatch[]> {
   try {
+    const activeSeasonId = seasonId || SEASON_ID
     const params = new URLSearchParams({
       division: '12517',
       game: 'csgo',
@@ -14,7 +17,7 @@ export async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
       offset: '0',
       order_by: 'round_number',
       order_dir: 'asc',
-      season: '13162',
+      season: activeSeasonId,
     })
 
     const url = `${API_BASE_URL}/matches?${params.toString()}`
@@ -58,7 +61,10 @@ export async function fetchGoodGameMatches(): Promise<GoodGameMatch[]> {
   }
 }
 
-export function transformGoodGameMatch(match: GoodGameMatch): Match {
+export function transformGoodGameMatch(
+  match: GoodGameMatch,
+  seasonId: string,
+): Match & { season_id: string } {
   try {
     // Log the match being transformed
     console.log('Transforming match:', JSON.stringify(match, null, 2))
@@ -93,6 +99,7 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
       team2_logo: match.away_signup.team.logo?.url,
       start_time: match.start_time,
       division_id: DIVISION_ID,
+      season_id: seasonId, // Include season_id
       is_finished: !!match.finished_at,
       winner_id: winnerId,
       team1_map_score: match.home_score,
@@ -107,12 +114,26 @@ export function transformGoodGameMatch(match: GoodGameMatch): Match {
   }
 }
 
-export async function syncMatches(supabase: any) {
+export async function syncMatches(supabase: any, seasonId?: string) {
   try {
     console.log('Starting match sync...')
 
+    // Get the current active season if not provided
+    let activeSeasonId = seasonId || SEASON_ID
+    if (!seasonId) {
+      const { data: currentSeason } = await supabase
+        .rpc('get_current_season')
+        .single()
+
+      if (currentSeason?.season_id) {
+        activeSeasonId = currentSeason.season_id
+      }
+    }
+
+    console.log(`Syncing matches for season: ${activeSeasonId}`)
+
     // 1. Fetch matches from Good Game Ligaen
-    const ggMatches = await fetchGoodGameMatches()
+    const ggMatches = await fetchGoodGameMatches(activeSeasonId)
     console.log(`Fetched ${ggMatches.length} matches from API`)
 
     if (ggMatches.length === 0) {
@@ -143,7 +164,7 @@ export async function syncMatches(supabase: any) {
                 .eq('gg_ligaen_api_id', match.id.toString())
                 .single()
 
-              const matchData = transformGoodGameMatch(match)
+              const matchData = transformGoodGameMatch(match, activeSeasonId)
 
               // Check if we need to process points for this match
               const needsPointsProcessing =

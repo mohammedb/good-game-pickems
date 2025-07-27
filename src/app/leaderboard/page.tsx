@@ -10,11 +10,22 @@ import { createBrowserClient } from '@/utils/supabase-client'
 import { SparklesText } from '@/components/magicui/sparkles-text'
 import { NumberTicker } from '@/components/magicui/number-ticker'
 import confetti from 'canvas-confetti'
-import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Icons } from '@/lib/icons'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import Image from 'next/image'
 
 type TimeRange = 'all' | 'weekly' | 'monthly'
+
+interface Season {
+  id: string
+  season_id: string
+  name: string
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  match_count: number
+  user_count: number
+}
 
 interface LeaderboardEntry {
   user_id: string
@@ -80,8 +91,37 @@ export default function LeaderboardPage() {
   const itemsPerPage = 20
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
+  const [seasons, setSeasons] = useState<Season[]>([])
+  const [selectedSeason, setSelectedSeason] = useState<string | null>(null)
+  const [loadingSeasons, setLoadingSeasons] = useState(true)
 
   const supabase = createBrowserClient()
+
+  // Fetch available seasons on mount
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_seasons')
+        if (error) throw error
+
+        setSeasons(data || [])
+        // Set the active season as default
+        const activeSeason = data?.find((s: Season) => s.is_active)
+        if (activeSeason) {
+          setSelectedSeason(activeSeason.season_id)
+        } else if (data && data.length > 0) {
+          // If no active season, select the most recent one
+          setSelectedSeason(data[0].season_id)
+        }
+      } catch (error) {
+        console.error('Error fetching seasons:', error)
+      } finally {
+        setLoadingSeasons(false)
+      }
+    }
+
+    fetchSeasons()
+  }, [supabase])
 
   const triggerConfetti = () => {
     const duration = 3000
@@ -143,7 +183,10 @@ export default function LeaderboardPage() {
 
       const { data, error: queryError } = await supabase.rpc(
         'get_leaderboard',
-        { time_filter: timeFilter },
+        {
+          time_filter: timeFilter,
+          season_id_param: selectedSeason,
+        },
       )
 
       if (queryError) throw queryError
@@ -257,8 +300,10 @@ export default function LeaderboardPage() {
 
   // Fetch leaderboard on mount and when dependencies change
   useEffect(() => {
-    fetchLeaderboard()
-  }, [timeRange, currentPage, hasTriggeredConfetti]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (selectedSeason) {
+      fetchLeaderboard()
+    }
+  }, [timeRange, currentPage, hasTriggeredConfetti, selectedSeason]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set up real-time subscription
   useEffect(() => {
@@ -308,14 +353,14 @@ export default function LeaderboardPage() {
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, [supabase, timeRange]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [supabase, timeRange, selectedSeason]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (isLoading) {
+  if (isLoading || loadingSeasons) {
     return (
       <div className="container mx-auto p-4">
         <div className="animate-pulse space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 rounded-lg bg-gray-200" />
+            <div key={i} className="h-16 rounded-lg bg-muted" />
           ))}
         </div>
       </div>
@@ -325,7 +370,7 @@ export default function LeaderboardPage() {
   if (error) {
     return (
       <div className="container mx-auto p-4">
-        <div className="rounded bg-red-100 p-4 text-red-700">
+        <div className="rounded bg-destructive/10 p-4 text-destructive">
           Kunne ikke laste inn topplisten
         </div>
       </div>
@@ -339,17 +384,52 @@ export default function LeaderboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Toppliste</h1>
-          {lastUpdate && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 text-sm text-muted-foreground"
-            >
-              <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-              Oppdatert {lastUpdate.toLocaleTimeString('nb-NO')}
-            </motion.div>
+        <div className="mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Toppliste</h1>
+            {lastUpdate && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <div className="h-2 w-2 animate-pulse rounded-full bg-status-active" />
+                Oppdatert {lastUpdate.toLocaleTimeString('nb-NO')}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Season Selector */}
+          {seasons.length > 0 && (
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">
+                Sesong:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {seasons.map((season) => (
+                  <Button
+                    key={season.id}
+                    variant={
+                      selectedSeason === season.season_id
+                        ? 'default'
+                        : 'outline'
+                    }
+                    size="sm"
+                    onClick={() => {
+                      setSelectedSeason(season.season_id)
+                      setCurrentPage(1)
+                      setHasTriggeredConfetti(false)
+                    }}
+                    className="relative"
+                  >
+                    {season.name}
+                    {season.is_active && (
+                      <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-status-active" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
         <div className="flex gap-2">
@@ -389,10 +469,10 @@ export default function LeaderboardPage() {
                 <Card
                   className={`relative overflow-hidden border-2 ${
                     index === 0
-                      ? 'border-yellow-500 bg-yellow-500/5'
+                      ? 'border-tier-gold bg-tier-gold/5'
                       : index === 1
-                        ? 'border-gray-400 bg-gray-400/5'
-                        : 'border-amber-600 bg-amber-600/5'
+                        ? 'border-tier-silver bg-tier-silver/5'
+                        : 'border-tier-bronze bg-tier-bronze/5'
                   }`}
                 >
                   <div className="p-6">
@@ -401,19 +481,19 @@ export default function LeaderboardPage() {
                         <div
                           className={`flex h-12 w-12 items-center justify-center rounded-full ${
                             index === 0
-                              ? 'bg-yellow-500/20'
+                              ? 'bg-tier-gold/20'
                               : index === 1
-                                ? 'bg-gray-400/20'
-                                : 'bg-amber-600/20'
+                                ? 'bg-tier-silver/20'
+                                : 'bg-tier-bronze/20'
                           }`}
                         >
-                          <Trophy
+                          <Icons.trophy
                             className={`h-6 w-6 ${
                               index === 0
-                                ? 'text-yellow-500'
+                                ? 'text-tier-gold'
                                 : index === 1
-                                  ? 'text-gray-400'
-                                  : 'text-amber-600'
+                                  ? 'text-tier-silver'
+                                  : 'text-tier-bronze'
                             }`}
                           />
                         </div>
@@ -519,18 +599,18 @@ export default function LeaderboardPage() {
                       <div
                         className={`absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full ${
                           entry.rankChange === 'up'
-                            ? 'bg-green-500'
+                            ? 'bg-status-active'
                             : entry.rankChange === 'down'
-                              ? 'bg-red-500'
-                              : 'bg-gray-500'
+                              ? 'bg-destructive'
+                              : 'bg-status-completed'
                         } text-white`}
                       >
                         {entry.rankChange === 'up' ? (
-                          <TrendingUp className="h-3 w-3" />
+                          <Icons.trendingUp className="h-3 w-3" />
                         ) : entry.rankChange === 'down' ? (
-                          <TrendingDown className="h-3 w-3" />
+                          <Icons.trendingDown className="h-3 w-3" />
                         ) : (
-                          <Minus className="h-3 w-3" />
+                          <Icons.remove className="h-3 w-3" />
                         )}
                       </div>
                     )}
@@ -543,14 +623,14 @@ export default function LeaderboardPage() {
                             {entry.username}
                           </span>
                           {entry.rankChange === 'up' && entry.previousRank && (
-                            <span className="text-xs font-medium text-green-600">
+                            <span className="text-xs font-medium text-success">
                               ↑ {entry.previousRank - entry.currentRank!}{' '}
                               plasser
                             </span>
                           )}
                           {entry.rankChange === 'down' &&
                             entry.previousRank && (
-                              <span className="text-xs font-medium text-red-600">
+                              <span className="text-xs font-medium text-destructive">
                                 ↓ {entry.currentRank! - entry.previousRank}{' '}
                                 plasser
                               </span>
@@ -697,7 +777,7 @@ export default function LeaderboardPage() {
                                                       </div>
                                                     )}
                                                   </div>
-                                                  <div className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-green-500">
+                                                  <div className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-status-active">
                                                     <svg
                                                       width="8"
                                                       height="8"
@@ -791,7 +871,7 @@ export default function LeaderboardPage() {
                                             {!isValidDate &&
                                               !pick.round &&
                                               !hasMapScores && (
-                                                <span className="text-green-600">
+                                                <span className="text-success">
                                                   ✓ Riktig pick
                                                 </span>
                                               )}
@@ -807,7 +887,7 @@ export default function LeaderboardPage() {
                                             poeng
                                           </div>
                                           {pick.map_score_points > 0 && (
-                                            <div className="mt-0.5 text-xs font-medium text-green-600">
+                                            <div className="mt-0.5 text-xs font-medium text-success">
                                               +{pick.map_score_points} map
                                             </div>
                                           )}
@@ -838,7 +918,7 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1 }}
             className="rounded-lg border border-dashed p-8 text-center"
           >
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Ingen predictions er lagt inn i denne perioden
             </p>
           </motion.div>

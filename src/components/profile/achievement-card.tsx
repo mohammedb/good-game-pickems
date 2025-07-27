@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Trophy, Target, Sparkles, Medal, Crown, Lock } from 'lucide-react'
+import { Icons } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import {
@@ -23,41 +23,41 @@ interface AchievementCardProps {
 }
 
 const iconMap = {
-  trophy: Trophy,
-  target: Target,
-  sparkles: Sparkles,
-  medal: Medal,
-  crown: Crown,
+  trophy: Icons.trophy,
+  target: Icons.target,
+  sparkles: Icons.sparkles,
+  medal: Icons.medal,
+  crown: Icons.crown,
 }
 
 const rarityStyles = {
   common: {
-    border: 'border-zinc-300 dark:border-zinc-700',
-    bg: 'bg-zinc-100 dark:bg-zinc-800',
-    iconBg: 'bg-zinc-200 dark:bg-zinc-700',
-    text: 'text-zinc-900 dark:text-zinc-100',
-    progressBar: 'bg-zinc-400',
+    border: 'border-muted',
+    bg: 'bg-muted/50',
+    iconBg: 'bg-muted',
+    text: 'text-foreground',
+    progressBar: 'bg-muted-foreground',
   },
   rare: {
-    border: 'border-blue-300 dark:border-blue-700',
-    bg: 'bg-blue-50 dark:bg-blue-950/50',
-    iconBg: 'bg-blue-200 dark:bg-blue-800',
-    text: 'text-blue-900 dark:text-blue-100',
-    progressBar: 'bg-blue-500',
+    border: 'border-info/30',
+    bg: 'bg-info/5',
+    iconBg: 'bg-info/20',
+    text: 'text-info',
+    progressBar: 'bg-info',
   },
   epic: {
-    border: 'border-purple-300 dark:border-purple-700',
-    bg: 'bg-purple-50 dark:bg-purple-950/50',
-    iconBg: 'bg-purple-200 dark:bg-purple-800',
-    text: 'text-purple-900 dark:text-purple-100',
-    progressBar: 'bg-purple-500',
+    border: 'border-tier-platinum/30',
+    bg: 'bg-tier-platinum/5',
+    iconBg: 'bg-tier-platinum/20',
+    text: 'text-tier-platinum',
+    progressBar: 'bg-tier-platinum',
   },
   legendary: {
-    border: 'border-amber-300 dark:border-amber-700',
-    bg: 'bg-amber-50 dark:bg-amber-950/50',
-    iconBg: 'bg-amber-200 dark:bg-amber-800',
-    text: 'text-amber-900 dark:text-amber-100',
-    progressBar: 'bg-amber-500',
+    border: 'border-tier-gold/30',
+    bg: 'bg-tier-gold/5',
+    iconBg: 'bg-tier-gold/20',
+    text: 'text-tier-gold',
+    progressBar: 'bg-tier-gold',
   },
 }
 
@@ -87,26 +87,24 @@ export function AchievementCard({
             <Card
               className={cn(
                 'relative overflow-hidden p-4 transition-all duration-300',
-                unlocked
-                  ? styles.border
-                  : 'border-gray-200 dark:border-gray-800',
-                unlocked ? styles.bg : 'bg-gray-50 dark:bg-gray-900/50',
+                unlocked ? styles.border : 'border-muted',
+                unlocked ? styles.bg : 'bg-muted/20',
                 !unlocked && 'opacity-75',
               )}
             >
               {/* Lock overlay for locked achievements */}
               {!unlocked && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                  <Lock className="h-8 w-8 text-gray-400" />
+                  <Icons.matchLocked className="h-8 w-8 text-muted-foreground" />
                 </div>
               )}
 
               {/* Sparkle effect for legendary achievements */}
               {unlocked && rarity === 'legendary' && (
                 <div className="absolute inset-0 opacity-20">
-                  <div className="absolute left-4 top-2 h-2 w-2 animate-pulse rounded-full bg-amber-400" />
-                  <div className="absolute bottom-4 right-6 h-1.5 w-1.5 animate-pulse rounded-full bg-amber-300 delay-300" />
-                  <div className="absolute right-8 top-6 h-1 w-1 animate-pulse rounded-full bg-amber-500 delay-700" />
+                  <div className="absolute left-4 top-2 h-2 w-2 animate-pulse rounded-full bg-tier-gold" />
+                  <div className="absolute bottom-4 right-6 h-1.5 w-1.5 animate-pulse rounded-full bg-tier-gold/80 delay-300" />
+                  <div className="absolute right-8 top-6 h-1 w-1 animate-pulse rounded-full bg-tier-gold delay-700" />
                 </div>
               )}
 
@@ -114,13 +112,13 @@ export function AchievementCard({
                 <div
                   className={cn(
                     'flex h-12 w-12 items-center justify-center rounded-full',
-                    unlocked ? styles.iconBg : 'bg-gray-200 dark:bg-gray-800',
+                    unlocked ? styles.iconBg : 'bg-muted',
                   )}
                 >
                   <Icon
                     className={cn(
                       'h-6 w-6',
-                      unlocked ? styles.text : 'text-gray-500',
+                      unlocked ? styles.text : 'text-muted-foreground',
                     )}
                   />
                 </div>
@@ -130,9 +128,7 @@ export function AchievementCard({
                     <h3
                       className={cn(
                         'font-semibold',
-                        unlocked
-                          ? styles.text
-                          : 'text-gray-700 dark:text-gray-300',
+                        unlocked ? styles.text : 'text-muted-foreground',
                       )}
                     >
                       {title}
@@ -141,7 +137,7 @@ export function AchievementCard({
                       <span
                         className={cn(
                           'text-sm font-medium',
-                          unlocked ? styles.text : 'text-gray-500',
+                          unlocked ? styles.text : 'text-muted-foreground',
                         )}
                       >
                         +{points}p
@@ -154,21 +150,21 @@ export function AchievementCard({
                       'mb-3 text-sm',
                       unlocked
                         ? 'text-muted-foreground'
-                        : 'text-gray-500 dark:text-gray-600',
+                        : 'text-muted-foreground',
                     )}
                   >
                     {description}
                   </p>
 
                   {/* Progress bar */}
-                  <div className="relative h-2 w-full rounded-full bg-gray-200 dark:bg-gray-800">
+                  <div className="relative h-2 w-full rounded-full bg-muted">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 1, ease: 'easeOut' }}
                       className={cn(
                         'h-full rounded-full',
-                        unlocked ? styles.progressBar : 'bg-gray-400',
+                        unlocked ? styles.progressBar : 'bg-muted-foreground',
                       )}
                     />
                   </div>
@@ -191,7 +187,7 @@ export function AchievementCard({
                   transition={{ delay: 0.5, type: 'spring' }}
                   className="absolute -right-1 -top-1"
                 >
-                  <Sparkles className="h-6 w-6 text-green-500" />
+                  <Icons.sparkles className="h-6 w-6 text-success" />
                 </motion.div>
               )}
             </Card>
@@ -241,12 +237,12 @@ export function AchievementCard({
                 className={cn(
                   'font-medium capitalize',
                   rarity === 'legendary'
-                    ? 'text-amber-600'
+                    ? 'text-tier-gold'
                     : rarity === 'epic'
-                      ? 'text-purple-600'
+                      ? 'text-tier-platinum'
                       : rarity === 'rare'
                         ? 'text-blue-600'
-                        : 'text-gray-600',
+                        : 'text-muted-foreground',
                 )}
               >
                 {rarity === 'legendary'

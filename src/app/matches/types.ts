@@ -61,6 +61,7 @@ export interface Match {
   team2_logo?: string
   start_time: string
   division_id: string
+  season_id?: string
   is_finished: boolean
   winner_id: string | null
   team1_score?: number | null

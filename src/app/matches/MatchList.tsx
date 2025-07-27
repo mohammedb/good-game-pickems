@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { submitPrediction, removeUnlockedPredictions } from './actions'
 import { Match } from './types'
 import Image from 'next/image'
-import { Trash2, Lock, Twitch, CheckCircle2, Timer } from 'lucide-react'
+import { Icons } from '@/lib/icons'
 import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
 import { BorderBeam } from '@/components/magicui/border-beam'
@@ -315,7 +315,7 @@ export default function MatchList({
           disabled={isRemoving}
           className="gap-2"
         >
-          <Trash2 className="h-4 w-4" />
+          <Icons.delete className="h-4 w-4" />
           {isRemoving ? 'Fjerner...' : 'Fjern Ulåste Predictions'}
         </Button>
       </div>
@@ -344,17 +344,17 @@ export default function MatchList({
             </h3>
             <div className="grid gap-2">
               <div className="flex items-start gap-2">
-                <Lock className="mt-1 h-3 w-3 shrink-0 text-yellow-500" />
+                <Icons.matchLocked className="mt-1 h-3 w-3 shrink-0 text-status-locked" />
                 <span>
                   Predictions låses <strong>2 timer</strong> før kampstart
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <Timer className="mt-1 h-3 w-3 shrink-0 text-blue-500" />
+                <Icons.matchUpcoming className="mt-1 h-3 w-3 shrink-0 text-info" />
                 <span>Du kan endre predictions helt frem til låsing</span>
               </div>
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="mt-1 h-3 w-3 shrink-0 text-green-500" />
+                <Icons.matchLive className="mt-1 h-3 w-3 shrink-0 text-status-active" />
                 <span>
                   Poeng deles ut når kampen er ferdig og resultatet er bekreftet
                 </span>
@@ -368,22 +368,22 @@ export default function MatchList({
             <h3 className="mb-3 text-base font-semibold">Status Forklaring</h3>
             <div className="grid gap-2">
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-500">
-                  <Timer className="h-3 w-3" />
+                <span className="flex items-center gap-1 rounded-full bg-info/10 px-2 py-1 text-xs font-medium text-info">
+                  <Icons.matchUpcoming className="h-3 w-3" />
                   Åpen
                 </span>
                 <span>Du kan legge inn eller endre prediction</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500">
-                  <Lock className="h-3 w-3" />
+                <span className="flex items-center gap-1 rounded-full bg-status-upcoming/10 px-2 py-1 text-xs font-medium text-status-upcoming">
+                  <Icons.matchLocked className="h-3 w-3" />
                   Låst
                 </span>
                 <span>Prediction er låst og kan ikke endres</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500">
-                  <CheckCircle2 className="h-3 w-3" />
+                <span className="flex items-center gap-1 rounded-full bg-status-active/10 px-2 py-1 text-xs font-medium text-status-active">
+                  <Icons.matchLive className="h-3 w-3" />
                   Ferdig
                 </span>
                 <span>Kampen er ferdig og poeng er delt ut</span>
@@ -441,18 +441,18 @@ export default function MatchList({
                                 {matchTime.toLocaleString('nb-NO')}
                               </time>
                               {match.is_finished ? (
-                                <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500">
-                                  <CheckCircle2 className="h-3 w-3" />
+                                <span className="flex items-center gap-1 rounded-full bg-status-active/10 px-2 py-1 text-xs font-medium text-status-active">
+                                  <Icons.matchLive className="h-3 w-3" />
                                   Ferdig
                                 </span>
                               ) : isLocked ? (
-                                <span className="flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500">
-                                  <Lock className="h-3 w-3" />
+                                <span className="flex items-center gap-1 rounded-full bg-status-upcoming/10 px-2 py-1 text-xs font-medium text-status-upcoming">
+                                  <Icons.matchLocked className="h-3 w-3" />
                                   Låst
                                 </span>
                               ) : (
-                                <span className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-500">
-                                  <Timer className="h-3 w-3" />
+                                <span className="flex items-center gap-1 rounded-full bg-info/10 px-2 py-1 text-xs font-medium text-info">
+                                  <Icons.matchUpcoming className="h-3 w-3" />
                                   Åpen
                                 </span>
                               )}
@@ -462,9 +462,9 @@ export default function MatchList({
                                 href={match.stream_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-sm text-purple-500 transition-colors hover:text-purple-600"
+                                className="flex items-center gap-2 text-sm text-activity-system transition-colors hover:text-activity-system/80"
                               >
-                                <Twitch className="h-4 w-4" />
+                                <Icons.twitch className="h-4 w-4" />
                                 <span>Se Stream</span>
                               </a>
                             )}
@@ -542,7 +542,7 @@ export default function MatchList({
                                             'text-lg font-semibold',
                                             match.winner_id ===
                                               match.team1_id &&
-                                              'text-green-500',
+                                              'text-status-active',
                                           )}
                                         >
                                           {match.team1}
@@ -556,7 +556,7 @@ export default function MatchList({
                                             'text-lg font-semibold',
                                             match.winner_id ===
                                               match.team2_id &&
-                                              'text-green-500',
+                                              'text-status-active',
                                           )}
                                         >
                                           {match.team2}
@@ -564,7 +564,7 @@ export default function MatchList({
                                       </div>
                                     </div>
                                     <div className="flex items-center justify-center gap-2">
-                                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                      <Icons.matchLive className="h-4 w-4 text-status-active" />
                                       <p className="text-sm text-muted-foreground">
                                         Ferdig
                                       </p>
@@ -572,7 +572,7 @@ export default function MatchList({
                                   </>
                                 ) : (
                                   <>
-                                    <Lock className="mx-auto mb-2 h-6 w-6 text-yellow-500" />
+                                    <Icons.matchLocked className="mx-auto mb-2 h-6 w-6 text-status-upcoming" />
                                     <p className="text-sm text-muted-foreground">
                                       Prediction er låst
                                     </p>

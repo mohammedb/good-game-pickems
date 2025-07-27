@@ -3,15 +3,15 @@
 import * as React from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/tailwind'
-import { Trophy, Medal, Star, Award, Crown } from 'lucide-react'
+import { Icons } from '@/lib/icons'
 import { SparklesText } from '@/components/magicui/sparkles-text'
 
 const badgeIcons = {
-  trophy: Trophy,
-  medal: Medal,
-  star: Star,
-  award: Award,
-  crown: Crown,
+  trophy: Icons.trophy,
+  medal: Icons.medal,
+  star: Icons.star,
+  award: Icons.award,
+  crown: Icons.crown,
 }
 
 interface BadgeCardProps {
@@ -36,13 +36,10 @@ export function BadgeCard({
   const Icon = badgeIcons[icon]
 
   const variants = {
-    bronze:
-      'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    silver:
-      'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400',
-    gold: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    platinum:
-      'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+    bronze: 'bg-tier-bronze/10 text-tier-bronze',
+    silver: 'bg-tier-silver/10 text-tier-silver',
+    gold: 'bg-tier-gold/10 text-tier-gold',
+    platinum: 'bg-tier-platinum/10 text-tier-platinum',
   }
 
   return (

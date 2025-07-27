@@ -51,6 +51,86 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Semantic colors
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
+        // Status colors
+        status: {
+          active: {
+            DEFAULT: 'hsl(var(--status-active))',
+            foreground: 'hsl(var(--status-active-foreground))',
+          },
+          upcoming: {
+            DEFAULT: 'hsl(var(--status-upcoming))',
+            foreground: 'hsl(var(--status-upcoming-foreground))',
+          },
+          completed: {
+            DEFAULT: 'hsl(var(--status-completed))',
+            foreground: 'hsl(var(--status-completed-foreground))',
+          },
+          locked: {
+            DEFAULT: 'hsl(var(--status-locked))',
+            foreground: 'hsl(var(--status-locked-foreground))',
+          },
+        },
+        // Tier colors
+        tier: {
+          bronze: {
+            DEFAULT: 'hsl(var(--tier-bronze))',
+            foreground: 'hsl(var(--tier-bronze-foreground))',
+          },
+          silver: {
+            DEFAULT: 'hsl(var(--tier-silver))',
+            foreground: 'hsl(var(--tier-silver-foreground))',
+          },
+          gold: {
+            DEFAULT: 'hsl(var(--tier-gold))',
+            foreground: 'hsl(var(--tier-gold-foreground))',
+          },
+          platinum: {
+            DEFAULT: 'hsl(var(--tier-platinum))',
+            foreground: 'hsl(var(--tier-platinum-foreground))',
+          },
+        },
+        // Activity colors
+        activity: {
+          sync: {
+            DEFAULT: 'hsl(var(--activity-sync))',
+            foreground: 'hsl(var(--activity-sync-foreground))',
+          },
+          user: {
+            DEFAULT: 'hsl(var(--activity-user))',
+            foreground: 'hsl(var(--activity-user-foreground))',
+          },
+          system: {
+            DEFAULT: 'hsl(var(--activity-system))',
+            foreground: 'hsl(var(--activity-system-foreground))',
+          },
+          pick: {
+            DEFAULT: 'hsl(var(--activity-pick))',
+            foreground: 'hsl(var(--activity-pick-foreground))',
+          },
+          match: {
+            DEFAULT: 'hsl(var(--activity-match))',
+            foreground: 'hsl(var(--activity-match-foreground))',
+          },
+        },
+        // Brand colors
+        brand: {
+          cyan: 'hsl(var(--brand-cyan))',
+          green: 'hsl(var(--brand-green))',
+          purple: 'hsl(var(--brand-purple))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

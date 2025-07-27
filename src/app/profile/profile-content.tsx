@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation'
 import { BorderBeam } from '@/components/magicui/border-beam'
 import { ProfileSkeleton } from '@/components/profile/profile-skeleton'
 import { SparklesText } from '@/components/magicui/sparkles-text'
-import { Trophy, Target, Sparkles, Medal, Crown } from 'lucide-react'
+import { Icons } from '@/lib/icons'
 
 interface Match {
   team1: string
@@ -74,11 +74,11 @@ interface ProfileContentProps {
 }
 
 const iconMap = {
-  trophy: Trophy,
-  target: Target,
-  sparkles: Sparkles,
-  medal: Medal,
-  crown: Crown,
+  trophy: Icons.trophy,
+  target: Icons.target,
+  sparkles: Icons.sparkles,
+  medal: Icons.medal,
+  crown: Icons.crown,
 }
 
 export default function ProfileContent({ stats }: ProfileContentProps) {
@@ -286,13 +286,11 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
 
         {/* Achievement Progress Overview */}
         <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 dark:border-amber-800 dark:from-amber-950/20 dark:to-amber-900/20">
+          <Card className="border-tier-gold/30 bg-gradient-to-br from-tier-gold/5 to-tier-gold/10 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Legendarisk
-                </p>
-                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                <p className="text-sm text-tier-gold-foreground">Legendarisk</p>
+                <p className="text-2xl font-bold text-tier-gold">
                   {
                     stats.achievements.filter(
                       (a) => a.rarity === 'legendary' && a.unlocked,
@@ -305,17 +303,15 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                   }
                 </p>
               </div>
-              <Crown className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+              <Icons.crown className="h-8 w-8 text-tier-gold" />
             </div>
           </Card>
 
-          <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/20">
+          <Card className="border-tier-platinum/30 bg-gradient-to-br from-tier-platinum/5 to-tier-platinum/10 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-700 dark:text-purple-300">
-                  Episk
-                </p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                <p className="text-sm text-tier-platinum-foreground">Episk</p>
+                <p className="text-2xl font-bold text-tier-platinum">
                   {
                     stats.achievements.filter(
                       (a) => a.rarity === 'epic' && a.unlocked,
@@ -325,17 +321,15 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                   {stats.achievements.filter((a) => a.rarity === 'epic').length}
                 </p>
               </div>
-              <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+              <Icons.sparkles className="h-8 w-8 text-tier-platinum" />
             </div>
           </Card>
 
-          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 dark:border-blue-800 dark:from-blue-950/20 dark:to-blue-900/20">
+          <Card className="border-info/30 bg-gradient-to-br from-info/5 to-info/10 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Sjelden
-                </p>
-                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                <p className="text-sm text-info-foreground">Sjelden</p>
+                <p className="text-2xl font-bold text-info">
                   {
                     stats.achievements.filter(
                       (a) => a.rarity === 'rare' && a.unlocked,
@@ -345,31 +339,29 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                   {stats.achievements.filter((a) => a.rarity === 'rare').length}
                 </p>
               </div>
-              <Medal className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <Icons.medal className="h-8 w-8 text-info" />
             </div>
           </Card>
 
-          <Card className="border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 dark:border-gray-800 dark:from-gray-950/20 dark:to-gray-900/20">
+          <Card className="border-muted bg-gradient-to-br from-muted/20 to-muted/30 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Total Poeng
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-sm text-muted-foreground">Total Poeng</p>
+                <p className="text-2xl font-bold text-foreground">
                   {stats.achievements
                     .filter((a) => a.unlocked)
                     .reduce((sum, a) => sum + a.points, 0)}
                 </p>
               </div>
-              <Trophy className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+              <Icons.trophy className="h-8 w-8 text-muted-foreground" />
             </div>
           </Card>
         </div>
 
         {/* Recently Unlocked Achievements */}
         {stats.achievements.filter((a) => a.unlocked).length > 0 && (
-          <Card className="mb-6 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
-            <h3 className="mb-4 text-lg font-semibold text-green-900 dark:text-green-100">
+          <Card className="mb-6 border-success/30 bg-gradient-to-r from-success/5 to-success/10 p-6">
+            <h3 className="mb-4 text-lg font-semibold text-success">
               🎉 Sist Opplåst
             </h3>
             <div className="flex flex-wrap gap-3">
@@ -389,12 +381,12 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                       whileHover={{ scale: 1.05 }}
                       className={`flex items-center gap-2 rounded-full px-4 py-2 ${
                         achievement.rarity === 'legendary'
-                          ? 'bg-amber-200 dark:bg-amber-800'
+                          ? 'bg-tier-gold/20'
                           : achievement.rarity === 'epic'
-                            ? 'bg-purple-200 dark:bg-purple-800'
+                            ? 'bg-tier-platinum/20'
                             : achievement.rarity === 'rare'
-                              ? 'bg-blue-200 dark:bg-blue-800'
-                              : 'bg-gray-200 dark:bg-gray-800'
+                              ? 'bg-info/20'
+                              : 'bg-muted'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -514,7 +506,7 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                           Resultat: {pick.match.team1_map_score}-
                           {pick.match.team2_map_score}
                           {pick.map_score_correct && (
-                            <span className="ml-2 text-green-500">
+                            <span className="ml-2 text-success">
                               (+2 poeng)
                             </span>
                           )}
@@ -525,10 +517,10 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                     <div
                       className={`rounded-full px-3 py-1 text-sm ${
                         pick.is_correct === null
-                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          ? 'bg-status-upcoming/10 text-status-upcoming'
                           : pick.is_correct
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            ? 'bg-success/10 text-success'
+                            : 'bg-destructive/10 text-destructive'
                       }`}
                     >
                       {pick.is_correct === null ? (
@@ -551,8 +543,8 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
                       <div
                         className={`text-sm ${
                           pick.map_score_correct
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-red-600 dark:text-red-400'
+                            ? 'text-success'
+                            : 'text-destructive'
                         }`}
                       >
                         {pick.map_score_correct ? 'Riktig score' : 'Feil score'}
