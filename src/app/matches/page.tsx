@@ -1,18 +1,26 @@
 // src/app/matches/page.tsx
 'use client'
 
-import { useMatches } from '@/hooks/use-matches'
+import { useMatches, GameTypeFilter } from '@/hooks/use-matches'
 import MatchList from './MatchList'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/utils/supabase-client'
 import { Loader2 } from 'lucide-react'
 import { MatchSkeleton } from '@/components/matches/match-skeleton'
+import { GameTypeSelector } from '@/components/game-type-selector'
 
 export default function MatchesPage() {
   const router = useRouter()
   const supabase = createBrowserClient()
-  const { data: matches, isLoading, isError, error } = useMatches()
+  const [selectedGameType, setSelectedGameType] =
+    useState<GameTypeFilter>('all')
+  const {
+    data: matches,
+    isLoading,
+    isError,
+    error,
+  } = useMatches(selectedGameType)
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState<string>()
   const [roundStats, setRoundStats] = useState({
@@ -129,6 +137,8 @@ export default function MatchesPage() {
         allRounds: allRounds,
         onRoundChange: setSelectedRound,
       }}
+      selectedGameType={selectedGameType}
+      onGameTypeChange={setSelectedGameType}
     />
   )
 }

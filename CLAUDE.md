@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Good Game Pickems - A competitive prediction platform for CS2 matches in the Good Game Ligaen (Norwegian esports league).
+Good Game Pickems - A competitive prediction platform for CS2 and League of Legends matches in the Good Game Ligaen (Norwegian esports league).
 
 ## Essential Commands
 
@@ -86,9 +86,11 @@ src/
 
 1. **Good Game Ligaen API**:
    - Base URL: `https://www.goodgameligaen.no/api`
-   - Division ID: 12517 (CS2)
+   - Division IDs: 
+     - CS2: 12517
+     - LoL: 12518 (configurable via `GOOD_GAME_LOL_DIVISION_ID`)
    - Season ID: 13162 (Current)
-   - Auth: Bearer token in `BEARER_TOKEN` env var
+   - Auth: Bearer token in `GOOD_GAME_LIGAEN_TOKEN` env var
 
 2. **Supabase Configuration**:
    - URL: `NEXT_PUBLIC_SUPABASE_URL`
@@ -133,6 +135,14 @@ src/
 2. Modify `goodgame.ts` API types
 3. Update sync logic in API route
 4. Add UI components as needed
+
+**Supporting a new game type**:
+
+1. Add game_type to database schema (done for LoL)
+2. Update `goodgame.ts` to support new game API endpoints
+3. Modify sync logic to handle multiple game types
+4. Update UI with game type filtering
+5. Test match syncing and display
 
 **Modifying points calculation**:
 

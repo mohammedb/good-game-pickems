@@ -1,10 +1,6 @@
 'use server'
 
-import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
-import { redirect } from 'next/navigation'
-import { renderEmail, WelcomeEmail } from '@/lib/email-templates'
-import { sendEmail } from '@/lib/email'
 import { signUpSchema } from '@/lib/validations/schemas'
 import { z } from 'zod'
 
@@ -15,25 +11,6 @@ const SITE_URL =
     : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 const REDIRECT_URL = `${SITE_URL}/api/auth/callback`
-
-async function sendWelcomeEmail(
-  email: string,
-  username: string,
-  verificationUrl: string,
-) {
-  const welcomeEmailHtml = await renderEmail(
-    WelcomeEmail({
-      username,
-      verificationUrl,
-    }),
-  )
-
-  await sendEmail({
-    to: email,
-    subject: 'Velkommen til GGWP.no! 🎮',
-    html: welcomeEmailHtml,
-  })
-}
 
 export async function signUp(formData: FormData) {
   // const cookieStore = cookies() - removed in Next.js 15
@@ -71,6 +48,7 @@ export async function signUp(formData: FormData) {
     }
 
     // Configure Supabase auth with site URL
+    // Disable Supabase's built-in confirmation email since we're sending our own
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
@@ -99,20 +77,16 @@ export async function signUp(formData: FormData) {
           updated_at: new Date().toISOString(),
         })
 
-        // Send welcome email with verification link
-        await sendWelcomeEmail(
-          validatedData.email,
-          validatedData.username,
-          REDIRECT_URL,
-        )
+        // Note: We rely on Supabase's built-in confirmation email
+        // Custom welcome email can be sent after email confirmation if needed
       } catch (error) {
         // Log the error but don't fail the signup
-        console.error('Error in signup process:', error)
+        console.error('Error creating user profile:', error)
 
         // Log to admin_logs table for visibility
         try {
           await supabase.from('admin_logs').insert({
-            action: 'email_send_failed',
+            action: 'user_profile_creation_failed',
             details: {
               user_id: authData.user.id,
               email: validatedData.email,
@@ -122,7 +96,7 @@ export async function signUp(formData: FormData) {
             created_at: new Date().toISOString(),
           })
         } catch (logError) {
-          console.error('Failed to log email error:', logError)
+          console.error('Failed to log error:', logError)
         }
       }
 

@@ -8,6 +8,7 @@ import Navigation from '@/components/Navigation'
 import Onboarding from '@/components/Onboarding'
 import { useUserStore } from '@/stores/user-store'
 import { QueryProvider } from '@/providers/query-provider'
+import { AchievementProvider } from '@/providers/achievement-provider'
 
 export default function RootLayoutClient({
   children,
@@ -30,13 +31,15 @@ export default function RootLayoutClient({
   return (
     <QueryProvider>
       <ThemeProvider>
-        <Navigation />
-        <main>{children}</main>
-        <Toaster />
-        {!isLoading && user && profile && !hasCompletedOnboarding && (
-          <Onboarding onComplete={() => setHasCompletedOnboarding(true)} />
-        )}
-        <Analytics />
+        <AchievementProvider>
+          <Navigation />
+          <main>{children}</main>
+          <Toaster />
+          {!isLoading && user && profile && !hasCompletedOnboarding && (
+            <Onboarding onComplete={() => setHasCompletedOnboarding(true)} />
+          )}
+          <Analytics />
+        </AchievementProvider>
       </ThemeProvider>
     </QueryProvider>
   )

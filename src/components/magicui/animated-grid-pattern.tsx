@@ -94,10 +94,10 @@ export function AnimatedGridPattern({
       resizeObserver.observe(containerRef.current)
     }
 
+    const container = containerRef.current
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current)
+      if (container) {
+        resizeObserver.unobserve(container)
       }
     }
   }, [containerRef])

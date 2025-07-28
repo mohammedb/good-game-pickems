@@ -12,6 +12,7 @@ import {
   X,
   LucideIcon,
   Users,
+  Swords,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/stores/onboarding-store'
@@ -34,6 +35,12 @@ const navItems: NavItem[] = [
     label: 'Kamper',
     icon: Calendar,
     id: 'nav-matches',
+  },
+  {
+    href: '/challenges',
+    label: 'Utfordringer',
+    icon: Swords,
+    id: 'nav-challenges',
   },
   {
     href: '/leaderboard',

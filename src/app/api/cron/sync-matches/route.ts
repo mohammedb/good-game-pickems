@@ -16,7 +16,11 @@ export async function POST(request: Request) {
     // const cookieStore = cookies() - removed in Next.js 15
     const supabase = await createServerClient()
 
-    const result = await syncMatches(supabase)
+    // Parse request body to get game types if provided
+    const body = await request.json().catch(() => ({}))
+    const gameTypes = body.gameTypes || ['csgo', 'lol'] // Default to both games
+
+    const result = await syncMatches(supabase, undefined, gameTypes)
 
     return NextResponse.json(result)
   } catch (error) {

@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { revalidatePath } from 'next/cache'
+import { AchievementService } from '@/lib/achievements/service'
 
 interface PickWithMatch {
   id: string
@@ -64,9 +65,31 @@ export async function submitPrediction(
       }
     }
 
-    // Revalidate the matches page to show updated state
-    revalidatePath('/matches')
-    return { success: true }
+    // Check achievements after prediction
+    try {
+      const achievementService = new AchievementService(supabase)
+      const achievementResult = await achievementService.checkAchievements(
+        userId,
+        'prediction_made',
+        { matchId },
+      )
+
+      // Revalidate the matches page to show updated state
+      revalidatePath('/matches')
+
+      return {
+        success: true,
+        achievements: achievementResult,
+      }
+    } catch (achievementError) {
+      console.error('Error checking achievements:', achievementError)
+      // Still return success even if achievement check fails
+      revalidatePath('/matches')
+      return {
+        success: true,
+        achievements: null,
+      }
+    }
   } catch (error) {
     console.error('Error in submitPrediction:', error)
     return { error: 'En uventet feil oppstod' }

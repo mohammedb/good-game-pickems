@@ -19,7 +19,15 @@
       "mcp__serena__activate_project",
       "mcp__serena__find_file",
       "Bash(mkdir:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:www.goodgameligaen.no)",
+      "Bash(mv:*)",
+      "mcp__serena__replace_regex",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "mcp__serena__find_symbol"
     ],
     "deny": []
   }

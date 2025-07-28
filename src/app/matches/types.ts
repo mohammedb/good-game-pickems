@@ -62,6 +62,8 @@ export interface Match {
   start_time: string
   division_id: string
   season_id?: string
+  game_type?: 'csgo' | 'lol'
+  game_data?: any
   is_finished: boolean
   winner_id: string | null
   team1_score?: number | null

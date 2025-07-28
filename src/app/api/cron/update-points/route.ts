@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { addAdminLog } from '@/lib/admin-logs'
+import { AchievementService } from '@/lib/achievements/service'
 
 // Points configuration
 const POINTS_FOR_CORRECT_PICK = 2
@@ -142,11 +143,51 @@ export async function POST(request: Request) {
     // 6. Update user total points (using a database function for atomicity)
     await supabase.rpc('update_user_total_points')
 
+    // 7. Check achievements for all affected users
+    const uniqueUserIds = Array.from(new Set(picks.map((p: Pick) => p.user_id)))
+    const achievementService = new AchievementService(supabase)
+
+    // Get round information for the matches
+    const matchRounds = matches.reduce(
+      (acc: Record<string, string>, match: any) => {
+        acc[match.id] = match.round
+        return acc
+      },
+      {},
+    )
+
+    // Check achievements for each user
+    let totalAchievementsUnlocked = 0
+    for (const userId of uniqueUserIds) {
+      try {
+        // Get the user's picks that were just processed
+        const userPicks = picks.filter((p: Pick) => p.user_id === userId)
+
+        // Check achievements for each completed match
+        for (const pick of userPicks) {
+          const roundId = matchRounds[pick.match_id]
+          const result = await achievementService.checkAchievements(
+            userId,
+            'match_completed',
+            {
+              matchId: pick.match_id,
+              roundId,
+              wasCorrect: pick.points_awarded > 0,
+            },
+          )
+
+          totalAchievementsUnlocked += result.unlocked.length
+        }
+      } catch (error) {
+        console.error(`Error checking achievements for user ${userId}:`, error)
+      }
+    }
+
     // Log the successful update
     await addAdminLog(
       'points',
       `Updated points for ${validResults.length} matches`,
-      `Processed ${picks.length} picks successfully`,
+      `Processed ${picks.length} picks successfully. ${totalAchievementsUnlocked} achievements unlocked.`,
     )
 
     return NextResponse.json({

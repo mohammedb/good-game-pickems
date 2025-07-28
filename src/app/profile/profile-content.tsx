@@ -5,7 +5,8 @@ import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatsCard } from '@/components/ui/stats-card'
-import { AchievementCard } from '@/components/profile/achievement-card'
+import { AchievementShowcase } from '@/components/achievements/achievement-showcase'
+import { ChallengeStatsCard } from '@/components/profile/challenge-stats-card'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast'
 import Link from 'next/link'
@@ -16,6 +17,7 @@ import { BorderBeam } from '@/components/magicui/border-beam'
 import { ProfileSkeleton } from '@/components/profile/profile-skeleton'
 import { SparklesText } from '@/components/magicui/sparkles-text'
 import { Icons } from '@/lib/icons'
+import type { Achievement } from '@/lib/achievements/types'
 
 interface Match {
   team1: string
@@ -39,26 +41,17 @@ interface Pick {
   match: Match
 }
 
-interface Achievement {
-  id: string
-  name: string
-  title: string
-  description: string
-  icon: 'trophy' | 'target' | 'sparkles' | 'medal' | 'crown'
-  rarity: 'common' | 'rare' | 'epic' | 'legendary'
-  points: number
-  unlocked: boolean
-  unlockedAt?: string
-  progress: number
-}
-
-interface ProfileStats {
+export interface ProfileStats {
   totalPicks: number
   correctPicks: number
   totalPoints: number
   mapScorePoints: number
   recentPicks: Pick[]
-  achievements: Achievement[]
+  achievements: (Achievement & {
+    unlocked: boolean
+    unlocked_at?: string
+    progress: number
+  })[]
   userStats: {
     totalPredictions: number
     correctPredictions: number
@@ -66,6 +59,13 @@ interface ProfileStats {
     longestStreak: number
     totalPoints: number
     mapScorePoints: number
+  } | null
+  challengeStats?: {
+    challenge_wins: number
+    challenge_losses: number
+    challenge_draws: number
+    challenge_points_won: number
+    challenge_points_lost: number
   } | null
 }
 
@@ -275,203 +275,29 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
         />
       </div>
 
-      {/* Achievement Summary Stats */}
+      {/* Challenge Stats */}
+      {stats.challengeStats && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-8"
+        >
+          <ChallengeStatsCard stats={stats.challengeStats} />
+        </motion.div>
+      )}
+
+      {/* Achievements Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="mb-8"
       >
-        <h2 className="mb-4 text-xl font-semibold">Prestasjoner</h2>
-
-        {/* Achievement Progress Overview */}
-        <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <Card className="border-tier-gold/30 bg-gradient-to-br from-tier-gold/5 to-tier-gold/10 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-tier-gold-foreground">Legendarisk</p>
-                <p className="text-2xl font-bold text-tier-gold">
-                  {
-                    stats.achievements.filter(
-                      (a) => a.rarity === 'legendary' && a.unlocked,
-                    ).length
-                  }
-                  /
-                  {
-                    stats.achievements.filter((a) => a.rarity === 'legendary')
-                      .length
-                  }
-                </p>
-              </div>
-              <Icons.crown className="h-8 w-8 text-tier-gold" />
-            </div>
-          </Card>
-
-          <Card className="border-tier-platinum/30 bg-gradient-to-br from-tier-platinum/5 to-tier-platinum/10 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-tier-platinum-foreground">Episk</p>
-                <p className="text-2xl font-bold text-tier-platinum">
-                  {
-                    stats.achievements.filter(
-                      (a) => a.rarity === 'epic' && a.unlocked,
-                    ).length
-                  }
-                  /
-                  {stats.achievements.filter((a) => a.rarity === 'epic').length}
-                </p>
-              </div>
-              <Icons.sparkles className="h-8 w-8 text-tier-platinum" />
-            </div>
-          </Card>
-
-          <Card className="border-info/30 bg-gradient-to-br from-info/5 to-info/10 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-info-foreground">Sjelden</p>
-                <p className="text-2xl font-bold text-info">
-                  {
-                    stats.achievements.filter(
-                      (a) => a.rarity === 'rare' && a.unlocked,
-                    ).length
-                  }
-                  /
-                  {stats.achievements.filter((a) => a.rarity === 'rare').length}
-                </p>
-              </div>
-              <Icons.medal className="h-8 w-8 text-info" />
-            </div>
-          </Card>
-
-          <Card className="border-muted bg-gradient-to-br from-muted/20 to-muted/30 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Poeng</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {stats.achievements
-                    .filter((a) => a.unlocked)
-                    .reduce((sum, a) => sum + a.points, 0)}
-                </p>
-              </div>
-              <Icons.trophy className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </Card>
-        </div>
-
-        {/* Recently Unlocked Achievements */}
-        {stats.achievements.filter((a) => a.unlocked).length > 0 && (
-          <Card className="mb-6 border-success/30 bg-gradient-to-r from-success/5 to-success/10 p-6">
-            <h3 className="mb-4 text-lg font-semibold text-success">
-              🎉 Sist Opplåst
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {stats.achievements
-                .filter((a) => a.unlocked)
-                .sort(
-                  (a, b) =>
-                    new Date(b.unlockedAt!).getTime() -
-                    new Date(a.unlockedAt!).getTime(),
-                )
-                .slice(0, 3)
-                .map((achievement) => {
-                  const Icon = iconMap[achievement.icon]
-                  return (
-                    <motion.div
-                      key={achievement.id}
-                      whileHover={{ scale: 1.05 }}
-                      className={`flex items-center gap-2 rounded-full px-4 py-2 ${
-                        achievement.rarity === 'legendary'
-                          ? 'bg-tier-gold/20'
-                          : achievement.rarity === 'epic'
-                            ? 'bg-tier-platinum/20'
-                            : achievement.rarity === 'rare'
-                              ? 'bg-info/20'
-                              : 'bg-muted'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="text-sm font-medium">
-                        {achievement.title}
-                      </span>
-                      <span className="text-xs opacity-75">
-                        +{achievement.points}p
-                      </span>
-                    </motion.div>
-                  )
-                })}
-            </div>
-          </Card>
-        )}
-
-        {/* Achievement Tabs */}
-        <div className="mb-6 flex gap-2">
-          <Button
-            variant={achievementFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setAchievementFilter('all')}
-          >
-            Alle ({stats.achievements.length})
-          </Button>
-          <Button
-            variant={achievementFilter === 'unlocked' ? 'default' : 'outline'}
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setAchievementFilter('unlocked')}
-          >
-            Opplåst ({stats.achievements.filter((a) => a.unlocked).length})
-          </Button>
-          <Button
-            variant={achievementFilter === 'progress' ? 'default' : 'outline'}
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setAchievementFilter('progress')}
-          >
-            I Progresjon (
-            {
-              stats.achievements.filter((a) => !a.unlocked && a.progress > 0)
-                .length
-            }
-            )
-          </Button>
-        </div>
-
-        {/* Achievement Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {stats.achievements
-            .filter((achievement) => {
-              if (achievementFilter === 'unlocked') return achievement.unlocked
-              if (achievementFilter === 'progress')
-                return !achievement.unlocked && achievement.progress > 0
-              return true
-            })
-            .sort((a, b) => {
-              // Sort by: unlocked first, then by rarity (legendary first), then by progress
-              if (a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1
-              const rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 }
-              if (a.rarity !== b.rarity)
-                return rarityOrder[a.rarity] - rarityOrder[b.rarity]
-              return b.progress - a.progress
-            })
-            .map((achievement, index) => (
-              <motion.div
-                key={achievement.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <AchievementCard {...achievement} />
-              </motion.div>
-            ))}
-        </div>
-
-        {stats.achievements.length === 0 && (
-          <div className="rounded-lg border border-dashed p-8 text-center">
-            <p className="text-muted-foreground">
-              Ingen prestasjoner tilgjengelig ennå
-            </p>
-          </div>
-        )}
+        <AchievementShowcase
+          achievements={stats.achievements}
+          userId={profile?.id || ''}
+        />
       </motion.div>
 
       <motion.div

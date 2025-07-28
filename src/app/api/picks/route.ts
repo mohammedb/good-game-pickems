@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/utils/supabase'
 import { z } from 'zod'
 import { pickSchema } from '@/lib/validations/schemas'
+import { AchievementService } from '@/lib/achievements/service'
 
 export async function POST(request: Request) {
   try {
@@ -36,10 +37,38 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json(
-      { message: 'Prediction saved successfully', data },
-      { status: 201 },
-    )
+    // Check achievements after prediction
+    try {
+      const achievementService = new AchievementService(supabase)
+      const achievementResult = await achievementService.checkAchievements(
+        validatedData.user_id,
+        'prediction_made',
+        {
+          matchId: validatedData.match_id,
+          pickId: data.id,
+        },
+      )
+
+      return NextResponse.json(
+        {
+          message: 'Prediction saved successfully',
+          data,
+          achievements: achievementResult,
+        },
+        { status: 201 },
+      )
+    } catch (achievementError) {
+      console.error('Error checking achievements:', achievementError)
+      // Still return success even if achievement check fails
+      return NextResponse.json(
+        {
+          message: 'Prediction saved successfully',
+          data,
+          achievements: null,
+        },
+        { status: 201 },
+      )
+    }
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json(

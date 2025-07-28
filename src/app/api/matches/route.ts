@@ -63,18 +63,28 @@ async function fetchGoodGameMatches() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const gameType = searchParams.get('gameType') // 'csgo', 'lol', or null for all
+
     const supabase = await createServerClient()
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    // Get matches from the last 24 hours and upcoming directly from our database
-    const { data: matches, error: dbError } = await supabase
+    // Build query
+    let query = supabase
       .from('matches')
       .select('*')
       .gte('start_time', twentyFourHoursAgo.toISOString())
       .order('start_time', { ascending: true })
+
+    // Filter by game type if specified
+    if (gameType && (gameType === 'csgo' || gameType === 'lol')) {
+      query = query.eq('game_type', gameType)
+    }
+
+    const { data: matches, error: dbError } = await query
 
     if (dbError) throw dbError
 

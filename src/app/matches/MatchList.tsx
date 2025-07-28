@@ -15,6 +15,8 @@ import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
 import { BorderBeam } from '@/components/magicui/border-beam'
 import { SparklesText } from '@/components/magicui/sparkles-text'
+import { Gamepad2, Swords } from 'lucide-react'
+import { useAchievements } from '@/hooks/use-achievements'
 import {
   Select,
   SelectContent,
@@ -23,6 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PredictionSummary } from './PredictionSummary'
+import { GameTypeSelector } from '@/components/game-type-selector'
+import { GameTypeFilter } from '@/hooks/use-matches'
 
 interface MatchListProps {
   matches: Match[]
@@ -35,6 +39,8 @@ interface MatchListProps {
     allRounds: string[]
     onRoundChange: (round: string) => void
   }
+  selectedGameType?: GameTypeFilter
+  onGameTypeChange?: (gameType: GameTypeFilter) => void
 }
 
 export default function MatchList({
@@ -42,9 +48,12 @@ export default function MatchList({
   userId,
   username,
   roundStats,
+  selectedGameType,
+  onGameTypeChange,
 }: MatchListProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { checkAchievements } = useAchievements(userId)
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isRemoving, setIsRemoving] = useState(false)
@@ -181,6 +190,18 @@ export default function MatchList({
           return
         }
 
+        // Check if achievements were unlocked
+        if (result.achievements && result.achievements.unlocked.length > 0) {
+          // The hook will handle showing notifications
+          result.achievements.unlocked.forEach(() => {
+            // Just trigger a refresh of achievements data
+            checkAchievements({
+              trigger: 'prediction_made',
+              context: { matchId },
+            })
+          })
+        }
+
         // Update local state to reflect the submission
         setMapScores((prev) => ({
           ...prev,
@@ -290,34 +311,52 @@ export default function MatchList({
 
   return (
     <div className="container mx-auto space-y-8 p-4">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <div>
-            <h1 className="mb-4 text-3xl font-bold">Kommende Kamper</h1>
-            <div className="mb-4">
-              <Image
-                src="/cs2.png"
-                alt="Counter-Strike 2"
-                width={128}
-                height={128}
-                className="h-12 w-48"
-              />
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Kommende Kamper</h1>
+          {selectedGameType && onGameTypeChange && (
+            <GameTypeSelector
+              selectedGame={selectedGameType}
+              onGameChange={onGameTypeChange}
+            />
+          )}
+        </div>
+        <div className="mb-4">
+          {selectedGameType === 'lol' ? (
+            <div className="flex items-center gap-2">
+              <Swords className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">League of Legends</span>
             </div>
-          </div>
+          ) : selectedGameType === 'csgo' ? (
+            <Image
+              src="/cs2.png"
+              alt="Counter-Strike 2"
+              width={128}
+              height={128}
+              className="h-12 w-48"
+            />
+          ) : (
+            <div className="flex items-center gap-2">
+              <Gamepad2 className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">All Games</span>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-between">
           <p className="text-muted-foreground">
             Legg inn dine predictions for kommende kamper
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRemoveUnlocked}
+            disabled={isRemoving}
+            className="gap-2"
+          >
+            <Icons.delete className="h-4 w-4" />
+            {isRemoving ? 'Fjerner...' : 'Fjern Ulåste Predictions'}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRemoveUnlocked}
-          disabled={isRemoving}
-          className="gap-2"
-        >
-          <Icons.delete className="h-4 w-4" />
-          {isRemoving ? 'Fjerner...' : 'Fjern Ulåste Predictions'}
-        </Button>
       </div>
 
       <Card className="mb-8 bg-muted/50 p-4">
@@ -434,6 +473,15 @@ export default function MatchList({
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
+                              {match.game_type && (
+                                <div className="rounded-full bg-muted p-2">
+                                  {match.game_type === 'lol' ? (
+                                    <Swords className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </div>
+                              )}
                               <div className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                                 BO{match.best_of}
                               </div>

@@ -62,6 +62,13 @@ import {
   Moon,
   Laptop,
   EyeOff,
+  // Achievement specific icons
+  Eye,
+  LineChart,
+  Flame,
+  CalendarCheck,
+  Heart,
+  Gamepad2,
   // Other icons
   CircleDot,
   Circle,
@@ -141,6 +148,16 @@ export const Icons = {
   circle: Circle,
   circleDot: CircleDot,
   calculator: Calculator,
+
+  // Achievement specific
+  eye: Eye,
+  chartLine: LineChart,
+  flame: Flame,
+  fire: Flame, // alias for flame
+  calendarCheck: CalendarCheck,
+  heart: Heart,
+  gamepad: Gamepad2,
+  lock: Lock,
 } as const
 
 // Type for icon names

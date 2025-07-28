@@ -13,6 +13,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.goodgameligaen.no',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   async headers() {
@@ -47,6 +53,7 @@ const nextConfig = {
                 'blob:',
                 'https:', // Allow HTTPS images
                 'https://i.bo3.no',
+                'https://www.goodgameligaen.no',
                 'https://*.supabase.co',
                 'https://www.google-analytics.com',
                 'https://*.vercel-scripts.com',

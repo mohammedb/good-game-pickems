@@ -1,18 +1,23 @@
 import { GoodGameMatch, Match } from '@/app/matches/types'
 
-const DIVISION_ID = '12517' // CS:GO Division
+const CS_DIVISION_ID = '12517' // CS:GO Division
+const LOL_DIVISION_ID = process.env.GOOD_GAME_LOL_DIVISION_ID || '12518' // LoL Division (configurable)
 const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13162' // Current Season (configurable)
 const API_BASE_URL = 'https://www.goodgameligaen.no/api'
 const BATCH_SIZE = 25 // Process matches in smaller batches
 
+export type GameType = 'csgo' | 'lol'
+
 export async function fetchGoodGameMatches(
   seasonId?: string,
+  gameType: GameType = 'csgo',
 ): Promise<GoodGameMatch[]> {
   try {
     const activeSeasonId = seasonId || SEASON_ID
+    const divisionId = gameType === 'lol' ? LOL_DIVISION_ID : CS_DIVISION_ID
     const params = new URLSearchParams({
-      division: '12517',
-      game: 'csgo',
+      division: divisionId,
+      game: gameType === 'lol' ? 'leagueoflegends' : 'csgo',
       limit: '50', // Reduced from 100 to process fewer matches per run
       offset: '0',
       order_by: 'round_number',
@@ -49,7 +54,7 @@ export async function fetchGoodGameMatches(
     }
 
     const data = await response.json()
-    console.log('Fetched matches:', data.length)
+    console.log(`Fetched ${gameType} matches:`, data.length)
     return data
   } catch (error: any) {
     if (error.name === 'AbortError') {
@@ -64,7 +69,8 @@ export async function fetchGoodGameMatches(
 export function transformGoodGameMatch(
   match: GoodGameMatch,
   seasonId: string,
-): Match & { season_id: string } {
+  gameType: GameType = 'csgo',
+): Match & { season_id: string; game_type: GameType } {
   try {
     // Log the match being transformed
     console.log('Transforming match:', JSON.stringify(match, null, 2))
@@ -98,8 +104,9 @@ export function transformGoodGameMatch(
       team1_logo: match.home_signup.team.logo?.url,
       team2_logo: match.away_signup.team.logo?.url,
       start_time: match.start_time,
-      division_id: DIVISION_ID,
+      division_id: gameType === 'lol' ? LOL_DIVISION_ID : CS_DIVISION_ID,
       season_id: seasonId, // Include season_id
+      game_type: gameType, // Include game_type
       is_finished: !!match.finished_at,
       winner_id: winnerId,
       team1_map_score: match.home_score,
@@ -114,7 +121,11 @@ export function transformGoodGameMatch(
   }
 }
 
-export async function syncMatches(supabase: any, seasonId?: string) {
+export async function syncMatches(
+  supabase: any,
+  seasonId?: string,
+  gameTypes: GameType[] = ['csgo'],
+) {
   try {
     console.log('Starting match sync...')
 
@@ -132,11 +143,19 @@ export async function syncMatches(supabase: any, seasonId?: string) {
 
     console.log(`Syncing matches for season: ${activeSeasonId}`)
 
-    // 1. Fetch matches from Good Game Ligaen
-    const ggMatches = await fetchGoodGameMatches(activeSeasonId)
-    console.log(`Fetched ${ggMatches.length} matches from API`)
+    const allGgMatches: { match: GoodGameMatch; gameType: GameType }[] = []
 
-    if (ggMatches.length === 0) {
+    // 1. Fetch matches from Good Game Ligaen for each game type
+    for (const gameType of gameTypes) {
+      console.log(`Fetching ${gameType} matches...`)
+      const ggMatches = await fetchGoodGameMatches(activeSeasonId, gameType)
+      console.log(`Fetched ${ggMatches.length} ${gameType} matches from API`)
+
+      // Add game type info to each match
+      allGgMatches.push(...ggMatches.map((match) => ({ match, gameType })))
+    }
+
+    if (allGgMatches.length === 0) {
       console.log('No matches returned from API')
       return {
         success: true,
@@ -147,15 +166,15 @@ export async function syncMatches(supabase: any, seasonId?: string) {
 
     // 2. Transform and process matches in batches
     const allTransformedMatches = []
-    for (let i = 0; i < ggMatches.length; i += BATCH_SIZE) {
-      const batch = ggMatches.slice(i, i + BATCH_SIZE)
+    for (let i = 0; i < allGgMatches.length; i += BATCH_SIZE) {
+      const batch = allGgMatches.slice(i, i + BATCH_SIZE)
       const transformedBatch = await Promise.all(
         batch
           .filter(
-            (match) =>
+            ({ match }) =>
               match && match.home_signup?.team && match.away_signup?.team,
           )
-          .map(async (match) => {
+          .map(async ({ match, gameType }) => {
             try {
               // Get the existing match ID if it exists
               const { data: existingMatch } = await supabase
@@ -164,7 +183,11 @@ export async function syncMatches(supabase: any, seasonId?: string) {
                 .eq('gg_ligaen_api_id', match.id.toString())
                 .single()
 
-              const matchData = transformGoodGameMatch(match, activeSeasonId)
+              const matchData = transformGoodGameMatch(
+                match,
+                activeSeasonId,
+                gameType,
+              )
 
               // Check if we need to process points for this match
               const needsPointsProcessing =
