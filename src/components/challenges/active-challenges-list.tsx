@@ -134,6 +134,12 @@ export function ActiveChallengesList() {
     }
   }
 
+  // Add useEffect to fetch data on component mount
+  useEffect(() => {
+    fetchUserAndChallenges()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleChallengeUpdate = async () => {
     const updatedChallenges = await fetchChallenges()
     if (currentUserId) {
