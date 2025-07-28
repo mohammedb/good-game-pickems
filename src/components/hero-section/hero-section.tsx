@@ -163,7 +163,7 @@ export function HeroSection() {
 
       <motion.div
         style={{ scale: shouldReduceMotion ? 1 : scale }}
-        className="container relative z-20 flex min-h-[100vh] flex-col items-center justify-center text-center"
+        className="container relative z-20 flex min-h-[100vh] flex-col items-center justify-center pb-20 text-center sm:pb-0"
       >
         <motion.div
           ref={ref}
@@ -287,7 +287,7 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: mounted ? 1 : 0 }}
             transition={{ delay: 0.9, duration: 0.8 }}
-            className="grid grid-cols-3 gap-8 pt-12"
+            className="grid grid-cols-3 gap-4 pt-8 sm:gap-8 sm:pt-12"
           >
             {[
               {
@@ -316,10 +316,10 @@ export function HeroSection() {
                 transition={{ delay: 1 + index * 0.1, duration: 0.8 }}
                 className="text-center"
               >
-                <stat.icon className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-                <div className="text-2xl font-bold">
+                <stat.icon className="mx-auto mb-2 h-5 w-5 text-muted-foreground sm:h-6 sm:w-6" />
+                <div className="text-lg font-bold sm:text-2xl">
                   {stat.label === null ? (
-                    <Loader2 className="mx-auto h-5 w-5 animate-spin" />
+                    <Loader2 className="mx-auto h-4 w-4 animate-spin sm:h-5 sm:w-5" />
                   ) : (
                     <>
                       {stat.label}
@@ -327,7 +327,7 @@ export function HeroSection() {
                     </>
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs text-muted-foreground sm:text-sm">
                   {stat.sublabel}
                 </div>
               </motion.div>
@@ -340,14 +340,16 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 sm:bottom-8"
         >
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
             className="flex flex-col items-center gap-2"
           >
-            <span className="text-sm text-muted-foreground">Scroll ned</span>
+            <span className="text-xs text-muted-foreground sm:text-sm">
+              Scroll ned
+            </span>
             <div className="h-6 w-0.5 bg-gradient-to-b from-muted-foreground to-transparent" />
           </motion.div>
         </motion.div>
