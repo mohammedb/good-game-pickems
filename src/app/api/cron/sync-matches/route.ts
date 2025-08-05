@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
     // Parse request body to get game types if provided
     const body = await request.json().catch(() => ({}))
-    const gameTypes = body.gameTypes || ['csgo', 'lol'] // Default to both games
+    const gameTypes = body.gameTypes || ['csgo', 'lol', 'valorant'] // Default to all three games
 
     const result = await syncMatches(supabase, undefined, gameTypes)
 

@@ -2,11 +2,13 @@ import { GoodGameMatch, Match } from '@/app/matches/types'
 
 const CS_DIVISION_ID = '12517' // CS:GO Division
 const LOL_DIVISION_ID = process.env.GOOD_GAME_LOL_DIVISION_ID || '12518' // LoL Division (configurable)
+const VALORANT_DIVISION_ID =
+  process.env.GOOD_GAME_VALORANT_DIVISION_ID || '13601' // Valorant Division (configurable)
 const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13162' // Current Season (configurable)
 const API_BASE_URL = 'https://www.goodgameligaen.no/api'
 const BATCH_SIZE = 25 // Process matches in smaller batches
 
-export type GameType = 'csgo' | 'lol'
+export type GameType = 'csgo' | 'lol' | 'valorant'
 
 export async function fetchGoodGameMatches(
   seasonId?: string,
@@ -14,10 +16,21 @@ export async function fetchGoodGameMatches(
 ): Promise<GoodGameMatch[]> {
   try {
     const activeSeasonId = seasonId || SEASON_ID
-    const divisionId = gameType === 'lol' ? LOL_DIVISION_ID : CS_DIVISION_ID
+    const divisionId =
+      gameType === 'lol'
+        ? LOL_DIVISION_ID
+        : gameType === 'valorant'
+          ? VALORANT_DIVISION_ID
+          : CS_DIVISION_ID
+    const gameParam =
+      gameType === 'lol'
+        ? 'leagueoflegends'
+        : gameType === 'valorant'
+          ? 'valorant'
+          : 'csgo'
     const params = new URLSearchParams({
       division: divisionId,
-      game: gameType === 'lol' ? 'leagueoflegends' : 'csgo',
+      game: gameParam,
       limit: '50', // Reduced from 100 to process fewer matches per run
       offset: '0',
       order_by: 'round_number',
@@ -104,7 +117,12 @@ export function transformGoodGameMatch(
       team1_logo: match.home_signup.team.logo?.url,
       team2_logo: match.away_signup.team.logo?.url,
       start_time: match.start_time,
-      division_id: gameType === 'lol' ? LOL_DIVISION_ID : CS_DIVISION_ID,
+      division_id:
+        gameType === 'lol'
+          ? LOL_DIVISION_ID
+          : gameType === 'valorant'
+            ? VALORANT_DIVISION_ID
+            : CS_DIVISION_ID,
       season_id: seasonId, // Include season_id
       game_type: gameType, // Include game_type
       is_finished: !!match.finished_at,

@@ -36,12 +36,13 @@ const navItems: NavItem[] = [
     icon: Calendar,
     id: 'nav-matches',
   },
-  {
-    href: '/challenges',
-    label: 'Utfordringer',
-    icon: Swords,
-    id: 'nav-challenges',
-  },
+  // Temporarily disabled - coming soon
+  // {
+  //   href: '/challenges',
+  //   label: 'Utfordringer',
+  //   icon: Swords,
+  //   id: 'nav-challenges',
+  // },
   {
     href: '/leaderboard',
     label: 'Toppliste',

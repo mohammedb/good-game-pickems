@@ -239,7 +239,7 @@ export default function ChallengeDetailPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/challenges')}
+          onClick={() => router.push('/')}
           className="transition-transform hover:scale-110"
         >
           <ArrowLeft className="h-4 w-4" />

@@ -67,6 +67,7 @@ export interface ProfileStats {
     challenge_points_won: number
     challenge_points_lost: number
   } | null
+  pointsTrend: number
 }
 
 interface ProfileContentProps {
@@ -262,7 +263,11 @@ export default function ProfileContent({ stats }: ProfileContentProps) {
       </motion.div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-3">
-        <StatsCard title="Totale Poeng" value={stats.totalPoints} trend={10} />
+        <StatsCard
+          title="Totale Poeng"
+          value={stats.totalPoints}
+          trend={stats.pointsTrend}
+        />
         <StatsCard
           title="Riktige Tips"
           value={stats.correctPicks}

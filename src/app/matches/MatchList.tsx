@@ -15,8 +15,8 @@ import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
 import { BorderBeam } from '@/components/magicui/border-beam'
 import { SparklesText } from '@/components/magicui/sparkles-text'
-import { Gamepad2, Swords } from 'lucide-react'
 import { useAchievements } from '@/hooks/use-achievements'
+import { SiCounterstrike, SiValorant, SiLeagueoflegends } from 'react-icons/si'
 import {
   Select,
   SelectContent,
@@ -324,20 +324,21 @@ export default function MatchList({
         <div className="mb-4">
           {selectedGameType === 'lol' ? (
             <div className="flex items-center gap-2">
-              <Swords className="h-8 w-8 text-primary" />
+              <SiLeagueoflegends className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold">League of Legends</span>
             </div>
           ) : selectedGameType === 'csgo' ? (
-            <Image
-              src="/cs2.png"
-              alt="Counter-Strike 2"
-              width={128}
-              height={128}
-              className="h-12 w-48"
-            />
+            <div className="flex items-center gap-2">
+              <SiCounterstrike className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">Counter-Strike 2</span>
+            </div>
+          ) : selectedGameType === 'valorant' ? (
+            <div className="flex items-center gap-2">
+              <SiValorant className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">Valorant</span>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Gamepad2 className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold">All Games</span>
             </div>
           )}
@@ -442,6 +443,15 @@ export default function MatchList({
         selectedWinners={selectedWinners}
         mapScores={mapScores}
         username={username}
+        gameType={
+          selectedGameType === 'csgo'
+            ? 'CS2'
+            : selectedGameType === 'lol'
+              ? 'LoL'
+              : selectedGameType === 'valorant'
+                ? 'Valorant'
+                : 'All Games'
+        }
       />
 
       {matches.length > 0 ? (
@@ -476,9 +486,11 @@ export default function MatchList({
                               {match.game_type && (
                                 <div className="rounded-full bg-muted p-2">
                                   {match.game_type === 'lol' ? (
-                                    <Swords className="h-4 w-4 text-muted-foreground" />
+                                    <SiLeagueoflegends className="h-4 w-4 text-muted-foreground" />
+                                  ) : match.game_type === 'valorant' ? (
+                                    <SiValorant className="h-4 w-4 text-muted-foreground" />
                                   ) : (
-                                    <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+                                    <SiCounterstrike className="h-4 w-4 text-muted-foreground" />
                                   )}
                                 </div>
                               )}

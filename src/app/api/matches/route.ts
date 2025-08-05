@@ -80,7 +80,10 @@ export async function GET(request: Request) {
       .order('start_time', { ascending: true })
 
     // Filter by game type if specified
-    if (gameType && (gameType === 'csgo' || gameType === 'lol')) {
+    if (
+      gameType &&
+      (gameType === 'csgo' || gameType === 'lol' || gameType === 'valorant')
+    ) {
       query = query.eq('game_type', gameType)
     }
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Match } from '@/app/matches/types'
 
-export type GameTypeFilter = 'all' | 'csgo' | 'lol'
+export type GameTypeFilter = 'all' | 'csgo' | 'lol' | 'valorant'
 
 async function fetchMatches(gameType: GameTypeFilter): Promise<Match[]> {
   const params = gameType !== 'all' ? `?gameType=${gameType}` : ''

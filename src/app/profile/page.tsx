@@ -39,6 +39,7 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
         achievements: [],
         userStats: null,
         challengeStats: null,
+        pointsTrend: 0,
       }
     }
 
@@ -146,14 +147,36 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
       }
     })
 
+    // Calculate total points
+    const totalPoints = processedPicks.reduce(
+      (sum, pick) =>
+        sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0),
+      0,
+    )
+
+    // Calculate points trend (last 7 days)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const recentPicks = processedPicks.filter((pick) => {
+      const pickDate = new Date(pick.created_at)
+      return pickDate >= sevenDaysAgo && pick.match.is_finished
+    })
+
+    const recentPoints = recentPicks.reduce(
+      (sum, pick) =>
+        sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0),
+      0,
+    )
+
+    // Calculate trend as percentage of total points gained in last 7 days
+    const pointsTrend =
+      totalPoints > 0 ? Math.round((recentPoints / totalPoints) * 100) : 0
+
     const stats: ProfileStats = {
       totalPicks: processedPicks.length,
       correctPicks: processedPicks.filter((pick) => pick.is_correct).length,
-      totalPoints: processedPicks.reduce(
-        (sum, pick) =>
-          sum + (pick.is_correct ? 1 : 0) + (pick.map_score_points || 0),
-        0,
-      ),
+      totalPoints,
       mapScorePoints: processedPicks.reduce(
         (sum, pick) => sum + (pick.map_score_points || 0),
         0,
@@ -162,6 +185,7 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
       achievements,
       userStats,
       challengeStats,
+      pointsTrend,
     }
 
     return stats
@@ -176,6 +200,7 @@ async function getProfileData(userId: string): Promise<ProfileStats> {
       achievements: [],
       userStats: null,
       challengeStats: null,
+      pointsTrend: 0,
     }
   }
 }

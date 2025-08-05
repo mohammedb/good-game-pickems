@@ -2,7 +2,8 @@
 
 import { cn } from '@/lib/utils'
 import { GameTypeFilter } from '@/hooks/use-matches'
-import { Gamepad2, Swords, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
+import { SiCounterstrike, SiValorant, SiLeagueoflegends } from 'react-icons/si'
 
 interface GameTypeSelectorProps {
   selectedGame: GameTypeFilter
@@ -12,8 +13,13 @@ interface GameTypeSelectorProps {
 
 const gameTypes = [
   { value: 'all' as GameTypeFilter, label: 'All Games', icon: Sparkles },
-  { value: 'csgo' as GameTypeFilter, label: 'CS2', icon: Gamepad2 },
-  { value: 'lol' as GameTypeFilter, label: 'League of Legends', icon: Swords },
+  { value: 'csgo' as GameTypeFilter, label: 'CS2', icon: SiCounterstrike },
+  {
+    value: 'lol' as GameTypeFilter,
+    label: 'League of Legends',
+    icon: SiLeagueoflegends,
+  },
+  { value: 'valorant' as GameTypeFilter, label: 'Valorant', icon: SiValorant },
 ]
 
 export function GameTypeSelector({
