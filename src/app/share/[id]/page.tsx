@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { NumberTicker } from '@/components/magicui/number-ticker'
 import { SparklesText } from '@/components/magicui/sparkles-text'
+import { SiCounterstrike, SiValorant, SiLeagueoflegends } from 'react-icons/si'
 
 interface SharePageProps {
   params: Promise<{
@@ -219,58 +220,94 @@ export default function SharePage({ params }: SharePageProps) {
   const accuracy =
     total_picks > 0 ? ((correct_picks / total_picks) * 100).toFixed(1) : '0.0'
 
+  // Get game type icon
+  const getGameIcon = (gameType: string) => {
+    switch (gameType?.toLowerCase()) {
+      case 'csgo':
+      case 'cs2':
+        return SiCounterstrike
+      case 'lol':
+      case 'league of legends':
+        return SiLeagueoflegends
+      case 'valorant':
+        return SiValorant
+      default:
+        return SiCounterstrike
+    }
+  }
+
+  const GameIcon = getGameIcon(sharedPrediction?.game_type || 'CS2')
+
   return (
     <div className="container mx-auto p-4">
-      <Card className="mx-auto max-w-5xl overflow-hidden">
-        {/* Header with gradient background */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-8">
-          <div className="text-center">
-            <Badge className="mb-4 gap-1">
-              {sharedPrediction.game_type || 'CS2'}
-            </Badge>
-            <h1 className="mb-2 text-3xl font-bold">{round} Predictions</h1>
+      <Card className="mx-auto max-w-5xl overflow-hidden border-2 shadow-2xl">
+        {/* Header with enhanced gradient and better alignment */}
+        <div className="from-primary/15 bg-gradient-to-br via-primary/10 to-primary/5 p-8">
+          <div className="space-y-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-background/80 shadow-lg backdrop-blur-sm">
+                <GameIcon className="h-6 w-6 text-primary" />
+              </div>
+              <Badge className="px-4 py-2 text-sm font-semibold shadow-md">
+                {sharedPrediction.game_type || 'CS2'}
+              </Badge>
+            </div>
+            <h1 className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-4xl font-bold text-transparent">
+              {round} Predictions
+            </h1>
             {username && (
-              <div className="mb-2 flex items-center justify-center gap-2 text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <User className="h-4 w-4" />
-                <span className="font-medium">{username}</span>
+                <span className="text-base font-medium">{username}</span>
               </div>
             )}
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Eye className="h-3 w-3" />
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground/80">
+              <Eye className="h-4 w-4" />
               <span>{view_count} visninger</span>
             </div>
           </div>
         </div>
 
-        <div className="p-8">
-          {/* Stats Section */}
-          <div className="mb-8 grid grid-cols-2 gap-4 sm:gap-8">
-            <Card className="group relative overflow-hidden p-6 text-center transition-all hover:scale-105">
-              <div className="mb-2 text-4xl font-bold text-primary">
-                <NumberTicker value={correct_picks} delay={0.5} />
-              </div>
-              <div className="text-sm text-muted-foreground">Riktige Picks</div>
-              {correct_picks >= total_picks && total_picks > 0 && (
-                <div className="absolute -right-2 -top-2 rotate-12">
-                  <SparklesText
-                    className="text-xs font-bold text-primary"
-                    sparklesCount={8}
-                  >
-                    Perfect!
-                  </SparklesText>
+        <div className="space-y-8 p-8">
+          {/* Enhanced Stats Section with better visual hierarchy */}
+          <div className="grid grid-cols-2 gap-6">
+            <Card className="group relative overflow-hidden border-2 bg-gradient-to-br from-background to-background/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+              <div className="space-y-3 p-8 text-center">
+                <div className="text-5xl font-black tracking-tight text-primary">
+                  <NumberTicker value={correct_picks} delay={0.5} />
+                  <span className="text-2xl font-normal text-muted-foreground">
+                    /{total_picks}
+                  </span>
                 </div>
-              )}
-            </Card>
-            <Card className="group p-6 text-center transition-all hover:scale-105">
-              <div className="mb-2 flex items-center justify-center text-4xl font-bold text-primary">
-                <NumberTicker
-                  value={parseFloat(accuracy)}
-                  delay={0.5}
-                  decimalPlaces={1}
-                />
-                <span>%</span>
+                <div className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Riktige Picks
+                </div>
+                {correct_picks >= total_picks && total_picks > 0 && (
+                  <div className="absolute -right-2 -top-2 rotate-12">
+                    <SparklesText
+                      className="text-xs font-bold text-primary"
+                      sparklesCount={8}
+                    >
+                      Perfect!
+                    </SparklesText>
+                  </div>
+                )}
               </div>
-              <div className="text-sm text-muted-foreground">Nøyaktighet</div>
+            </Card>
+            <Card className="group border-2 bg-gradient-to-br from-background to-background/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+              <div className="space-y-3 p-8 text-center">
+                <div className="flex items-baseline justify-center text-5xl font-black tracking-tight text-primary">
+                  <NumberTicker
+                    value={parseFloat(accuracy)}
+                    delay={0.5}
+                    decimalPlaces={1}
+                  />
+                  <span className="text-3xl">%</span>
+                </div>
+                <div className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Nøyaktighet
+                </div>
+              </div>
             </Card>
           </div>
 
@@ -281,149 +318,193 @@ export default function SharePage({ params }: SharePageProps) {
                 <h2 className="mb-6 text-center text-xl font-semibold">
                   Kampene
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                <div className="grid gap-6 lg:grid-cols-2">
                   {predictions.map((match, index) => {
                     const matchTime = new Date(match.st)
                     const now = new Date()
                     const isUpcoming = matchTime > now
+                    const MatchGameIcon = getGameIcon(
+                      sharedPrediction.game_type || 'CS2',
+                    )
 
                     return (
-                      <Card key={index} className="flex h-full flex-col p-4">
-                        <div className="mb-4 flex items-center justify-between">
-                          <Badge
-                            variant={match.f ? 'default' : 'secondary'}
-                            className="gap-1"
-                          >
-                            {match.f ? (
-                              <>
-                                <CheckCircle2 className="h-3 w-3" />
-                                Ferdig
-                              </>
-                            ) : isUpcoming ? (
-                              <>
-                                <Clock className="h-3 w-3" />
-                                {matchTime.toLocaleDateString('nb-NO', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </>
-                            ) : (
-                              <>
-                                <Clock className="h-3 w-3" />
-                                Pågår
-                              </>
-                            )}
-                          </Badge>
-                        </div>
-
-                        <div className="flex flex-grow items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {match.t1l ? (
-                              <Image
-                                src={match.t1l}
-                                alt={match.t1}
-                                width={40}
-                                height={40}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                                <span className="text-xs">
-                                  {match.t1.substring(0, 2)}
-                                </span>
-                              </div>
-                            )}
-                            <span
-                              className={cn(
-                                'transition-colors',
-                                match.pw === match.t1 ? 'font-bold' : '',
-                                match.f &&
-                                  match.w === match.t1 &&
-                                  'text-green-500',
-                                match.pw === match.t1 && 'text-primary',
-                              )}
-                            >
-                              {match.t1}
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="text-sm font-medium text-muted-foreground">
-                              vs
+                      <Card
+                        key={index}
+                        className="border-2 bg-gradient-to-br from-background to-background/50 transition-all duration-300 hover:shadow-lg"
+                      >
+                        {/* Match Header with game icon and status */}
+                        <div className="flex items-center justify-between p-4 pb-0">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-primary/10">
+                              <MatchGameIcon className="h-4 w-4 text-primary" />
                             </div>
-                            {(match.t1m !== null || match.t2m !== null) && (
-                              <div className="text-sm font-medium">
-                                {match.t1m ?? 0} - {match.t2m ?? 0}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span
-                              className={cn(
-                                'transition-colors',
-                                match.pw === match.t2 ? 'font-bold' : '',
-                                match.f &&
-                                  match.w === match.t2 &&
-                                  'text-green-500',
-                                match.pw === match.t2 && 'text-primary',
-                              )}
+                            <Badge
+                              variant={match.f ? 'default' : 'secondary'}
+                              className="gap-1.5 px-3 py-1 font-medium"
                             >
-                              {match.t2}
-                            </span>
-                            {match.t2l ? (
-                              <Image
-                                src={match.t2l}
-                                alt={match.t2}
-                                width={40}
-                                height={40}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                                <span className="text-xs">
-                                  {match.t2.substring(0, 2)}
-                                </span>
-                              </div>
-                            )}
+                              {match.f ? (
+                                <>
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  Ferdig
+                                </>
+                              ) : isUpcoming ? (
+                                <>
+                                  <Clock className="h-3.5 w-3.5" />
+                                  {matchTime.toLocaleDateString('nb-NO', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="h-3.5 w-3.5" />
+                                  Pågår
+                                </>
+                              )}
+                            </Badge>
                           </div>
                         </div>
 
-                        {match.pw && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex flex-col items-center gap-3">
-                              <div className="w-full rounded-lg border-2 border-primary/20 bg-primary/5 p-3 text-center">
-                                <div className="mb-2 text-sm font-medium text-muted-foreground">
-                                  Prediction
-                                </div>
-                                <div className="flex items-center justify-center gap-2">
-                                  <span className="font-semibold">
-                                    {match.pw}
-                                  </span>
-                                  {match.t1m !== null && match.t2m !== null && (
-                                    <span className="text-muted-foreground">
-                                      ({match.t1m}-{match.t2m})
+                        {/* Teams Section with improved alignment */}
+                        <div className="p-4 pt-3">
+                          <div className="mb-6 flex items-center justify-between">
+                            {/* Team 1 */}
+                            <div className="flex flex-1 items-center gap-3">
+                              <div className="relative">
+                                {match.t1l ? (
+                                  <Image
+                                    src={match.t1l}
+                                    alt={match.t1}
+                                    width={48}
+                                    height={48}
+                                    className="rounded-full border-2 shadow-sm"
+                                  />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 bg-muted shadow-sm">
+                                    <span className="text-sm font-semibold text-muted-foreground">
+                                      {match.t1.substring(0, 2).toUpperCase()}
                                     </span>
+                                  </div>
+                                )}
+                                {match.f && match.w === match.t1 && (
+                                  <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
+                                    <CheckCircle2 className="h-3 w-3 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <span
+                                  className={cn(
+                                    'block truncate text-sm font-semibold transition-colors',
+                                    match.pw === match.t1 &&
+                                      'font-bold text-primary',
+                                    match.f &&
+                                      match.w === match.t1 &&
+                                      'text-green-600',
                                   )}
+                                >
+                                  {match.t1}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Center Score/VS */}
+                            <div className="flex min-w-[80px] flex-col items-center justify-center px-4">
+                              <div className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                vs
+                              </div>
+                              {(match.t1m !== null || match.t2m !== null) && (
+                                <div className="min-w-[60px] rounded-lg bg-muted px-3 py-1 text-center text-xl font-bold">
+                                  {match.t1m ?? 0} - {match.t2m ?? 0}
                                 </div>
-                                {match.f && match.w && (
-                                  <div className="mt-3 flex items-center justify-center gap-2">
+                              )}
+                            </div>
+
+                            {/* Team 2 */}
+                            <div className="flex flex-1 items-center justify-end gap-3">
+                              <div className="min-w-0 flex-1 text-right">
+                                <span
+                                  className={cn(
+                                    'block truncate text-sm font-semibold transition-colors',
+                                    match.pw === match.t2 &&
+                                      'font-bold text-primary',
+                                    match.f &&
+                                      match.w === match.t2 &&
+                                      'text-green-600',
+                                  )}
+                                >
+                                  {match.t2}
+                                </span>
+                              </div>
+                              <div className="relative">
+                                {match.t2l ? (
+                                  <Image
+                                    src={match.t2l}
+                                    alt={match.t2}
+                                    width={48}
+                                    height={48}
+                                    className="rounded-full border-2 shadow-sm"
+                                  />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 bg-muted shadow-sm">
+                                    <span className="text-sm font-semibold text-muted-foreground">
+                                      {match.t2.substring(0, 2).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                {match.f && match.w === match.t2 && (
+                                  <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
+                                    <CheckCircle2 className="h-3 w-3 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Prediction Section */}
+                          {match.pw && (
+                            <div className="space-y-3">
+                              <div className="rounded-xl border-2 border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 p-4">
+                                <div className="space-y-2 text-center">
+                                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Min Prediction
+                                  </div>
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span className="text-lg font-bold text-primary">
+                                      {match.pw}
+                                    </span>
+                                    {match.t1m !== null &&
+                                      match.t2m !== null && (
+                                        <span className="text-sm font-medium text-muted-foreground">
+                                          ({match.t1m}-{match.t2m})
+                                        </span>
+                                      )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Results Section */}
+                              {match.f && match.w && (
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-center gap-2">
                                     <Badge
                                       variant={
                                         match.pw === match.w
                                           ? 'success'
                                           : 'destructive'
                                       }
-                                      className="text-sm"
+                                      className="px-3 py-1.5 text-sm font-semibold shadow-md"
                                     >
                                       {match.pw === match.w ? (
-                                        <div className="flex items-center gap-1">
-                                          <CheckCircle2 className="h-3 w-3 animate-pulse" />
+                                        <div className="flex items-center gap-1.5">
+                                          <CheckCircle2 className="h-4 w-4" />
                                           <span>Riktig Vinner (+2)</span>
                                         </div>
                                       ) : (
-                                        <div className="flex items-center gap-1">
-                                          <span>✗</span>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-base">✗</span>
                                           <span>Feil Vinner</span>
                                         </div>
                                       )}
@@ -439,62 +520,62 @@ export default function SharePage({ params }: SharePageProps) {
                                               ? 'success'
                                               : 'destructive'
                                           }
-                                          className="text-sm"
+                                          className="px-3 py-1.5 text-sm font-semibold shadow-md"
                                         >
                                           {match.t1m === match.at1m &&
                                           match.t2m === match.at2m ? (
-                                            <div className="flex items-center gap-1">
-                                              <CheckCircle2 className="h-3 w-3 animate-pulse" />
+                                            <div className="flex items-center gap-1.5">
+                                              <CheckCircle2 className="h-4 w-4" />
                                               <span>Riktig Maps (+1)</span>
                                             </div>
                                           ) : (
-                                            <div className="flex items-center gap-1">
-                                              <span>✗</span>
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-base">
+                                                ✗
+                                              </span>
                                               <span>Feil Maps</span>
                                             </div>
                                           )}
                                         </Badge>
                                       )}
                                   </div>
-                                )}
-                              </div>
 
-                              {match.f &&
-                                match.w &&
-                                match.at1m !== null &&
-                                match.at2m !== null && (
-                                  <div className="w-full rounded-lg bg-muted/50 p-3 text-center">
-                                    <div className="mb-2 text-sm font-medium text-muted-foreground">
-                                      Faktisk Resultat
-                                    </div>
-                                    <div className="flex items-center justify-center gap-3">
-                                      <span
-                                        className={cn(
-                                          'font-semibold',
-                                          match.w === match.t1 &&
-                                            'text-green-500',
-                                        )}
-                                      >
-                                        {match.t1}
-                                      </span>
-                                      <span className="font-bold">
-                                        {match.at1m} - {match.at2m}
-                                      </span>
-                                      <span
-                                        className={cn(
-                                          'font-semibold',
-                                          match.w === match.t2 &&
-                                            'text-green-500',
-                                        )}
-                                      >
-                                        {match.t2}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
+                                  {match.at1m !== null &&
+                                    match.at2m !== null && (
+                                      <div className="rounded-lg border bg-muted/30 p-3 text-center">
+                                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                          Faktisk Resultat
+                                        </div>
+                                        <div className="flex items-center justify-center gap-4">
+                                          <span
+                                            className={cn(
+                                              'text-sm font-semibold',
+                                              match.w === match.t1 &&
+                                                'text-green-600',
+                                            )}
+                                          >
+                                            {match.t1}
+                                          </span>
+                                          <span className="rounded-md bg-background px-2 py-1 text-lg font-bold">
+                                            {match.at1m} - {match.at2m}
+                                          </span>
+                                          <span
+                                            className={cn(
+                                              'text-sm font-semibold',
+                                              match.w === match.t2 &&
+                                                'text-green-600',
+                                            )}
+                                          >
+                                            {match.t2}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </Card>
                     )
                   })}

@@ -27,7 +27,9 @@
       "Bash(cd:*)",
       "Bash(cd:*)",
       "Bash(cd:*)",
-      "mcp__serena__find_symbol"
+      "mcp__serena__find_symbol",
+      "Bash(curl:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": []
   }

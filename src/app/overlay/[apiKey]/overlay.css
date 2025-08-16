@@ -1,0 +1,151 @@
+/* Hide navigation and other UI elements for overlay */
+body {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hide the main navigation */
+nav {
+  display: none !important;
+}
+
+/* Remove default padding from main */
+main {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Hide any footer elements */
+footer {
+  display: none !important;
+}
+
+/* Ensure the overlay container fills the viewport */
+.overlay-container {
+  min-height: 100vh;
+  width: 100vw;
+  position: relative;
+  background: transparent;
+}
+
+/* Remove any default backgrounds */
+.bg-background,
+.bg-card,
+.bg-popover,
+.bg-primary,
+.bg-secondary,
+.bg-muted,
+.bg-accent,
+.bg-destructive {
+  background: transparent !important;
+}
+
+/* Ensure no scrollbars appear */
+html, body {
+  overflow: hidden !important;
+}
+
+/* OBS and streaming optimizations */
+* {
+  /* Force hardware acceleration for smooth animations */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  
+  /* Optimize text rendering for streams */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Prevent text selection in overlay */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* High contrast mode for better visibility on stream */
+.overlay-container {
+  filter: contrast(1.1) brightness(1.05);
+}
+
+/* Ensure crisp edges for logos and images */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* Optimize animations for 60fps streaming */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Reduce animations for performance if needed */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Force dark mode for consistency */
+.overlay-container {
+  color-scheme: dark;
+}
+
+/* Remove any unwanted browser default styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent context menu on right click */
+.overlay-container {
+  -webkit-context-menu: none;
+  -moz-context-menu: none;
+  context-menu: none;
+}
+
+/* Disable drag and drop */
+* {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Custom animation effects */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

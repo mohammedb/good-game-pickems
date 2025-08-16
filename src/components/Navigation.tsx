@@ -13,6 +13,7 @@ import {
   LucideIcon,
   Users,
   Swords,
+  Code2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/stores/onboarding-store'
@@ -60,6 +61,12 @@ const navItems: NavItem[] = [
     label: 'Om Oss',
     icon: Users,
     id: 'nav-about',
+  },
+  {
+    href: '/developer',
+    label: 'API',
+    icon: Code2,
+    id: 'nav-developer',
   },
 ]
 
