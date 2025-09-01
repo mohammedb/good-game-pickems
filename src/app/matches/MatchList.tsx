@@ -28,6 +28,17 @@ import { PredictionSummary } from './PredictionSummary'
 import { GameTypeSelector } from '@/components/game-type-selector'
 import { GameTypeFilter } from '@/hooks/use-matches'
 
+interface Season {
+  id: string
+  season_id: string
+  name: string
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  match_count: number
+  user_count: number
+}
+
 interface MatchListProps {
   matches: Match[]
   userId: string
@@ -41,6 +52,9 @@ interface MatchListProps {
   }
   selectedGameType?: GameTypeFilter
   onGameTypeChange?: (gameType: GameTypeFilter) => void
+  seasons?: Season[]
+  selectedSeason?: string | null
+  onSeasonChange?: (seasonId: string) => void
 }
 
 export default function MatchList({
@@ -50,6 +64,9 @@ export default function MatchList({
   roundStats,
   selectedGameType,
   onGameTypeChange,
+  seasons,
+  selectedSeason,
+  onSeasonChange,
 }: MatchListProps) {
   const router = useRouter()
   const { toast } = useToast()
@@ -312,13 +329,49 @@ export default function MatchList({
   return (
     <div className="container mx-auto space-y-8 p-4">
       <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Kommende Kamper</h1>
+        <div className="mb-4">
+          <h1 className="mb-4 text-3xl font-bold">Kommende Kamper</h1>
+
+          {/* Season Selector */}
+          {seasons && seasons.length > 0 && onSeasonChange && (
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">
+                Sesong:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {seasons.map((season) => (
+                  <Button
+                    key={season.id}
+                    variant={
+                      selectedSeason === season.season_id
+                        ? 'default'
+                        : 'outline'
+                    }
+                    size="sm"
+                    onClick={() => onSeasonChange(season.season_id)}
+                    className="relative"
+                  >
+                    {season.name}
+                    {season.is_active && (
+                      <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-status-active" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Game Type Selector */}
           {selectedGameType && onGameTypeChange && (
-            <GameTypeSelector
-              selectedGame={selectedGameType}
-              onGameChange={onGameTypeChange}
-            />
+            <div className="mb-4 flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">
+                Spill:
+              </span>
+              <GameTypeSelector
+                selectedGame={selectedGameType}
+                onGameChange={onGameTypeChange}
+              />
+            </div>
           )}
         </div>
         <div className="mb-4">

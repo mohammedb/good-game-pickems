@@ -67,16 +67,20 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const gameType = searchParams.get('gameType') // 'csgo', 'lol', or null for all
+    const seasonId = searchParams.get('seasonId') // optional season filter
 
     const supabase = await createServerClient()
-    const now = new Date()
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    // Build query - show all matches (remove 24 hour restriction)
+    // Build query
     let query = supabase
       .from('matches')
       .select('*')
       .order('start_time', { ascending: true })
+
+    // Filter by season if specified
+    if (seasonId) {
+      query = query.eq('season_id', seasonId)
+    }
 
     // Filter by game type if specified
     if (
@@ -90,6 +94,9 @@ export async function GET(request: Request) {
 
     if (dbError) throw dbError
 
+    console.log(
+      `Returning ${matches?.length || 0} matches${seasonId ? ` for season ${seasonId}` : ''} ${gameType ? `(${gameType})` : ''}`,
+    )
     return NextResponse.json(matches || [])
   } catch (error) {
     console.error('Error in matches API route:', error)

@@ -10,17 +10,31 @@ import { Loader2 } from 'lucide-react'
 import { MatchSkeleton } from '@/components/matches/match-skeleton'
 import { GameTypeSelector } from '@/components/game-type-selector'
 
+interface Season {
+  id: string
+  season_id: string
+  name: string
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  match_count: number
+  user_count: number
+}
+
 export default function MatchesPage() {
   const router = useRouter()
   const supabase = createBrowserClient()
   const [selectedGameType, setSelectedGameType] =
     useState<GameTypeFilter>('all')
+  const [seasons, setSeasons] = useState<Season[]>([])
+  const [selectedSeason, setSelectedSeason] = useState<string | null>(null)
+  const [loadingSeasons, setLoadingSeasons] = useState(true)
   const {
     data: matches,
     isLoading,
     isError,
     error,
-  } = useMatches(selectedGameType)
+  } = useMatches(selectedGameType, selectedSeason)
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState<string>()
   const [roundStats, setRoundStats] = useState({
@@ -28,6 +42,33 @@ export default function MatchesPage() {
     correctPicks: 0,
   })
   const [selectedRound, setSelectedRound] = useState<string>()
+
+  // Fetch available seasons on mount
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_seasons')
+        if (error) throw error
+
+        const seasonsData = data as Season[]
+        setSeasons(seasonsData)
+
+        // Set active season as default if no season selected
+        if (!selectedSeason) {
+          const activeSeason = seasonsData.find((s) => s.is_active)
+          if (activeSeason) {
+            setSelectedSeason(activeSeason.season_id)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching seasons:', error)
+      } finally {
+        setLoadingSeasons(false)
+      }
+    }
+
+    fetchSeasons()
+  }, [supabase, selectedSeason])
 
   // Get all unique rounds
   const allRounds = matches
@@ -100,7 +141,7 @@ export default function MatchesPage() {
     fetchRoundPicks()
   }, [userId, currentRound, matches, supabase])
 
-  if (isLoading || !userId) {
+  if (isLoading || loadingSeasons || !userId) {
     return (
       <div className="container max-w-4xl py-8">
         <MatchSkeleton />
@@ -117,17 +158,9 @@ export default function MatchesPage() {
     )
   }
 
-  if (!matches?.length) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-muted-foreground">No matches found</p>
-      </div>
-    )
-  }
-
   return (
     <MatchList
-      matches={matches}
+      matches={matches || []}
       userId={userId}
       username={username}
       roundStats={{
@@ -139,6 +172,9 @@ export default function MatchesPage() {
       }}
       selectedGameType={selectedGameType}
       onGameTypeChange={setSelectedGameType}
+      seasons={seasons}
+      selectedSeason={selectedSeason}
+      onSeasonChange={setSelectedSeason}
     />
   )
 }
