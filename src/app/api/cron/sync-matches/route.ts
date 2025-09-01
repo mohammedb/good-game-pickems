@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/utils/supabase'
+import { createServiceRoleClient } from '@/utils/supabase'
 import { syncMatches } from '@/utils/goodgame'
 import { withCronAuth } from '@/lib/api-middleware'
 import { validateRequestBody, schemas } from '@/lib/api-validation'
@@ -14,7 +14,8 @@ const cronSyncSchema = z.object({
 
 export const POST = withCronAuth(async (request: NextRequest, context) => {
   try {
-    const supabase = await createServerClient()
+    // Use service role client for cron operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Validate request body
     const { data: body, error } = await validateRequestBody(

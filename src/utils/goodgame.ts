@@ -1,11 +1,19 @@
 import { GoodGameMatch, Match } from '@/app/matches/types'
 
-const CS_DIVISION_ID = '12517' // CS:GO Division
-const LOL_DIVISION_ID = process.env.GOOD_GAME_LOL_DIVISION_ID || '12518' // LoL Division (configurable)
+const CS_DIVISION_ID = process.env.GOOD_GAME_CS_DIVISION_ID || '18351' // CS:GO Division (configurable)
+const LOL_DIVISION_ID = process.env.GOOD_GAME_LOL_DIVISION_ID || '18353' // LoL Division (configurable)
 const VALORANT_DIVISION_ID =
-  process.env.GOOD_GAME_VALORANT_DIVISION_ID || '13601' // Valorant Division (configurable)
-const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13162' // Current Season (configurable)
-const API_BASE_URL = 'https://www.goodgameligaen.no/api'
+  process.env.GOOD_GAME_VALORANT_DIVISION_ID || '18355' // Valorant Division (configurable)
+const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13600' // Current Season (configurable)
+
+// Log configuration on startup
+console.log('Good Game API Configuration:', {
+  CS_DIVISION_ID,
+  LOL_DIVISION_ID,
+  VALORANT_DIVISION_ID,
+  SEASON_ID,
+})
+const API_BASE_URL = 'https://www.gamer.no/api/paradise'
 const BATCH_SIZE = 25 // Process matches in smaller batches
 
 export type GameType = 'csgo' | 'lol' | 'valorant'
@@ -22,58 +30,74 @@ export async function fetchGoodGameMatches(
         : gameType === 'valorant'
           ? VALORANT_DIVISION_ID
           : CS_DIVISION_ID
-    const gameParam =
-      gameType === 'lol'
-        ? 'leagueoflegends'
-        : gameType === 'valorant'
-          ? 'valorant'
-          : 'csgo'
-    const params = new URLSearchParams({
-      division: divisionId,
-      game: gameParam,
-      limit: '50', // Reduced from 100 to process fewer matches per run
-      offset: '0',
-      order_by: 'round_number',
-      order_dir: 'asc',
-      season: activeSeasonId,
-    })
 
-    const url = `${API_BASE_URL}/matches?${params.toString()}`
-    console.log('Fetching matches from:', url)
+    console.log(
+      `Attempting to fetch ${gameType} matches for season ${activeSeasonId}, division ${divisionId}`,
+    )
 
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    const allMatches: GoodGameMatch[] = []
 
-    const response = await fetch(url, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
-      headers: {
-        Authorization: `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`,
-      },
-      signal: controller.signal,
-    })
+    try {
+      for (const status of ['finished', 'unfinished']) {
+        const params = new URLSearchParams({
+          status,
+          relation: 'all',
+          division_id: divisionId,
+          limit: '100',
+        })
 
-    clearTimeout(timeoutId)
+        const url = `${API_BASE_URL}/competition/${activeSeasonId}/matchups?${params.toString()}`
+        console.log(`Fetching ${status} matches from:`, url)
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('API Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      })
-      throw new Error(
-        `Failed to fetch matches: ${response.statusText}. ${errorText}`,
-      )
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
+        const response = await fetch(url, {
+          next: { revalidate: 300 }, // Cache for 5 minutes
+          headers: {
+            Authorization: `Bearer ${process.env.GOOD_GAME_LIGAEN_TOKEN}`,
+          },
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('API Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText,
+          })
+          throw new Error(
+            `Failed to fetch ${status} matches: ${response.statusText}. ${errorText}`,
+          )
+        }
+
+        const data = await response.json()
+        console.log(`API response for ${status} ${gameType}:`, {
+          hasData: !!data.data,
+          isArray: Array.isArray(data.data),
+          length: data.data ? data.data.length : 0,
+          keys: Object.keys(data),
+        })
+
+        if (data.data && Array.isArray(data.data)) {
+          allMatches.push(...data.data)
+        }
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('Request timed out after 10 seconds')
+        return []
+      }
+      console.error(`Error fetching ${gameType} matches:`, error)
+      throw error
     }
 
-    const data = await response.json()
-    console.log(`Fetched ${gameType} matches:`, data.length)
-    return data
+    console.log(`Total matches fetched for ${gameType}:`, allMatches.length)
+    return allMatches
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.error('Request timed out after 10 seconds')
-      return []
-    }
     console.error('Error fetching from Good Game Ligaen:', error)
     throw error
   }
@@ -94,7 +118,7 @@ export function transformGoodGameMatch(
       throw new Error('Invalid match data: missing team information')
     }
 
-    // Find the first Twitch stream if available
+    // Check for stream information (videos field may not exist in new API)
     const stream = match.videos?.find((video) => video.source === 'twitch')
 
     // Determine winner ID based on winning_side and finished status
@@ -147,17 +171,11 @@ export async function syncMatches(
   try {
     console.log('Starting match sync...')
 
-    // Get the current active season if not provided
+    // Use the configured season ID or the provided one
     let activeSeasonId = seasonId || SEASON_ID
-    if (!seasonId) {
-      const { data: currentSeason } = await supabase
-        .rpc('get_current_season')
-        .single()
-
-      if (currentSeason?.season_id) {
-        activeSeasonId = currentSeason.season_id
-      }
-    }
+    console.log(
+      `Using season ID: ${activeSeasonId} (from ${seasonId ? 'parameter' : 'environment variable'})`,
+    )
 
     console.log(`Syncing matches for season: ${activeSeasonId}`)
 
@@ -165,12 +183,20 @@ export async function syncMatches(
 
     // 1. Fetch matches from Good Game Ligaen for each game type
     for (const gameType of gameTypes) {
-      console.log(`Fetching ${gameType} matches...`)
-      const ggMatches = await fetchGoodGameMatches(activeSeasonId, gameType)
-      console.log(`Fetched ${ggMatches.length} ${gameType} matches from API`)
+      try {
+        console.log(`Fetching ${gameType} matches...`)
+        const ggMatches = await fetchGoodGameMatches(activeSeasonId, gameType)
+        console.log(`Fetched ${ggMatches.length} ${gameType} matches from API`)
 
-      // Add game type info to each match
-      allGgMatches.push(...ggMatches.map((match) => ({ match, gameType })))
+        // Add game type info to each match
+        allGgMatches.push(...ggMatches.map((match) => ({ match, gameType })))
+      } catch (error) {
+        console.error(`Error fetching ${gameType} matches:`, error)
+        // Continue with other game types even if one fails
+        console.log(
+          `Skipping ${gameType} due to error, continuing with other games...`,
+        )
+      }
     }
 
     if (allGgMatches.length === 0) {

@@ -13,6 +13,8 @@ import confetti from 'canvas-confetti'
 import { Icons } from '@/lib/icons'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import Image from 'next/image'
+import { GameTypeSelector } from '@/components/game-type-selector'
+import { GameTypeFilter } from '@/hooks/use-matches'
 
 type TimeRange = 'all' | 'weekly' | 'monthly'
 
@@ -34,14 +36,14 @@ interface LeaderboardEntry {
   correct_picks: number
   total_picks: number
   map_score_points: number
-  recentCorrectPicks?: RecentCorrectPick[]
+  recentPicks?: RecentPick[]
   previousRank?: number
   currentRank?: number
   rankChange?: 'up' | 'down' | 'same' | 'new'
   winRate?: number
 }
 
-interface RecentCorrectPick {
+interface RecentPick {
   id: string
   match_id: string
   predicted_winner: string
@@ -58,6 +60,7 @@ interface RecentCorrectPick {
   match_date: string
   created_at: string
   round: string | null
+  is_correct: boolean
 }
 
 interface LeaderboardResult {
@@ -78,6 +81,7 @@ const getRankBadge = (index: number) => {
 
 export default function LeaderboardPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
+  const [gameFilter, setGameFilter] = useState<GameTypeFilter>('all')
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -186,6 +190,7 @@ export default function LeaderboardPage() {
         {
           time_filter: timeFilter,
           season_id_param: selectedSeason,
+          game_type_filter: gameFilter,
         },
       )
 
@@ -251,13 +256,13 @@ export default function LeaderboardPage() {
         topUsers.map(async (user) => {
           try {
             const { data: pickData, error: pickError } = await supabase.rpc(
-              'get_user_recent_correct_picks',
+              'get_user_recent_picks',
               { user_id_param: user.user_id },
             )
 
             if (pickError) throw pickError
 
-            user.recentCorrectPicks = pickData as RecentCorrectPick[]
+            user.recentPicks = pickData as RecentPick[]
             console.log(
               'Recent picks data for user',
               user.username,
@@ -303,7 +308,7 @@ export default function LeaderboardPage() {
     if (selectedSeason) {
       fetchLeaderboard()
     }
-  }, [timeRange, currentPage, hasTriggeredConfetti, selectedSeason]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timeRange, currentPage, hasTriggeredConfetti, selectedSeason, gameFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set up real-time subscription
   useEffect(() => {
@@ -431,6 +436,21 @@ export default function LeaderboardPage() {
               </div>
             </div>
           )}
+
+          {/* Game Type Filter */}
+          <div className="mb-4 flex items-center gap-4">
+            <span className="text-sm font-medium text-muted-foreground">
+              Spill:
+            </span>
+            <GameTypeSelector
+              selectedGame={gameFilter}
+              onGameChange={(game) => {
+                setGameFilter(game)
+                setCurrentPage(1)
+                setHasTriggeredConfetti(false)
+              }}
+            />
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
@@ -666,245 +686,272 @@ export default function LeaderboardPage() {
                       onClick={() => toggleUserExpand(entry.user_id)}
                     >
                       {expandedUsers[entry.user_id] ? 'Skjul' : 'Vis'} siste 5
-                      riktige picks
+                      picks
                       <span className="ml-2">↓</span>
                     </Button>
 
-                    {expandedUsers[entry.user_id] &&
-                      entry.recentCorrectPicks && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="mt-3 overflow-hidden"
-                        >
-                          {entry.recentCorrectPicks.length > 0 ? (
-                            <div className="space-y-2">
-                              {entry.recentCorrectPicks.map(
-                                (pick, pickIndex) => {
-                                  const isTeam1Winner =
-                                    pick.predicted_winner === pick.team1
-                                  const winnerLogo = isTeam1Winner
-                                    ? pick.team1_logo
-                                    : pick.team2_logo
-                                  const winnerName = isTeam1Winner
-                                    ? pick.team1
-                                    : pick.team2
-                                  const loserLogo = isTeam1Winner
-                                    ? pick.team2_logo
-                                    : pick.team1_logo
-                                  const loserName = isTeam1Winner
-                                    ? pick.team2
-                                    : pick.team1
-                                  const winnerScore = isTeam1Winner
-                                    ? pick.team1_score
-                                    : pick.team2_score
-                                  const loserScore = isTeam1Winner
-                                    ? pick.team2_score
-                                    : pick.team1_score
-                                  const winnerMapScore = isTeam1Winner
-                                    ? pick.team1_map_score
-                                    : pick.team2_map_score
-                                  const loserMapScore = isTeam1Winner
-                                    ? pick.team2_map_score
-                                    : pick.team1_map_score
+                    {expandedUsers[entry.user_id] && entry.recentPicks && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-3 overflow-hidden"
+                      >
+                        {entry.recentPicks.length > 0 ? (
+                          <div className="space-y-2">
+                            {entry.recentPicks.map((pick, pickIndex) => {
+                              const isTeam1Winner =
+                                pick.predicted_winner === pick.team1
+                              const winnerLogo = isTeam1Winner
+                                ? pick.team1_logo
+                                : pick.team2_logo
+                              const winnerName = isTeam1Winner
+                                ? pick.team1
+                                : pick.team2
+                              const loserLogo = isTeam1Winner
+                                ? pick.team2_logo
+                                : pick.team1_logo
+                              const loserName = isTeam1Winner
+                                ? pick.team2
+                                : pick.team1
+                              const winnerScore = isTeam1Winner
+                                ? pick.team1_score
+                                : pick.team2_score
+                              const loserScore = isTeam1Winner
+                                ? pick.team2_score
+                                : pick.team1_score
+                              const winnerMapScore = isTeam1Winner
+                                ? pick.team1_map_score
+                                : pick.team2_map_score
+                              const loserMapScore = isTeam1Winner
+                                ? pick.team2_map_score
+                                : pick.team1_map_score
 
-                                  const hasScores =
-                                    winnerScore !== null &&
-                                    winnerScore !== undefined &&
-                                    loserScore !== null &&
-                                    loserScore !== undefined
-                                  const hasMapScores =
-                                    winnerMapScore !== null &&
-                                    winnerMapScore !== undefined &&
-                                    loserMapScore !== null &&
-                                    loserMapScore !== undefined
+                              const hasScores =
+                                winnerScore !== null &&
+                                winnerScore !== undefined &&
+                                loserScore !== null &&
+                                loserScore !== undefined
+                              const hasMapScores =
+                                winnerMapScore !== null &&
+                                winnerMapScore !== undefined &&
+                                loserMapScore !== null &&
+                                loserMapScore !== undefined
 
-                                  const matchDate = pick.match_date
-                                    ? new Date(pick.match_date)
-                                    : null
-                                  const isValidDate =
-                                    matchDate && !isNaN(matchDate.getTime())
+                              const matchDate = pick.match_date
+                                ? new Date(pick.match_date)
+                                : null
+                              const isValidDate =
+                                matchDate && !isNaN(matchDate.getTime())
 
-                                  const formattedDate = isValidDate
-                                    ? matchDate.toLocaleDateString('nb-NO', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year:
-                                          matchDate.getFullYear() !==
-                                          new Date().getFullYear()
-                                            ? 'numeric'
-                                            : undefined,
-                                      })
-                                    : null
-                                  const formattedTime = isValidDate
-                                    ? matchDate.toLocaleTimeString('nb-NO', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })
-                                    : null
+                              const formattedDate = isValidDate
+                                ? matchDate.toLocaleDateString('nb-NO', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year:
+                                      matchDate.getFullYear() !==
+                                      new Date().getFullYear()
+                                        ? 'numeric'
+                                        : undefined,
+                                  })
+                                : null
+                              const formattedTime = isValidDate
+                                ? matchDate.toLocaleTimeString('nb-NO', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : null
 
-                                  return (
-                                    <motion.div
-                                      key={pick.id}
-                                      initial={{ opacity: 0, x: -20 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      transition={{ delay: pickIndex * 0.05 }}
-                                      className="group relative rounded-lg border border-border/50 bg-card/50 p-3 transition-all duration-200 hover:border-primary/20 hover:shadow-sm"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        {/* Match info */}
-                                        <div className="flex-1">
-                                          <div className="mb-2 flex items-center gap-2">
-                                            <div className="flex items-center gap-2">
-                                              {/* Winner */}
-                                              <div className="flex items-center gap-1.5">
-                                                <div className="relative">
-                                                  <div className="h-8 w-8 overflow-hidden rounded-full bg-white shadow-sm">
-                                                    {winnerLogo ? (
-                                                      <Image
-                                                        src={winnerLogo}
-                                                        alt={winnerName}
-                                                        width={32}
-                                                        height={32}
-                                                        className="h-full w-full object-contain p-0.5"
-                                                      />
-                                                    ) : (
-                                                      <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-medium">
-                                                        {winnerName
-                                                          .substring(0, 2)
-                                                          .toUpperCase()}
-                                                      </div>
-                                                    )}
+                              return (
+                                <motion.div
+                                  key={pick.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: pickIndex * 0.05 }}
+                                  className="group relative rounded-lg border border-border/50 bg-card/50 p-3 transition-all duration-200 hover:border-primary/20 hover:shadow-sm"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {/* Match info */}
+                                    <div className="flex-1">
+                                      <div className="mb-2 flex items-center gap-2">
+                                        <div className="flex items-center gap-2">
+                                          {/* Winner */}
+                                          <div className="flex items-center gap-1.5">
+                                            <div className="relative">
+                                              <div className="h-8 w-8 overflow-hidden rounded-full bg-white shadow-sm">
+                                                {winnerLogo ? (
+                                                  <Image
+                                                    src={winnerLogo}
+                                                    alt={winnerName}
+                                                    width={32}
+                                                    height={32}
+                                                    className="h-full w-full object-contain p-0.5"
+                                                  />
+                                                ) : (
+                                                  <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-medium">
+                                                    {winnerName
+                                                      .substring(0, 2)
+                                                      .toUpperCase()}
                                                   </div>
-                                                  <div className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-status-active">
-                                                    <svg
-                                                      width="8"
-                                                      height="8"
-                                                      viewBox="0 0 24 24"
-                                                      fill="none"
-                                                    >
-                                                      <path
-                                                        d="M20 6L9 17L4 12"
-                                                        stroke="white"
-                                                        strokeWidth="3"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                </div>
-                                                <span className="text-sm font-medium">
-                                                  {winnerName}
-                                                </span>
+                                                )}
                                               </div>
-
-                                              {/* Score - only show if we have valid scores */}
-                                              {hasScores && (
-                                                <div className="flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 text-xs font-bold">
-                                                  <span>{winnerScore}</span>
-                                                  <span className="text-muted-foreground">
-                                                    -
-                                                  </span>
-                                                  <span className="text-muted-foreground">
-                                                    {loserScore}
-                                                  </span>
-                                                </div>
-                                              )}
-
-                                              {/* VS text if no scores */}
-                                              {!hasScores && (
-                                                <span className="px-2 text-xs font-medium text-muted-foreground">
-                                                  vs
-                                                </span>
-                                              )}
-
-                                              {/* Loser */}
-                                              <div className="flex items-center gap-1.5 opacity-60">
-                                                <div className="h-6 w-6 overflow-hidden rounded-full bg-white shadow-sm">
-                                                  {loserLogo ? (
-                                                    <Image
-                                                      src={loserLogo}
-                                                      alt={loserName}
-                                                      width={24}
-                                                      height={24}
-                                                      className="h-full w-full object-contain p-0.5"
+                                              <div
+                                                className={`absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full ${
+                                                  pick.is_correct
+                                                    ? 'bg-status-active'
+                                                    : 'bg-destructive'
+                                                }`}
+                                              >
+                                                {pick.is_correct ? (
+                                                  <svg
+                                                    width="8"
+                                                    height="8"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                  >
+                                                    <path
+                                                      d="M20 6L9 17L4 12"
+                                                      stroke="white"
+                                                      strokeWidth="3"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
                                                     />
-                                                  ) : (
-                                                    <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium">
-                                                      {loserName
-                                                        .substring(0, 2)
-                                                        .toUpperCase()}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                <span className="text-sm text-muted-foreground">
-                                                  {loserName}
-                                                </span>
+                                                  </svg>
+                                                ) : (
+                                                  <svg
+                                                    width="8"
+                                                    height="8"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                  >
+                                                    <path
+                                                      d="M18 6L6 18M6 6l12 12"
+                                                      stroke="white"
+                                                      strokeWidth="3"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                    />
+                                                  </svg>
+                                                )}
                                               </div>
                                             </div>
+                                            <span className="text-sm font-medium">
+                                              {winnerName}
+                                            </span>
                                           </div>
 
-                                          {/* Match details - only show items that have data */}
-                                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                            {isValidDate &&
-                                              formattedDate &&
-                                              formattedTime && (
-                                                <span>
-                                                  {formattedDate} kl.{' '}
-                                                  {formattedTime}
-                                                </span>
-                                              )}
-                                            {pick.round && (
-                                              <span>
-                                                {isValidDate ? '•' : ''} Runde{' '}
-                                                {pick.round}
+                                          {/* Score - only show if we have valid scores */}
+                                          {hasScores && (
+                                            <div className="flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 text-xs font-bold">
+                                              <span>{winnerScore}</span>
+                                              <span className="text-muted-foreground">
+                                                -
                                               </span>
-                                            )}
-                                            {hasMapScores && (
-                                              <span>
-                                                • Maps: {winnerMapScore}-
-                                                {loserMapScore}
+                                              <span className="text-muted-foreground">
+                                                {loserScore}
                                               </span>
-                                            )}
-                                            {/* Show "Riktig pick" if no other details */}
-                                            {!isValidDate &&
-                                              !pick.round &&
-                                              !hasMapScores && (
-                                                <span className="text-success">
-                                                  ✓ Riktig pick
-                                                </span>
-                                              )}
-                                          </div>
-                                        </div>
-
-                                        {/* Points */}
-                                        <div className="text-right">
-                                          <div className="text-lg font-bold text-primary">
-                                            +{pick.points_earned || 2}
-                                          </div>
-                                          <div className="text-xs text-muted-foreground">
-                                            poeng
-                                          </div>
-                                          {pick.map_score_points > 0 && (
-                                            <div className="mt-0.5 text-xs font-medium text-success">
-                                              +{pick.map_score_points} map
                                             </div>
                                           )}
+
+                                          {/* VS text if no scores */}
+                                          {!hasScores && (
+                                            <span className="px-2 text-xs font-medium text-muted-foreground">
+                                              vs
+                                            </span>
+                                          )}
+
+                                          {/* Loser */}
+                                          <div className="flex items-center gap-1.5 opacity-60">
+                                            <div className="h-6 w-6 overflow-hidden rounded-full bg-white shadow-sm">
+                                              {loserLogo ? (
+                                                <Image
+                                                  src={loserLogo}
+                                                  alt={loserName}
+                                                  width={24}
+                                                  height={24}
+                                                  className="h-full w-full object-contain p-0.5"
+                                                />
+                                              ) : (
+                                                <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium">
+                                                  {loserName
+                                                    .substring(0, 2)
+                                                    .toUpperCase()}
+                                                </div>
+                                              )}
+                                            </div>
+                                            <span className="text-sm text-muted-foreground">
+                                              {loserName}
+                                            </span>
+                                          </div>
                                         </div>
                                       </div>
-                                    </motion.div>
-                                  )
-                                },
-                              )}
-                            </div>
-                          ) : (
-                            <p className="py-4 text-center text-xs text-muted-foreground">
-                              Ingen riktige picks ennå
-                            </p>
-                          )}
-                        </motion.div>
-                      )}
+
+                                      {/* Match details - only show items that have data */}
+                                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                        {isValidDate &&
+                                          formattedDate &&
+                                          formattedTime && (
+                                            <span>
+                                              {formattedDate} kl.{' '}
+                                              {formattedTime}
+                                            </span>
+                                          )}
+                                        {pick.round && (
+                                          <span>
+                                            {isValidDate ? '•' : ''} Runde{' '}
+                                            {pick.round}
+                                          </span>
+                                        )}
+                                        {hasMapScores && (
+                                          <span>
+                                            • Maps: {winnerMapScore}-
+                                            {loserMapScore}
+                                          </span>
+                                        )}
+                                        {/* Show "Riktig pick" if no other details */}
+                                        {!isValidDate &&
+                                          !pick.round &&
+                                          !hasMapScores && (
+                                            <span className="text-success">
+                                              ✓ Riktig pick
+                                            </span>
+                                          )}
+                                      </div>
+                                    </div>
+
+                                    {/* Points */}
+                                    <div className="text-right">
+                                      <div
+                                        className={`text-lg font-bold ${
+                                          pick.is_correct
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground'
+                                        }`}
+                                      >
+                                        {pick.is_correct ? '+' : ''}
+                                        {pick.points_earned || 0}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        poeng
+                                      </div>
+                                      {pick.map_score_points > 0 && (
+                                        <div className="mt-0.5 text-xs font-medium text-success">
+                                          +{pick.map_score_points} map
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <p className="py-4 text-center text-xs text-muted-foreground">
+                            Ingen picks ennå
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </Card>

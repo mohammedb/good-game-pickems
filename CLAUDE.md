@@ -103,10 +103,10 @@ src/
 1. **Good Game Ligaen API**:
    - Base URL: `https://www.goodgameligaen.no/api`
    - Division IDs: 
-     - CS2: 12517 (hardcoded)
-     - LoL: 12518 (via `GOOD_GAME_LOL_DIVISION_ID`)
+     - CS2: 13599 (via `GOOD_GAME_CS_DIVISION_ID`)
+     - LoL: 13600 (via `GOOD_GAME_LOL_DIVISION_ID`)
      - Valorant: 13601 (via `GOOD_GAME_VALORANT_DIVISION_ID`)
-   - Season ID: 13162 (Current)
+   - Season ID: 13599 (via `GOOD_GAME_SEASON_ID`)
    - Auth: Bearer token in `GOOD_GAME_LIGAEN_TOKEN` env var
 
 2. **Environment Variables**:
@@ -118,7 +118,9 @@ src/
    
    # Good Game Ligaen
    GOOD_GAME_LIGAEN_TOKEN=
-   GOOD_GAME_LOL_DIVISION_ID=12518
+   GOOD_GAME_SEASON_ID=13599
+   GOOD_GAME_CS_DIVISION_ID=13599
+   GOOD_GAME_LOL_DIVISION_ID=13600
    GOOD_GAME_VALORANT_DIVISION_ID=13601
    
    # Auth

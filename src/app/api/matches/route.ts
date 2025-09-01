@@ -72,11 +72,10 @@ export async function GET(request: Request) {
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    // Build query
+    // Build query - show all matches (remove 24 hour restriction)
     let query = supabase
       .from('matches')
       .select('*')
-      .gte('start_time', twentyFourHoursAgo.toISOString())
       .order('start_time', { ascending: true })
 
     // Filter by game type if specified

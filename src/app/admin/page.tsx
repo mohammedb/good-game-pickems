@@ -239,7 +239,7 @@ export default function AdminPage() {
       setSyncError(false)
       setSyncStatus('syncing')
       setSyncProgress(0)
-      setSyncMessage('Initializing sync...')
+      setSyncMessage('Initializing sync for CS:GO, LoL, and Valorant...')
 
       // Simulate progress updates
       progressInterval = setInterval(() => {
@@ -263,13 +263,15 @@ export default function AdminPage() {
       // Show success message
       toast({
         title: 'Success',
-        description: `Synced ${result.synced_matches} matches`,
+        description: `Synced ${result.synced_matches} matches (CS:GO, LoL, Valorant)`,
       })
 
       clearInterval(progressInterval)
       setSyncProgress(100)
       setSyncStatus('success')
-      setSyncMessage(`Synced ${result.synced_matches} matches successfully!`)
+      setSyncMessage(
+        `Synced ${result.synced_matches} matches successfully (CS:GO, LoL, Valorant)!`,
+      )
       setSyncSuccess(true)
 
       // Refresh the page data with animation

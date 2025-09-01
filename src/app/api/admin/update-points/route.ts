@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { createServerClient } from '@/utils/supabase'
+import { createServerClient, createServiceRoleClient } from '@/utils/supabase'
 import { addAdminLog } from '@/lib/admin-logs'
 
 export async function POST(request: Request) {
@@ -27,8 +27,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use service role client for admin operations (bypasses RLS)
+    const serviceSupabase = createServiceRoleClient()
+
     // First, let's check if we need to reset any matches that were marked as processed but didn't get points
-    const { data: processedMatches } = await supabase
+    const { data: processedMatches } = await serviceSupabase
       .from('matches')
       .select(
         `
@@ -48,7 +51,7 @@ export async function POST(request: Request) {
     if (processedMatches) {
       for (const match of processedMatches) {
         // Check if this match has any picks with points
-        const { data: picks } = await supabase
+        const { data: picks } = await serviceSupabase
           .from('picks')
           .select('points_awarded')
           .eq('match_id', match.id)
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
           console.log(
             `Resetting points_processed for match ${match.gg_ligaen_api_id} (${match.team1} vs ${match.team2})`,
           )
-          await supabase
+          await serviceSupabase
             .from('matches')
             .update({ points_processed: false })
             .eq('id', match.id)
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
     }
 
     // Now get all unprocessed matches that have winners
-    const { data: matches, error: matchesError } = await supabase
+    const { data: matches, error: matchesError } = await serviceSupabase
       .from('matches')
       .select(
         'id, gg_ligaen_api_id, winner_id, team1_id, team2_id, team1, team2, is_finished',
@@ -106,7 +109,7 @@ export async function POST(request: Request) {
         )
 
         // Get picks for this match before processing
-        const { data: beforePicks } = await supabase
+        const { data: beforePicks } = await serviceSupabase
           .from('picks')
           .select('id, user_id, predicted_winner, points_awarded, is_correct')
           .eq('match_id', match.id)
@@ -114,10 +117,10 @@ export async function POST(request: Request) {
         console.log('Picks before processing:', beforePicks)
 
         // Update points for the match
-        const { data: updateResult, error: updateError } = await supabase.rpc(
-          'update_match_points',
-          { match_id_param: match.id },
-        )
+        const { data: updateResult, error: updateError } =
+          await serviceSupabase.rpc('update_match_points', {
+            match_id_param: match.id,
+          })
 
         if (updateError) {
           console.error('Error in update_match_points:', updateError)
@@ -127,7 +130,7 @@ export async function POST(request: Request) {
         console.log('update_match_points result:', updateResult)
 
         // Get picks after processing to verify changes
-        const { data: afterPicks } = await supabase
+        const { data: afterPicks } = await serviceSupabase
           .from('picks')
           .select('id, user_id, predicted_winner, points_awarded, is_correct')
           .eq('match_id', match.id)
@@ -136,7 +139,7 @@ export async function POST(request: Request) {
 
         // Only mark as processed if points were actually awarded
         if (afterPicks && afterPicks.some((pick) => pick.points_awarded > 0)) {
-          await supabase
+          await serviceSupabase
             .from('matches')
             .update({ points_processed: true })
             .eq('id', match.id)
@@ -154,21 +157,21 @@ export async function POST(request: Request) {
 
     // Update user total points and rankings
     try {
-      const { data: beforePoints } = await supabase
+      const { data: beforePoints } = await serviceSupabase
         .from('users')
         .select('id, username, total_points')
         .order('total_points', { ascending: false })
 
       console.log('User points before update:', beforePoints)
 
-      const { error: updateError } = await supabase.rpc(
+      const { error: updateError } = await serviceSupabase.rpc(
         'update_user_total_points',
       )
       if (updateError) {
         console.error('Error in update_user_total_points:', updateError)
       }
 
-      const { data: afterPoints } = await supabase
+      const { data: afterPoints } = await serviceSupabase
         .from('users')
         .select('id, username, total_points')
         .order('total_points', { ascending: false })
@@ -179,7 +182,7 @@ export async function POST(request: Request) {
     }
 
     // Get count of processed picks
-    const { count: processedPicks } = await supabase
+    const { count: processedPicks } = await serviceSupabase
       .from('picks')
       .select('*', { count: 'exact', head: true })
       .in(
