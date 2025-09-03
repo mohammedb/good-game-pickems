@@ -1,17 +1,23 @@
 import { GoodGameMatch, Match } from '@/app/matches/types'
 
-const CS_DIVISION_ID = process.env.GOOD_GAME_CS_DIVISION_ID || '18351' // CS:GO Division (configurable)
+const CS_DIVISION_ID = '18324' // CS2 1. Divisjon only
 const LOL_DIVISION_ID = process.env.GOOD_GAME_LOL_DIVISION_ID || '18353' // LoL Division (configurable)
 const VALORANT_DIVISION_ID =
   process.env.GOOD_GAME_VALORANT_DIVISION_ID || '18355' // Valorant Division (configurable)
-const SEASON_ID = process.env.GOOD_GAME_SEASON_ID || '13600' // Current Season (configurable)
+
+// Season IDs per game type
+const CS_SEASON_ID = process.env.GOOD_GAME_CS_SEASON_ID || '13599'
+const LOL_SEASON_ID = process.env.GOOD_GAME_LOL_SEASON_ID || '13600'
+const VALORANT_SEASON_ID = process.env.GOOD_GAME_VALORANT_SEASON_ID || '13601'
 
 // Log configuration on startup
 console.log('Good Game API Configuration:', {
   CS_DIVISION_ID,
   LOL_DIVISION_ID,
   VALORANT_DIVISION_ID,
-  SEASON_ID,
+  CS_SEASON_ID,
+  LOL_SEASON_ID,
+  VALORANT_SEASON_ID,
 })
 const API_BASE_URL = 'https://www.gamer.no/api/paradise'
 const BATCH_SIZE = 25 // Process matches in smaller batches
@@ -23,7 +29,14 @@ export async function fetchGoodGameMatches(
   gameType: GameType = 'csgo',
 ): Promise<GoodGameMatch[]> {
   try {
-    const activeSeasonId = seasonId || SEASON_ID
+    // Use game-specific season ID if not overridden
+    const activeSeasonId =
+      seasonId ||
+      (gameType === 'lol'
+        ? LOL_SEASON_ID
+        : gameType === 'valorant'
+          ? VALORANT_SEASON_ID
+          : CS_SEASON_ID)
     const divisionId =
       gameType === 'lol'
         ? LOL_DIVISION_ID
@@ -39,12 +52,27 @@ export async function fetchGoodGameMatches(
 
     try {
       for (const status of ['finished', 'unfinished']) {
-        const params = new URLSearchParams({
-          status,
-          relation: 'all',
-          division_id: divisionId,
-          limit: '100',
-        })
+        // For CS2, filter by 1. Divisjon only; for LoL filter by division; for Valorant get all
+        const params =
+          gameType === 'csgo'
+            ? new URLSearchParams({
+                status,
+                relation: 'all',
+                division_id: CS_DIVISION_ID, // Only 1. Divisjon for CS2
+                limit: '100',
+              })
+            : gameType === 'lol'
+              ? new URLSearchParams({
+                  status,
+                  relation: 'all',
+                  division_id: divisionId,
+                  limit: '100',
+                })
+              : new URLSearchParams({
+                  status,
+                  relation: 'all',
+                  limit: '100',
+                })
 
         const url = `${API_BASE_URL}/competition/${activeSeasonId}/matchups?${params.toString()}`
         console.log(`Fetching ${status} matches from:`, url)
@@ -141,12 +169,14 @@ export function transformGoodGameMatch(
       team1_logo: match.home_signup.team.logo?.url,
       team2_logo: match.away_signup.team.logo?.url,
       start_time: match.start_time,
+      // Use the actual division_id from the match data
       division_id:
-        gameType === 'lol'
+        match.matchupable_id?.toString() ||
+        (gameType === 'lol'
           ? LOL_DIVISION_ID
           : gameType === 'valorant'
             ? VALORANT_DIVISION_ID
-            : CS_DIVISION_ID,
+            : CS_DIVISION_ID),
       season_id: seasonId, // Include season_id
       game_type: gameType, // Include game_type
       is_finished: !!match.finished_at,
@@ -170,26 +200,40 @@ export async function syncMatches(
 ) {
   try {
     console.log('Starting match sync...')
+    console.log(`Syncing matches for game types: ${gameTypes.join(', ')}`)
 
-    // Use the configured season ID or the provided one
-    let activeSeasonId = seasonId || SEASON_ID
-    console.log(
-      `Using season ID: ${activeSeasonId} (from ${seasonId ? 'parameter' : 'environment variable'})`,
-    )
-
-    console.log(`Syncing matches for season: ${activeSeasonId}`)
-
-    const allGgMatches: { match: GoodGameMatch; gameType: GameType }[] = []
+    const allGgMatches: {
+      match: GoodGameMatch
+      gameType: GameType
+      seasonId: string
+    }[] = []
 
     // 1. Fetch matches from Good Game Ligaen for each game type
     for (const gameType of gameTypes) {
       try {
-        console.log(`Fetching ${gameType} matches...`)
-        const ggMatches = await fetchGoodGameMatches(activeSeasonId, gameType)
+        // Use game-specific season ID
+        const gameSeasonId =
+          seasonId ||
+          (gameType === 'lol'
+            ? LOL_SEASON_ID
+            : gameType === 'valorant'
+              ? VALORANT_SEASON_ID
+              : CS_SEASON_ID)
+
+        console.log(
+          `Fetching ${gameType} matches for season ${gameSeasonId}...`,
+        )
+        const ggMatches = await fetchGoodGameMatches(gameSeasonId, gameType)
         console.log(`Fetched ${ggMatches.length} ${gameType} matches from API`)
 
-        // Add game type info to each match
-        allGgMatches.push(...ggMatches.map((match) => ({ match, gameType })))
+        // Add game type and season info to each match
+        allGgMatches.push(
+          ...ggMatches.map((match) => ({
+            match,
+            gameType,
+            seasonId: gameSeasonId,
+          })),
+        )
       } catch (error) {
         console.error(`Error fetching ${gameType} matches:`, error)
         // Continue with other game types even if one fails
@@ -218,7 +262,7 @@ export async function syncMatches(
             ({ match }) =>
               match && match.home_signup?.team && match.away_signup?.team,
           )
-          .map(async ({ match, gameType }) => {
+          .map(async ({ match, gameType, seasonId: matchSeasonId }) => {
             try {
               // Get the existing match ID if it exists
               const { data: existingMatch } = await supabase
@@ -229,7 +273,7 @@ export async function syncMatches(
 
               const matchData = transformGoodGameMatch(
                 match,
-                activeSeasonId,
+                matchSeasonId,
                 gameType,
               )
 

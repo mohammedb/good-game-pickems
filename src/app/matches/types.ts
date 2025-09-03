@@ -49,6 +49,7 @@ export interface GoodGameMatch {
   away_signup: GoodGameSignup
   best_of?: number
   videos?: GoodGameVideo[]
+  matchupable_id?: number
 }
 
 export interface Match {

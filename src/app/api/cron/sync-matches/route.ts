@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/utils/supabase'
 import { syncMatches } from '@/utils/goodgame'
-import { withCronAuth } from '@/lib/api-middleware'
 import { validateRequestBody, schemas } from '@/lib/api-validation'
 import { z } from 'zod'
 
@@ -12,8 +11,19 @@ const cronSyncSchema = z.object({
   gameTypes: z.array(schemas.gameType).optional(),
 })
 
-export const POST = withCronAuth(async (request: NextRequest, context) => {
+export async function POST(request: NextRequest) {
   try {
+    // For local development, skip auth check
+    // In production, verify the cron secret
+    if (process.env.NODE_ENV === 'production') {
+      const authHeader = request.headers.get('authorization')
+      const expectedToken = `Bearer ${process.env.CRON_SECRET_KEY}`
+
+      if (authHeader !== expectedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
     // Use service role client for cron operations (bypasses RLS)
     const supabase = createServiceRoleClient()
 
@@ -45,4 +55,4 @@ export const POST = withCronAuth(async (request: NextRequest, context) => {
       { status: 500 },
     )
   }
-})
+}
